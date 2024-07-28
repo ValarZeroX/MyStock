@@ -1,4 +1,4 @@
-package com.banshus.mystock
+package com.banshus.mystock.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

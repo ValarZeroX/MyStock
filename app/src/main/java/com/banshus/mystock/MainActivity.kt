@@ -5,26 +5,24 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.systemBarsPadding
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import com.banshus.mystock.ui.theme.MyStockTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.banshus.mystock.ui.NavBar
+import com.banshus.mystock.ui.StockAddScreen
+import com.banshus.mystock.ui.StockReportScreen
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<StockViewModel>()
-    //同意實驗API
-    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()

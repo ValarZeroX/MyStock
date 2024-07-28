@@ -14,5 +14,10 @@ var Black1 = Color(0xFF1C1D21)
 var Black2 = Color(0xFF323338)
 
 var White1 = Color(0xFFC6C6C7)
+var Gray1 = Color(0xFF6C757D)
+var Gary2 = Color(0xFFADB5BD)
 
 var Blue1 = Color(0xFF009EEC)
+
+var Red1 = Color(0xFFDC3545)
+var Red2 = Color(0xFFE35D6A)

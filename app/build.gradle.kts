@@ -71,4 +71,10 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation (libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.foundation)
+    // CORE
+    implementation(libs.sheetsComposeDialogsCore)
+    // CALENDAR
+    implementation(libs.sheetsComposeDialogsCalendar)
+    // CLOCK
+    implementation(libs.sheetsComposeDialogsClock)
 }

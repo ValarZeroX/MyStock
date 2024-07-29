@@ -14,12 +14,14 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
-import com.banshus.mystock.ui.theme.MyStockTheme
+//import com.banshus.mystock.ui.theme.MyStockTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.StockAddScreen
 import com.banshus.mystock.ui.StockReportScreen
+import com.banshus.mystock.ui.StockSettingScreen
+import com.banshus.mystock.ui.theme.MyStockTheme
 
 class MainActivity : ComponentActivity() {
     private val viewModel by viewModels<StockViewModel>()
@@ -27,8 +29,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            MyStockTheme {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+            MyStockTheme(
+                darkTheme = true,
+                dynamicColor = false,
+                themeIndex = 2
+            ) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceContainer) {
                     Box {
                         Column(modifier = Modifier.systemBarsPadding()){
                             when (viewModel.selectedTab) {
@@ -36,7 +42,7 @@ class MainActivity : ComponentActivity() {
                                 1 -> StockAddScreen()
                                 2 -> StockAddScreen()
                                 3 -> StockReportScreen(modifier = Modifier.weight(1f))
-                                4 -> StockAddScreen()
+                                4 -> StockSettingScreen()
                             }
                         }
                         Column(

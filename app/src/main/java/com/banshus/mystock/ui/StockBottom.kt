@@ -16,15 +16,13 @@ import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.QueryStats
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.banshus.mystock.ui.theme.Black1
-import com.banshus.mystock.ui.theme.Blue1
-import com.banshus.mystock.ui.theme.White1
 
 data class TabData(val icon: ImageVector, val description: String)
 
@@ -41,7 +39,7 @@ fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Black1)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .padding(8.dp)
     ) {
         Row(
@@ -52,8 +50,10 @@ fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
                 NavItem(
                     imageVector = tab.icon,
                     contentDescription = tab.description,
-                    modifier = Modifier.size(58.dp).padding(10.dp),
-                    tint = if (selected == index) Blue1 else White1,
+                    modifier = Modifier
+                        .size(58.dp)
+                        .padding(10.dp),
+                    tint = if (selected == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                     onClick = {
                         onTabSelected(index)
                     }
@@ -70,7 +70,7 @@ fun NavItem(
     imageVector: ImageVector,
     contentDescription: String,
     modifier: Modifier,
-    tint: Color = Color.White,
+    tint: Color = MaterialTheme.colorScheme.onPrimary,
     onClick: () -> Unit
 ) {
     Column(modifier = Modifier.clickable(onClick = onClick)) {

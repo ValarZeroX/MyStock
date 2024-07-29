@@ -30,15 +30,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.banshus.mystock.ui.theme.Black1
-import com.banshus.mystock.ui.theme.White1
 import androidx.compose.runtime.*
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.KeyboardType
-import com.banshus.mystock.ui.theme.Black2
-import com.banshus.mystock.ui.theme.Gary2
-import com.banshus.mystock.ui.theme.Gray1
-import com.banshus.mystock.ui.theme.Red1
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -66,10 +60,10 @@ fun StockAddScreen() {
     val clockState = rememberUseCaseState()
     Column (
         modifier = Modifier
-            .background(Black2)
+            .background(MaterialTheme.colorScheme.surfaceBright)
             .fillMaxSize()
     ){
-        Header()
+        AddHeader()
         Row(
             modifier = Modifier.padding(10.dp)
         ) {
@@ -79,7 +73,6 @@ fun StockAddScreen() {
                     .align(Alignment.CenterVertically)
                     .width(100.dp)
                     .padding(start = 10.dp, end = 20.dp),
-                color = White1
             )
             var stockSymbol by remember {
                 mutableStateOf("")
@@ -88,17 +81,6 @@ fun StockAddScreen() {
                 value = stockSymbol,
                 onValueChange = {stockSymbol = it},
                 label = {Text("股票代碼")},
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Black2, //背景
-                    unfocusedContainerColor = Black2,
-                    focusedIndicatorColor = Gray1, //邊線
-                    unfocusedIndicatorColor = Gray1,
-                    focusedLabelColor = Gary2, //標題
-                    unfocusedLabelColor = Gary2,
-                    cursorColor = Color.White, //光標顏色
-                    focusedTextColor = White1, //字體
-                    unfocusedTextColor = White1
-                ),
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -111,7 +93,6 @@ fun StockAddScreen() {
                     .align(Alignment.CenterVertically)
                     .width(100.dp)
                     .padding(start = 10.dp, end = 20.dp),
-                color = White1
             )
             var stockName by remember {
                 mutableStateOf("")
@@ -120,17 +101,6 @@ fun StockAddScreen() {
                 value = stockName,
                 onValueChange = {stockName = it},
                 label = {Text("股票名稱")},
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Black2, //背景
-                    unfocusedContainerColor = Black2,
-                    focusedIndicatorColor = Gray1, //邊線
-                    unfocusedIndicatorColor = Gray1,
-                    focusedLabelColor = Gary2, //標題
-                    unfocusedLabelColor = Gary2,
-                    cursorColor = Color.White, //光標顏色
-                    focusedTextColor = White1, //字體
-                    unfocusedTextColor = White1
-                ),
             )
         }
         Row(
@@ -142,7 +112,6 @@ fun StockAddScreen() {
                     .align(Alignment.CenterVertically)
                     .width(100.dp)
                     .padding(start = 10.dp, end = 20.dp),
-                color = White1
             )
             var stockPrice by remember {
                 mutableStateOf("")
@@ -162,21 +131,6 @@ fun StockAddScreen() {
                     }
                 },
                 label = {Text("價格")},
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Black2, //背景
-                    unfocusedContainerColor = Black2,
-                    errorContainerColor = Black2,
-                    focusedIndicatorColor = Gray1, //邊線
-                    unfocusedIndicatorColor = Gray1,
-                    errorIndicatorColor = Red1,
-                    focusedLabelColor = Gary2, //標題
-                    unfocusedLabelColor = Gary2,
-                    errorLabelColor = Red1,
-                    cursorColor = Color.White, //光標顏色
-                    focusedTextColor = White1, //字體
-                    unfocusedTextColor = White1,
-                    errorTextColor = White1
-                ),
                 keyboardOptions = KeyboardOptions.Default.copy(
                     keyboardType = KeyboardType.Number
                 ),
@@ -192,7 +146,6 @@ fun StockAddScreen() {
                     .align(Alignment.CenterVertically)
                     .width(100.dp)
                     .padding(start = 10.dp, end = 20.dp),
-                color = White1
             )
             var stockQuantity by remember {
                 mutableStateOf("")
@@ -201,17 +154,6 @@ fun StockAddScreen() {
                 value = stockQuantity,
                 onValueChange = {stockQuantity = it},
                 label = {Text("股數")},
-                colors = TextFieldDefaults.colors(
-                    focusedContainerColor = Black2, //背景
-                    unfocusedContainerColor = Black2,
-                    focusedIndicatorColor = Gray1, //邊線
-                    unfocusedIndicatorColor = Gray1,
-                    focusedLabelColor = Gary2, //標題
-                    unfocusedLabelColor = Gary2,
-                    cursorColor = Color.White, //光標顏色
-                    focusedTextColor = White1, //字體
-                    unfocusedTextColor = White1
-                ),
             )
         }
         Row(modifier = Modifier
@@ -223,22 +165,13 @@ fun StockAddScreen() {
                     .align(Alignment.CenterVertically)
                     .width(100.dp)
                     .padding(start = 10.dp, end = 20.dp),
-                color = White1
             )
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                 Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Black2,
-                        contentColor = White1
-                    ),
-                    modifier = Modifier.border(
-                        width = 1.dp,
-                        color = Gary2,
-                        shape = MaterialTheme.shapes.small
-                    ).weight(1f),
+                    modifier = Modifier.weight(1f),
                     onClick = {
                     calendarState.show()
                 }) {
@@ -246,15 +179,7 @@ fun StockAddScreen() {
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Button(
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Black2,
-                        contentColor = White1,
-                    ),
-                    modifier = Modifier.border(
-                        width = 1.dp,
-                        color = Gary2,
-                        shape = MaterialTheme.shapes.small
-                    ).weight(1f),
+                    modifier = Modifier.weight(1f),
                     onClick = {
                         clockState.show()
                     }) {
@@ -288,11 +213,11 @@ fun StockAddScreen() {
     }
 }
 @Composable
-fun Header() {
+fun AddHeader() {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Black1)
+            .background(MaterialTheme.colorScheme.surfaceContainer)
             .padding(top = 20.dp, bottom = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -302,14 +227,12 @@ fun Header() {
             modifier = Modifier
                 .padding(start = 16.dp)
                 .size(36.dp),
-            tint = White1
         )
         Spacer(modifier = Modifier.weight(1f))
         Text(
             "新增記錄",
             modifier = Modifier.weight(1f),
             textAlign = TextAlign.Center,
-            color = White1,
             fontSize = 20.sp
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -319,7 +242,6 @@ fun Header() {
             modifier = Modifier
                 .padding(end = 16.dp)
                 .size(36.dp),
-            tint = White1
         )
     }
 }

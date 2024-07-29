@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
                 dynamicColor = false,
                 themeIndex = 2
             ) {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surfaceContainer) {
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
                     Box {
                         Column(modifier = Modifier.systemBarsPadding()){
                             when (viewModel.selectedTab) {

@@ -191,14 +191,14 @@ fun MyStockTheme(
         }
 
         darkTheme -> when (themeIndex) {
-            1 -> darkScheme
-            2 -> darkSchemeGreen
+            0 -> darkScheme
+            1 -> darkSchemeGreen
             else -> darkScheme
         }
 
         else -> when (themeIndex) {
-            1 -> lightScheme
-            2 -> lightSchemeGreen
+            0 -> lightScheme
+            1 -> lightSchemeGreen
             else -> lightScheme
         }
     }

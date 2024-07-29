@@ -1,6 +1,7 @@
 package com.banshus.mystock.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -21,9 +22,27 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.banshus.mystock.ui.setting.ColorThemeScreen
 
 @Composable
-fun StockSettingScreen(){
+fun MySetting() {
+    val navController = rememberNavController()
+    NavHost(navController = navController, startDestination = "stockSettingScreen") {
+        composable("stockSettingScreen") {
+            StockSettingScreen(navController)
+        }
+        composable("colorThemeScreen") {
+            ColorThemeScreen(navController)
+        }
+    }
+}
+
+@Composable
+fun StockSettingScreen(navController: NavHostController){
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
@@ -55,7 +74,11 @@ fun StockSettingScreen(){
                         modifier = Modifier.padding(horizontal = 10.dp)
                     )
                     Row (
-                        verticalAlignment = Alignment.CenterVertically
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.clickable {
+                            println("Hello")
+                            navController.navigate("colorThemeScreen")
+                        }
                     ){
                         Text(
                             text = "主題顏色",
@@ -96,8 +119,10 @@ fun SettingHeader() {
     }
 }
 
+
+
 @Preview
 @Composable
 fun StockSettingScreenPreview(){
-    StockSettingScreen()
+    MySetting()
 }

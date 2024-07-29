@@ -14,13 +14,12 @@ import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
-//import com.banshus.mystock.ui.theme.MyStockTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.StockAddScreen
 import com.banshus.mystock.ui.StockReportScreen
-import com.banshus.mystock.ui.StockSettingScreen
+import com.banshus.mystock.ui.MySetting
 import com.banshus.mystock.ui.theme.MyStockTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,7 +41,7 @@ class MainActivity : ComponentActivity() {
                                 1 -> StockAddScreen()
                                 2 -> StockAddScreen()
                                 3 -> StockReportScreen(modifier = Modifier.weight(1f))
-                                4 -> StockSettingScreen()
+                                4 -> MySetting()
                             }
                         }
                         Column(

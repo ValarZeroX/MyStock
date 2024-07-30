@@ -37,9 +37,9 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-//        val dao = AppDatabase.getDatabase(this).userSettingsDao()
-//        val repository = UserSettingsRepository(dao)
-//        val factory = UserSettingsViewModelFactory(repository)
+        val dao = AppDatabase.getDatabase(this).userSettingsDao()
+        val repository = UserSettingsRepository(dao)
+        val factory = UserSettingsViewModelFactory(repository)
 //        userSettingsViewModel = ViewModelProvider(this, factory).get(UserSettingsViewModel::class.java)
         setContent {
 //            println(userSettingsViewModel.userSettings)

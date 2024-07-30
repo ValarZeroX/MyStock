@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
+    id("kotlin-kapt")
 }
 
 android {
@@ -79,5 +80,11 @@ dependencies {
     // CLOCK
     implementation(libs.sheetsComposeDialogsClock)
     // Room
-    implementation (libs.androidx.room.runtime)
+//    implementation (libs.androidx.room.runtime)
+
+    val room_version = "2.6.1"
+
+    implementation("androidx.room:room-runtime:$room_version")
+    kapt("androidx.room:room-compiler:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
 }

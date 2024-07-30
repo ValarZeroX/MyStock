@@ -25,10 +25,12 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,203 +68,180 @@ fun StockAddScreen() {
     val selectedTime = remember { mutableStateOf(nowTime) }
     val clockState = rememberUseCaseState()
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text("新增記錄", maxLines = 1, overflow = TextOverflow.Ellipsis)
-                },
-                navigationIcon = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Close,
-                            contentDescription = "關閉"
-                        )
-                    }
-                },
-                actions = {
-                    IconButton(onClick = { /* doSomething() */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = "確認"
-                        )
-                    }
+    AddHeader()
+    LazyColumn(
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.surface)
+            .fillMaxSize()
+    ) {
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "股票代碼",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .width(100.dp)
+                        .padding(start = 10.dp, end = 20.dp),
+                )
+                var stockSymbol by remember {
+                    mutableStateOf("")
                 }
-            )
-        },
-        content = { innerPadding ->
-            LazyColumn (
-                contentPadding = innerPadding,
-                modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceBright)
-                    .fillMaxSize()
-            ){
-                item {
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = "股票代碼",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
-                        var stockSymbol by remember {
-                            mutableStateOf("")
-                        }
-                        OutlinedTextField(
-                            value = stockSymbol,
-                            onValueChange = {stockSymbol = it},
-                            label = {Text("股票代碼")},
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = "股票名稱",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
-                        var stockName by remember {
-                            mutableStateOf("")
-                        }
-                        OutlinedTextField(
-                            value = stockName,
-                            onValueChange = {stockName = it},
-                            label = {Text("股票名稱")},
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = "價格",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
-                        var stockPrice by remember {
-                            mutableStateOf("")
-                        }
-                        var isStockPriceError by remember { mutableStateOf(false) }
-                        OutlinedTextField(
-                            value = stockPrice,
-                            onValueChange = { newText ->
-                                // 驗證是否正浮點數
-                                val parsedValue = newText.toFloatOrNull()
-                                if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
-                                    stockPrice = newText
-                                    stockPrice = newText
-                                    isStockPriceError = false
-                                } else {
-                                    isStockPriceError = true
-                                }
-                            },
-                            label = {Text("價格")},
-                            keyboardOptions = KeyboardOptions.Default.copy(
-                                keyboardType = KeyboardType.Number
-                            ),
-                            isError = isStockPriceError
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = "股數",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
-                        var stockQuantity by remember {
-                            mutableStateOf("")
-                        }
-                        OutlinedTextField(
-                            value = stockQuantity,
-                            onValueChange = {stockQuantity = it},
-                            label = {Text("股數")},
-                        )
-                    }
-                }
-                item{
-                    Row(modifier = Modifier
-                        .padding(10.dp)
-                    ) {
-                        Text(
-                            text = "交易日期",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Button(
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    calendarState.show()
-                                }) {
-                                Text(stockDateTime)
-                            }
-                            Spacer(modifier = Modifier.width(16.dp))
-                            Button(
-                                modifier = Modifier.weight(1f),
-                                onClick = {
-                                    clockState.show()
-                                }) {
-                                Text(selectedTime.value)
-                            }
-                        }
-                    }
-                    CalendarDialog(
-                        state = calendarState,
-                        config = CalendarConfig(
-                            yearSelection = true,
-                            monthSelection = true,
-                            style = CalendarStyle.MONTH,
-                        ),
-                        selection = CalendarSelection.Dates { newDates ->
-                            stockDateTime = newDates.firstOrNull()?.toString() ?: ""
-                        }
-                    )
-
-                    ClockDialog(
-                        state = clockState,
-                        selection = ClockSelection.HoursMinutes { hours, minutes ->
-                            val newTime = LocalTime.of(hours, minutes, 0).format(timeFormatter)
-                            selectedTime.value = newTime
-                        },
-                        config = ClockConfig(
-                            defaultTime = LocalTime.parse(selectedTime.value, timeFormatter),
-                            is24HourFormat = true
-                        )
-                    )
-                }
-//        AddHeader()
-
+                OutlinedTextField(
+                    value = stockSymbol,
+                    onValueChange = { stockSymbol = it },
+                    label = { Text("股票代碼") },
+                )
             }
         }
-    )
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "股票名稱",
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .width(100.dp)
+                        .padding(start = 10.dp, end = 20.dp),
+                )
+                var stockName by remember {
+                    mutableStateOf("")
+                }
+                OutlinedTextField(
+                    value = stockName,
+                    onValueChange = { stockName = it },
+                    label = { Text("股票名稱") },
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "價格",
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .width(100.dp)
+                        .padding(start = 10.dp, end = 20.dp),
+                )
+                var stockPrice by remember {
+                    mutableStateOf("")
+                }
+                var isStockPriceError by remember { mutableStateOf(false) }
+                OutlinedTextField(
+                    value = stockPrice,
+                    onValueChange = { newText ->
+                        // 驗證是否正浮點數
+                        val parsedValue = newText.toFloatOrNull()
+                        if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
+                            stockPrice = newText
+                            stockPrice = newText
+                            isStockPriceError = false
+                        } else {
+                            isStockPriceError = true
+                        }
+                    },
+                    label = { Text("價格") },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        keyboardType = KeyboardType.Number
+                    ),
+                    isError = isStockPriceError
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                Text(
+                    text = "股數",
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .width(100.dp)
+                        .padding(start = 10.dp, end = 20.dp),
+                )
+                var stockQuantity by remember {
+                    mutableStateOf("")
+                }
+                OutlinedTextField(
+                    value = stockQuantity,
+                    onValueChange = { stockQuantity = it },
+                    label = { Text("股數") },
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier
+                    .padding(10.dp)
+            ) {
+                Text(
+                    text = "交易日期",
+                    modifier = Modifier
+                        .align(Alignment.CenterVertically)
+                        .width(100.dp)
+                        .padding(start = 10.dp, end = 20.dp),
+                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            calendarState.show()
+                        }) {
+                        Text(stockDateTime)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Button(
+                        modifier = Modifier.weight(1f),
+                        onClick = {
+                            clockState.show()
+                        }) {
+                        Text(selectedTime.value)
+                    }
+                }
+            }
+            CalendarDialog(
+                state = calendarState,
+                config = CalendarConfig(
+                    yearSelection = true,
+                    monthSelection = true,
+                    style = CalendarStyle.MONTH,
+                ),
+                selection = CalendarSelection.Dates { newDates ->
+                    stockDateTime = newDates.firstOrNull()?.toString() ?: ""
+                }
+            )
+
+            ClockDialog(
+                state = clockState,
+                selection = ClockSelection.HoursMinutes { hours, minutes ->
+                    val newTime = LocalTime.of(hours, minutes, 0).format(timeFormatter)
+                    selectedTime.value = newTime
+                },
+                config = ClockConfig(
+                    defaultTime = LocalTime.parse(selectedTime.value, timeFormatter),
+                    is24HourFormat = true
+                )
+            )
+        }
+//        AddHeader()
+
+    }
 
 
 }
-//@Composable
-//fun AddHeader() {
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddHeader() {
 //    Row(
 //        modifier = Modifier
 //            .fillMaxWidth()
@@ -275,7 +254,7 @@ fun StockAddScreen() {
 //            contentDescription = "關閉",
 //            modifier = Modifier
 //                .padding(start = 16.dp)
-//                .size(36.dp),
+//                .size(30.dp),
 //        )
 //        Spacer(modifier = Modifier.weight(1f))
 //        Text(
@@ -290,15 +269,40 @@ fun StockAddScreen() {
 //            contentDescription = "確定",
 //            modifier = Modifier
 //                .padding(end = 16.dp)
-//                .size(36.dp),
+//                .size(30.dp),
 //        )
 //    }
-//}
+    CenterAlignedTopAppBar(
+        title = {
+            Text(
+                "新增記錄",
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        },
+        navigationIcon = {
+            IconButton(onClick = { /* do something */ }) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "關閉"
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = { /* do something */ }) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = "確認"
+                )
+            }
+        }
+    )
+}
 
 
 @Preview
 @Composable
-fun StockAddScreenPreview(){
+fun StockAddScreenPreview() {
     StockAddScreen()
 }
 

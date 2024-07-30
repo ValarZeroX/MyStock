@@ -16,24 +16,31 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.StockAddScreen
 import com.banshus.mystock.ui.StockReportScreen
 import com.banshus.mystock.ui.MySetting
 import com.banshus.mystock.ui.theme.MyStockTheme
+import com.banshus.mystock.viewmodels.UserSettingsViewModel
+import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
+
 
 class MainActivity : ComponentActivity() {
+//    private val userSettingsViewModel by viewModels<UserSettingsViewModel>()
     private val viewModel by viewModels<StockViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+//            println(userSettingsViewModel.userSettings)
             MyStockTheme(
                 darkTheme = true,
                 dynamicColor = false,
-                themeIndex = 2
+                themeIndex = 1
             ) {
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
+                Surface(tonalElevation = 5.dp) {
                     Box {
                         Column(modifier = Modifier.systemBarsPadding()){
                             when (viewModel.selectedTab) {

@@ -3,6 +3,7 @@ package com.banshus.mystock.ui.theme
 import androidx.compose.ui.graphics.Color
 
 var Blue1 = Color(0xFF009EEC)
+var Gray1 = Color(0xFF808080)
 
 val primaryLight = Color(0xFF2B638B)
 val onPrimaryLight = Color(0xFFFFFFFF)

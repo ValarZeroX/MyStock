@@ -78,4 +78,6 @@ dependencies {
     implementation(libs.sheetsComposeDialogsCalendar)
     // CLOCK
     implementation(libs.sheetsComposeDialogsClock)
+    // Room
+    implementation (libs.androidx.room.runtime)
 }

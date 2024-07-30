@@ -10,10 +10,17 @@ import com.banshus.mystock.data.entities.UserSettings
 import com.banshus.mystock.repository.UserSettingsRepository
 import kotlinx.coroutines.launch
 
-class UserSettingsViewModel(private val userSettingsDao: UserSettingsDao) : ViewModel() {
-//    private fun getUserSettings(): UserSettings {
-//        return UserSettings
-//    }
+class UserSettingsViewModel(private val repository: UserSettingsRepository) : ViewModel() {
+    private val _userSettings: MutableLiveData<UserSettings> = MutableLiveData()
+    val userSettings: LiveData<UserSettings> get() = _userSettings
+
+    fun loadUserSettings() {
+        viewModelScope.launch {
+            repository.getUserSettings().observeForever {
+                _userSettings.postValue(it)
+            }
+        }
+    }
 }
 //class UserSettingsViewModel(private val repository: UserSettingsRepository) : ViewModel() {
 //    private val _userSettings = MutableLiveData<UserSettings?>()
@@ -37,12 +44,12 @@ class UserSettingsViewModel(private val userSettingsDao: UserSettingsDao) : View
 //}
 
 class UserSettingsViewModelFactory(
-    private val userSettingsDao: UserSettingsDao
+    private val repository: UserSettingsRepository
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(UserSettingsViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return UserSettingsViewModel(userSettingsDao) as T
+            return UserSettingsViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }

@@ -5,6 +5,9 @@ import com.banshus.mystock.data.dao.UserSettingsDao
 import com.banshus.mystock.data.entities.UserSettings
 
 class UserSettingsRepository(private val userSettingsDao: UserSettingsDao) {
+    fun getUserSettings(): LiveData<UserSettings> {
+        return userSettingsDao.getUserSettings()
+    }
 //    val userSettings: UserSettings? = userSettingsDao.getUserSettings()
 //
 //    suspend fun getUserSettings(): UserSettings? {

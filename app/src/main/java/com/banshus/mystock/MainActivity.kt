@@ -17,7 +17,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.StockAddScreen
 import com.banshus.mystock.ui.StockReportScreen
@@ -29,10 +31,16 @@ import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 
 class MainActivity : ComponentActivity() {
 //    private val userSettingsViewModel by viewModels<UserSettingsViewModel>()
+//    private lateinit var userSettingsViewModel: UserSettingsViewModel
     private val viewModel by viewModels<StockViewModel>()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+//        val dao = AppDatabase.getDatabase(this).userSettingsDao()
+//        val repository = UserSettingsRepository(dao)
+//        val factory = UserSettingsViewModelFactory(repository)
+//        userSettingsViewModel = ViewModelProvider(this, factory).get(UserSettingsViewModel::class.java)
         setContent {
 //            println(userSettingsViewModel.userSettings)
             MyStockTheme(
@@ -51,6 +59,7 @@ class MainActivity : ComponentActivity() {
                                 4 -> MySetting()
                             }
                         }
+//                        userSettingsViewModel.loadUserSettings()
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()

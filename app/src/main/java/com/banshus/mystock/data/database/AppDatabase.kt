@@ -22,11 +22,11 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                    context,
+                    context.applicationContext,
                     AppDatabase::class.java,
                     "app_database")
-                    .createFromAsset("database/stock.db")
-//                    .addCallback(DatabaseCallback())
+//                    .createFromAsset("database/stock.db")
+                    .addCallback(DatabaseCallback())
                     .build()
                 INSTANCE = instance
 
@@ -34,23 +34,23 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-//        private class DatabaseCallback : RoomDatabase.Callback() {
-//            override fun onCreate(db: SupportSQLiteDatabase) {
-//                super.onCreate(db)
-//                INSTANCE?.let { database ->
-//                    CoroutineScope(Dispatchers.IO).launch {
-//                        populateDatabase(database.userSettingsDao())
-//                    }
-//                }
-//            }
-//
-//            suspend fun populateDatabase(userSettingsDao: UserSettingsDao) {
-//                // 插入预设值
-//                val defaultSettings = listOf(
-//                    UserSettings(themeIndex = 0)
-//                )
-//                defaultSettings.forEach { userSettingsDao.insert(it) }
-//            }
-//        }
+        private class DatabaseCallback : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                INSTANCE?.let { database ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        populateDatabase(database.userSettingsDao())
+                    }
+                }
+            }
+
+            suspend fun populateDatabase(userSettingsDao: UserSettingsDao) {
+                // 插入预设值
+                val defaultSettings = listOf(
+                    UserSettings(themeIndex = 0)
+                )
+                defaultSettings.forEach { userSettingsDao.insert(it) }
+            }
+        }
     }
 }

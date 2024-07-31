@@ -11,37 +11,20 @@ import com.banshus.mystock.repository.UserSettingsRepository
 import kotlinx.coroutines.launch
 
 class UserSettingsViewModel(private val repository: UserSettingsRepository) : ViewModel() {
-    private val _userSettings: MutableLiveData<UserSettings> = MutableLiveData()
-    val userSettings: LiveData<UserSettings> get() = _userSettings
+    val userSettings: LiveData<UserSettings> = repository.getUserSettings()
 
-    fun loadUserSettings() {
+    fun updateUserSettings(newThemeIndex: Int) {
         viewModelScope.launch {
-            repository.getUserSettings().observeForever {
-                _userSettings.postValue(it)
+            // 获取当前的设置
+            val currentSettings = userSettings.value
+            // 更新数据库
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(themeIndex = newThemeIndex)
+                repository.updateUserSettings(updatedSettings)
             }
         }
     }
 }
-//class UserSettingsViewModel(private val repository: UserSettingsRepository) : ViewModel() {
-//    private val _userSettings = MutableLiveData<UserSettings?>()
-//    val userSettings: LiveData<UserSettings?> get() = _userSettings
-//
-//    init {
-//        // 在初始化时加载数据
-//        viewModelScope.launch {
-//            _userSettings.value = repository.getUserSettings()
-//        }
-//    }
-//    fun insert(userSettings: UserSettings) = viewModelScope.launch {
-//        repository.insert(userSettings)
-//        _userSettings.value = repository.getUserSettings()
-//    }
-//
-//    fun update(userSettings: UserSettings) = viewModelScope.launch {
-//        repository.update(userSettings)
-//        _userSettings.value = repository.getUserSettings()
-//    }
-//}
 
 class UserSettingsViewModelFactory(
     private val repository: UserSettingsRepository

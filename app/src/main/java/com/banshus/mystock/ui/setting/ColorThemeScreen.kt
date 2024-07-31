@@ -26,16 +26,25 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.theme.Blue1
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.primaryDark
@@ -44,10 +53,27 @@ import com.banshus.mystock.ui.theme.surfaceContainerDark
 import com.banshus.mystock.ui.theme.surfaceContainerDarkGreen
 import com.banshus.mystock.ui.theme.surfaceDark
 import com.banshus.mystock.ui.theme.surfaceDarkGreen
+import com.banshus.mystock.viewmodels.UserSettingsViewModel
+import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorThemeScreen(navController: NavHostController) {
+    // 获取 Context
+    val context = LocalContext.current
+    // 创建 Repository 和 Factory
+    val repository = UserSettingsRepository(AppDatabase.getDatabase(context).userSettingsDao())
+    val factory = UserSettingsViewModelFactory(repository)
+
+    // 获取 ViewModel 实例
+    val userSettingsViewModel: UserSettingsViewModel = viewModel(
+        factory = factory
+    )
+    // 观察 LiveData<UserSettings>
+    val userSettings by userSettingsViewModel.userSettings.observeAsState()
+    val themeIndex = userSettings?.themeIndex
+    //選擇的主題
+//    val selectedThemeIndex = remember { mutableIntStateOf(themeIndex ?: 0) }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -91,10 +117,15 @@ fun ColorThemeScreen(navController: NavHostController) {
                 ) {
                     Card(
                         modifier = Modifier
-                            .size(100.dp, 150.dp).weight(1f).clickable {
-
+                            .size(100.dp, 150.dp)
+                            .weight(1f)
+                            .clickable {
+                                userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
                             },
-                        border = BorderStroke(2.dp, Blue1),
+                        border = BorderStroke(
+                            width = if (themeIndex == 0) 2.dp else 1.dp,
+                            color = if (themeIndex == 0) Blue1 else Gray1
+                        ),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.Transparent
                         )
@@ -125,10 +156,15 @@ fun ColorThemeScreen(navController: NavHostController) {
                     Spacer(modifier = Modifier.width(20.dp))
                     Card(
                         modifier = Modifier
-                            .size(100.dp, 150.dp).weight(1f).clickable {
-
+                            .size(100.dp, 150.dp)
+                            .weight(1f)
+                            .clickable {
+                                userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
                             },
-                        border = BorderStroke(1.dp, Gray1),
+                        border = BorderStroke(
+                            width = if (themeIndex == 1) 2.dp else 1.dp,
+                            color = if (themeIndex == 1) Blue1 else Gray1
+                        ),
                         colors = CardDefaults.cardColors(
                             containerColor = Color.Transparent
                         )

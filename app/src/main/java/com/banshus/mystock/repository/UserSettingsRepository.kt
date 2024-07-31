@@ -8,6 +8,11 @@ class UserSettingsRepository(private val userSettingsDao: UserSettingsDao) {
     fun getUserSettings(): LiveData<UserSettings> {
         return userSettingsDao.getUserSettings()
     }
+
+    suspend fun updateUserSettings(userSettings: UserSettings) {
+        userSettingsDao.update(userSettings)
+    }
+//    var allSetting: LiveData<List<UserSettings>> = userSettingsDao.getUserSettings()
 //    val userSettings: UserSettings? = userSettingsDao.getUserSettings()
 //
 //    suspend fun getUserSettings(): UserSettings? {

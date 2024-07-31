@@ -11,11 +11,13 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
+import com.banshus.mystock.viewmodels.UserSettingsViewModel
 
 private val lightScheme = lightColorScheme(
     primary = primaryLight,
@@ -177,17 +179,22 @@ data class ColorFamily(
     val onColorContainer: Color
 )
 
-val unspecified_scheme = ColorFamily(
-    Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
-)
+//val unspecified_scheme = ColorFamily(
+//    Color.Unspecified, Color.Unspecified, Color.Unspecified, Color.Unspecified
+//)
 
 @Composable
 fun MyStockTheme(
+    userSettingsViewModel: UserSettingsViewModel,
     darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
-    themeIndex: Int = 1,
     content: @Composable () -> Unit
 ) {
+    //取資料庫app設定
+    val userSettings = userSettingsViewModel.userSettings.observeAsState()
+    val themeIndex = userSettings.value?.themeIndex
+//    println(userSettings.value?.themeIndex)
+
     val colorScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current

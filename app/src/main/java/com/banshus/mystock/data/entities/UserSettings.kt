@@ -6,5 +6,6 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "user_settings")
 data class UserSettings(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
-    val themeIndex: Int,
+    val themeIndex: Int
 )
+

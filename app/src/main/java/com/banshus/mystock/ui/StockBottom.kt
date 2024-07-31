@@ -32,7 +32,7 @@ data class TabData(val icon: ImageVector, val description: String)
 @Composable
 fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
     val tabs = listOf(
-        TabData(Icons.Filled.QueryStats, "持股"),
+        TabData(Icons.Filled.QueryStats, "帳戶"),
         TabData(Icons.Filled.CalendarMonth, "記錄"),
         TabData(Icons.Filled.Add, "新增"),
         TabData(Icons.Filled.BarChart, "報表"),

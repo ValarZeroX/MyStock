@@ -93,11 +93,11 @@ fun AddAccountScreen(navController: NavHostController) {
             }
             if (showDialog) {
                 CurrencyDialog(
-                    selectedCurrency = selectedCurrency,
-                    onCurrencySelected = { currency ->
-                        selectedCurrency = currency
-                        showDialog = false
-                    },
+                    initialSelectedCurrency = selectedCurrency,
+//                    onCurrencySelected = { currency ->
+//                        selectedCurrency = currency
+//                        showDialog = false
+//                    },
                     onDismissRequest = { showDialog = false },
                     onConfirmation = { showDialog = false },
                 )
@@ -108,8 +108,8 @@ fun AddAccountScreen(navController: NavHostController) {
 
 @Composable
 fun CurrencyDialog(
-    selectedCurrency: String,
-    onCurrencySelected: (String) -> Unit,
+    initialSelectedCurrency: String,
+//    onCurrencySelected: (String) -> Unit,
     onDismissRequest: () -> Unit,
     onConfirmation: () -> Unit,
 ) {
@@ -155,7 +155,8 @@ fun CurrencyDialog(
     )
 
     val listState = rememberLazyListState()
-    val selectedIndex = currencies.indexOf(selectedCurrency)
+    var selectedCurrency by remember { mutableStateOf(initialSelectedCurrency) }
+//    val selectedIndex = currencies.indexOf(selectedCurrency)
     Dialog(
         onDismissRequest = {
             onDismissRequest()
@@ -193,11 +194,11 @@ fun CurrencyDialog(
                 ) {
                     itemsIndexed(currencies) { index, currency ->
                         CurrencyItem(
-                            selectedIndex = selectedIndex,
+                            selectedIndex = if (currency == selectedCurrency) index else -1,
                             index = index,
                             currency = currency,
                             onClick = {
-                                onCurrencySelected(currency)
+                                selectedCurrency = currency
                             }
                         )
                     }

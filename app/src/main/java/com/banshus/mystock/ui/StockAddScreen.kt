@@ -65,15 +65,6 @@ fun StockAddScreen() {
             Row(
                 modifier = Modifier.padding(10.dp)
             ) {
-//                Text(
-//                    text = "股票代碼",
-//                    style = MaterialTheme.typography.labelMedium,
-//                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-//                    modifier = Modifier
-//                        .align(Alignment.CenterVertically)
-//                        .width(100.dp)
-//                        .padding(start = 10.dp, end = 20.dp),
-//                )
                 var stockSymbol by remember {
                     mutableStateOf("")
                 }
@@ -81,19 +72,9 @@ fun StockAddScreen() {
                     value = stockSymbol,
                     onValueChange = { stockSymbol = it },
                     label = { Text("股票代碼") },
-                )
-            }
-        }
-        item {
-            Row(
-                modifier = Modifier.padding(10.dp)
-            ) {
-                Text(
-                    text = "股票名稱",
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .width(100.dp)
-                        .padding(start = 10.dp, end = 20.dp),
+                        .weight(1f)
+                        .padding(end = 5.dp)
                 )
                 var stockName by remember {
                     mutableStateOf("")
@@ -102,6 +83,9 @@ fun StockAddScreen() {
                     value = stockName,
                     onValueChange = { stockName = it },
                     label = { Text("股票名稱") },
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 5.dp)
                 )
             }
         }
@@ -109,13 +93,23 @@ fun StockAddScreen() {
             Row(
                 modifier = Modifier.padding(10.dp)
             ) {
-                Text(
-                    text = "價格",
+                var stockName by remember {
+                    mutableStateOf("")
+                }
+                OutlinedTextField(
+                    value = stockName,
+                    onValueChange = { stockName = it },
+                    label = { Text("股票名稱") },
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .width(100.dp)
-                        .padding(start = 10.dp, end = 20.dp),
+                        .fillMaxWidth()
+                        .padding(15.dp)
                 )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
                 var stockPrice by remember {
                     mutableStateOf("")
                 }
@@ -137,20 +131,10 @@ fun StockAddScreen() {
                     keyboardOptions = KeyboardOptions.Default.copy(
                         keyboardType = KeyboardType.Number
                     ),
-                    isError = isStockPriceError
-                )
-            }
-        }
-        item {
-            Row(
-                modifier = Modifier.padding(10.dp)
-            ) {
-                Text(
-                    text = "股數",
+                    isError = isStockPriceError,
                     modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .width(100.dp)
-                        .padding(start = 10.dp, end = 20.dp),
+                        .fillMaxWidth()
+                        .padding(15.dp)
                 )
                 var stockQuantity by remember {
                     mutableStateOf("")
@@ -159,6 +143,26 @@ fun StockAddScreen() {
                     value = stockQuantity,
                     onValueChange = { stockQuantity = it },
                     label = { Text("股數") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
+                )
+            }
+        }
+        item {
+            Row(
+                modifier = Modifier.padding(10.dp)
+            ) {
+                var stockQuantity by remember {
+                    mutableStateOf("")
+                }
+                OutlinedTextField(
+                    value = stockQuantity,
+                    onValueChange = { stockQuantity = it },
+                    label = { Text("股數") },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(15.dp)
                 )
             }
         }

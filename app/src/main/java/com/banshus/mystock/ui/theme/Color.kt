@@ -4,6 +4,12 @@ import androidx.compose.ui.graphics.Color
 
 var Blue1 = Color(0xFF009EEC)
 var Gray1 = Color(0xFF808080)
+var StockGreen = Color(0xFF1EB980)
+var StockDark = Color(0xFF045D56)
+var StockOrange = Color(0xFFFF6859)
+var StockYellow = Color(0xFFFFCF44)
+var StockPurple = Color(0xFFB15DFF)
+var StockBlue = Color(0xFF72DEFF)
 
 val primaryLight = Color(0xFF2B638B)
 val onPrimaryLight = Color(0xFFFFFFFF)

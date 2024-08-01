@@ -4,16 +4,20 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.banshus.mystock.data.dao.StockAccountDao
 import com.banshus.mystock.data.dao.UserSettingsDao
+import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.UserSettings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserSettings::class], version = 1)
+@Database(entities = [UserSettings::class, StockAccount::class], version = 2)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
+    abstract fun stockAccountDao(): StockAccountDao
 
     companion object {
         @Volatile
@@ -27,6 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "app_database")
 //                    .createFromAsset("database/stock.db")
                     .addCallback(DatabaseCallback())
+                    .addMigrations(MIGRATION_1_2)
                     .build()
                 INSTANCE = instance
 
@@ -52,5 +57,18 @@ abstract class AppDatabase : RoomDatabase() {
                 defaultSettings.forEach { userSettingsDao.insert(it) }
             }
         }
+
+        private val MIGRATION_1_2 = object : Migration(1, 2) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 创建新的表
+                db.execSQL(
+                    """CREATE TABLE IF NOT EXISTS `stock_account` (
+                        `accountId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+                        `account` TEXT NOT NULL, 
+                        `currency` TEXT NOT NULL)"""
+                )
+            }
+        }
+
     }
 }

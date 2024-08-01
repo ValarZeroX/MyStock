@@ -52,16 +52,6 @@ class MainActivity : ComponentActivity() {
 //            UserSettingsViewModelFactory(repository)
 //        )[UserSettingsViewModel::class.java]
         setContent {
-            println("hello")
-//            val userSettings = userSettingsViewModel.userSettings.observeAsState(emptyList())
-//
-//            println(userSettings)
-
-//            userSettings.value?.let {
-//                Text(text = "当前主题索引: ${it.themeIndex}")
-//            }
-//            println(userSettingsViewModel.userSettings)
-            println("hello")
             MyStockTheme(
                 userSettingsViewModel = userSettingsViewModel,
                 darkTheme = true,

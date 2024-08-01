@@ -1,6 +1,7 @@
 package com.banshus.mystock.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -23,6 +25,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.banshus.mystock.ui.stock.AddAccountScreen
+import com.banshus.mystock.ui.stock.StockAccountScreen
 
 @Composable
 fun MyAccount() {
@@ -33,24 +36,6 @@ fun MyAccount() {
         }
         composable("addAccountScreen") {
             AddAccountScreen(navController)
-        }
-    }
-}
-
-@Composable
-fun StockAccountScreen(navController: NavHostController) {
-    Scaffold(
-        topBar = {
-            AccountHeader(navController)
-        },
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .background(MaterialTheme.colorScheme.surface)
-        ){
-
         }
     }
 }

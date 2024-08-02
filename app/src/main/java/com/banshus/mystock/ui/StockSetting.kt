@@ -36,18 +36,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 
-@Composable
-fun MySetting() {
-    val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "stockSettingScreen") {
-        composable("stockSettingScreen") {
-            StockSettingScreen(navController)
-        }
-        composable("colorThemeScreen") {
-            ColorThemeScreen(navController)
-        }
-    }
-}
 
 @Composable
 fun StockSettingScreen(navController: NavHostController){
@@ -127,12 +115,4 @@ fun SettingHeader() {
             )
         },
     )
-}
-
-
-
-@Preview
-@Composable
-fun StockSettingScreenPreview(){
-    MySetting()
 }

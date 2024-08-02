@@ -21,59 +21,58 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 
-data class TabData(val icon: ImageVector, val description: String)
+data class TabData(val icon: ImageVector, val description: String, val router: String)
 
 @Composable
-fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
+fun NavBar(selectedItemIndex: MutableState<Int>, navController: NavHostController) {
     val tabs = listOf(
-        TabData(Icons.Filled.QueryStats, "帳戶"),
-        TabData(Icons.Filled.CalendarMonth, "記錄"),
-        TabData(Icons.Filled.Add, "新增"),
-        TabData(Icons.Filled.BarChart, "報表"),
-        TabData(Icons.Filled.Menu, "設定")
+        TabData(Icons.Filled.QueryStats, "帳戶", "stockAccountScreen"),
+        TabData(Icons.Filled.CalendarMonth, "記錄", "stockAccountScreen"),
+        TabData(Icons.Filled.Add, "新增", "stockAddScreen"),
+        TabData(Icons.Filled.BarChart, "報表", "stockAccountScreen"),
+        TabData(Icons.Filled.Menu, "設定", "stockSettingScreen")
     )
     NavigationBar{
         tabs.forEachIndexed { index, tab ->
             NavigationBarItem(
                 icon = { Icon(tab.icon, contentDescription = tab.description) },
                 label = { Text(tab.description) },
-                selected = selected == index,
-                onClick = { onTabSelected(index) }
+                selected = selectedItemIndex.value == index,
+                onClick = {
+                    selectedItemIndex.value = index
+                    navController.navigate(tab.router)
+                }
             )
         }
     }
-//    Box(
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .background(MaterialTheme.colorScheme.surfaceContainer)
-//            .padding(8.dp)
-//    ) {
-//        Row(
-//            modifier = Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.SpaceEvenly
-//        ) {
-//            tabs.forEachIndexed { index, tab ->
-//                NavItem(
-//                    imageVector = tab.icon,
-//                    contentDescription = tab.description,
-//                    modifier = Modifier
-//                        .size(58.dp)
-//                        .padding(10.dp),
-//                    tint = if (selected == index) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-//                    onClick = {
-//                        onTabSelected(index)
-//                    }
-//                )
-//            }
+}
+//fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
+//    val tabs = listOf(
+//        TabData(Icons.Filled.QueryStats, "帳戶"),
+//        TabData(Icons.Filled.CalendarMonth, "記錄"),
+//        TabData(Icons.Filled.Add, "新增"),
+//        TabData(Icons.Filled.BarChart, "報表"),
+//        TabData(Icons.Filled.Menu, "設定")
+//    )
+//    NavigationBar{
+//        tabs.forEachIndexed { index, tab ->
+//            NavigationBarItem(
+//                icon = { Icon(tab.icon, contentDescription = tab.description) },
+//                label = { Text(tab.description) },
+//                selected = selected == index,
+//                onClick = { onTabSelected(index) }
+//            )
 //        }
 //    }
-}
+//}
 
 
 
@@ -95,8 +94,8 @@ fun NavBar(selected: Int, onTabSelected: (Int) -> Unit) {
 //    }
 //}
 
-@Preview(showBackground = false)
-@Composable
-fun NavBarPreview() {
-    NavBar(selected = 0, onTabSelected = {})
-}
+//@Preview(showBackground = false)
+//@Composable
+//fun NavBarPreview() {
+//    NavBar(selected = 0, onTabSelected = {})
+//}

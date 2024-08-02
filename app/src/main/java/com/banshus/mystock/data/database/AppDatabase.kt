@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserSettings::class, StockAccount::class], version = 2)
+@Database(entities = [UserSettings::class, StockAccount::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
     abstract fun stockAccountDao(): StockAccountDao
@@ -31,7 +31,7 @@ abstract class AppDatabase : RoomDatabase() {
                     "app_database")
 //                    .createFromAsset("database/stock.db")
                     .addCallback(DatabaseCallback())
-                    .addMigrations(MIGRATION_1_2)
+                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                 INSTANCE = instance
 
@@ -66,6 +66,15 @@ abstract class AppDatabase : RoomDatabase() {
                         `accountId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
                         `account` TEXT NOT NULL, 
                         `currency` TEXT NOT NULL)"""
+                )
+            }
+        }
+
+        private val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                // 添加新的字段到现有表
+                db.execSQL(
+                    "ALTER TABLE `stock_account` ADD COLUMN `stockMarket` INTEGER NOT NULL DEFAULT 0"
                 )
             }
         }

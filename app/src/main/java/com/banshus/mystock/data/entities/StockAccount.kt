@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class StockAccount(
     @PrimaryKey(autoGenerate = true) val accountId: Int = 0,
     var account: String,
-    val currency: String
+    val currency: String,
+    val stockMarket: Int, //股票市場 0:台股,1:美股
 )

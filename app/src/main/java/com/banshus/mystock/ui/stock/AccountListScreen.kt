@@ -50,7 +50,7 @@ fun AccountListHeader(navController: NavHostController) {
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
                     contentDescription = "關閉"
@@ -59,7 +59,7 @@ fun AccountListHeader(navController: NavHostController) {
         },
         actions = {
             IconButton(onClick = {
-                navController.navigate("AddAccountScreen")
+                navController.navigate("addAccountScreen")
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,

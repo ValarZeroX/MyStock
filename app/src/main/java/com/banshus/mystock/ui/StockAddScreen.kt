@@ -296,7 +296,7 @@ fun StockAddScreen(navController: NavHostController) {
                     )
                     Button(
                         onClick = {
-                        navController.navigate("addAccountScreen")
+                        navController.navigate("accountListScreen")
                         }) {
                         Text("國泰世華")
                     }

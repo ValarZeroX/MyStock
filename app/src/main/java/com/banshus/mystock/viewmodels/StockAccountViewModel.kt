@@ -6,11 +6,12 @@ import androidx.lifecycle.viewModelScope
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.repository.StockAccountRepository
 import kotlinx.coroutines.launch
+import java.math.BigDecimal
 
 class StockAccountViewModel(private val repository: StockAccountRepository) : ViewModel() {
-    fun insertStockAccount(accountName: String, currencyCode: String, stockMarket: Int) {
+    fun insertStockAccount(accountName: String, currencyCode: String, stockMarket: Int, autoCalculate: Boolean, commissionDecimal: Double, transactionTaxDecimal: Double, discount: Double) {
         viewModelScope.launch {
-            val stockAccount = StockAccount(account = accountName, currency = currencyCode, stockMarket = stockMarket)
+            val stockAccount = StockAccount(account = accountName, currency = currencyCode, stockMarket = stockMarket, autoCalculate = autoCalculate, commissionDecimal = commissionDecimal, transactionTaxDecimal = transactionTaxDecimal, discount = discount)
             repository.insertStockAccount(stockAccount)
         }
     }

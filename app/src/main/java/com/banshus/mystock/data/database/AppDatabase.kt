@@ -14,7 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserSettings::class, StockAccount::class], version = 3)
+@Database(entities = [UserSettings::class, StockAccount::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
     abstract fun stockAccountDao(): StockAccountDao
@@ -22,8 +22,8 @@ abstract class AppDatabase : RoomDatabase() {
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
-
         fun getDatabase(context: Context): AppDatabase {
+//            deleteDatabase(context)
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
@@ -31,7 +31,6 @@ abstract class AppDatabase : RoomDatabase() {
                     "app_database")
 //                    .createFromAsset("database/stock.db")
                     .addCallback(DatabaseCallback())
-                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                     .build()
                 INSTANCE = instance
 
@@ -58,26 +57,9 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
-        private val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // 创建新的表
-                db.execSQL(
-                    """CREATE TABLE IF NOT EXISTS `stock_account` (
-                        `accountId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
-                        `account` TEXT NOT NULL, 
-                        `currency` TEXT NOT NULL)"""
-                )
-            }
+        private fun deleteDatabase(context: Context) {
+            context.deleteDatabase("app_database")
         }
-
-        private val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
-                // 添加新的字段到现有表
-                db.execSQL(
-                    "ALTER TABLE `stock_account` ADD COLUMN `stockMarket` INTEGER NOT NULL DEFAULT 0"
-                )
-            }
-        }
-
     }
 }
+

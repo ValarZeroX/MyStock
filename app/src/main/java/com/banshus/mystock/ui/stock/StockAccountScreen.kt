@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,21 +39,26 @@ import java.util.Locale
 
 @Composable
 fun StockAccountScreen(navController: NavHostController) {
-    Scaffold(
-        topBar = {
+   Column {
             AccountHeader(navController)
-        },
-    ) { innerPadding ->
-        StockMainScreen(innerPadding)
+            StockMainScreen()
+
     }
+
+//    Scaffold(
+//        topBar = {
+//            AccountHeader(navController)
+//        },
+//    ) { innerPadding ->
+//        StockMainScreen(innerPadding)
+//    }
 }
 
 @Composable
-fun StockMainScreen(innerPadding: PaddingValues) {
+fun StockMainScreen() {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(innerPadding)
             .background(MaterialTheme.colorScheme.surface)
     ){
         item {
@@ -143,14 +149,6 @@ fun AccountHeader(navController: NavHostController) {
                 overflow = TextOverflow.Ellipsis
             )
         },
-//        navigationIcon = {
-//            IconButton(onClick = { /* do something */ }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Close,
-//                    contentDescription = "關閉"
-//                )
-//            }
-//        },
         actions = {
             IconButton(onClick = {
                 navController.navigate("AddAccountScreen")

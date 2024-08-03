@@ -32,7 +32,7 @@ data class StockRecord(
     val stockType: Int, // 股票類別(一般或ETF)
     val transactionType: Int, // 交易類型（0:買入或1:賣出 2:股利）
     val transactionDate: Long, // 交易日期（時間戳記）
-    val quantity: Double, // 股數
+    val quantity: Int, // 股數
     val pricePerUnit: Double, // 每單位價格
     val totalAmount: Double, // 成交價格
     val commission: Double, // 手續費

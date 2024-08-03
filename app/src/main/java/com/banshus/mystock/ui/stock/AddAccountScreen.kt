@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,7 +33,6 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +49,9 @@ import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
+import java.math.BigDecimal
+import java.math.MathContext
+import java.math.RoundingMode
 
 data class Currency(val code: String, val name: String)
 
@@ -71,11 +72,14 @@ fun AddAccountScreen(navController: NavHostController) {
     var selectedBrokerageIndex by remember { mutableIntStateOf(0) }
     var checked by remember { mutableStateOf(false) }
     // 手續費
-    var commission by remember { mutableStateOf("0.1425") }
+    var commissionPercent by remember { mutableStateOf("0.1425") }
     var isCommissionError by remember { mutableStateOf(false) }
     // 證交稅
-    var transactionTax by remember { mutableStateOf("0.3") }
+    var transactionTaxPercent by remember { mutableStateOf("0.3") }
     var isTransactionTaxError by remember { mutableStateOf(false) }
+    // 手續費折扣
+    var discount by remember { mutableStateOf("100") }
+    var isDiscountError by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             AddAccountScreenHeader(
@@ -83,7 +87,20 @@ fun AddAccountScreen(navController: NavHostController) {
                 onSave = {
                     // 在保存時，將帳戶名稱和所選幣別儲存到數據庫
                     val currencyCode = selectedCurrency?.code ?: ""
-                    stockAccountViewModel.insertStockAccount(accountName, currencyCode, selectedStockMarketIndex)
+
+                    val commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)
+                    val transactionTax = roundToDecimal(transactionTaxPercent.toDouble() / 100, 6)
+                    val newDiscount = roundToDecimal(discount.toDouble() / 100, 4)
+
+                    stockAccountViewModel.insertStockAccount(
+                        accountName,
+                        currencyCode,
+                        selectedStockMarketIndex,
+                        checked,
+                        commission,
+                        transactionTax,
+                        newDiscount
+                    )
                     navController.popBackStack() // 儲存完成後返回上一頁
                 }
             )
@@ -99,12 +116,11 @@ fun AddAccountScreen(navController: NavHostController) {
             val currencies = listOf(
                 Currency("TWD", "新台幣"),
                 Currency("USD", "美金"),
-                Currency("JPY", "日圓"),
                 // 添加更多幣別
             )
             // 設定預設的貨幣為 USD
             LaunchedEffect(currencies) {
-                selectedCurrency = currencies.find { it.code == "USD" }
+                selectedCurrency = currencies.find { it.code == "TWD" }
             }
             Row(modifier = Modifier.padding(15.dp)){
                 Text(
@@ -161,7 +177,7 @@ fun AddAccountScreen(navController: NavHostController) {
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "自動計算",
+                    text = "進階設定",
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(100.dp)
@@ -176,7 +192,7 @@ fun AddAccountScreen(navController: NavHostController) {
                 )
             }
 
-            if (selectedStockMarketIndex == 0) {
+            if (checked) {
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
                         text = "手續費",
@@ -186,13 +202,13 @@ fun AddAccountScreen(navController: NavHostController) {
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     OutlinedTextField(
-                        value = commission,
+                        value = commissionPercent,
                         onValueChange = { newText ->
                             // 驗證是否正浮點數
                             val parsedValue = newText.toFloatOrNull()
                             if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..100f)) {
-                                commission = newText
-                                commission = newText
+                                commissionPercent = newText
+                                commissionPercent = newText
                                 isCommissionError = false
                             } else {
                                 isCommissionError = true
@@ -216,13 +232,13 @@ fun AddAccountScreen(navController: NavHostController) {
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     OutlinedTextField(
-                        value = transactionTax,
+                        value = transactionTaxPercent,
                         onValueChange = { newText ->
                             // 驗證是否正浮點數
                             val parsedValue = newText.toFloatOrNull()
                             if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..100f)) {
-                                transactionTax = newText
-                                transactionTax = newText
+                                transactionTaxPercent = newText
+                                transactionTaxPercent = newText
                                 isTransactionTaxError = false
                             } else {
                                 isTransactionTaxError = true
@@ -237,38 +253,68 @@ fun AddAccountScreen(navController: NavHostController) {
                         }
                     )
                 }
-            }
-
-            if (selectedStockMarketIndex == 1 && checked) {
-                Row(
-                    modifier = Modifier.padding(15.dp)
-                ) {
+                Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "股票券商",
+                        text = "手續費折扣",
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    val options = listOf("複委託", "海外券商")
-                    SingleChoiceSegmentedButtonRow(
-                        modifier = Modifier.fillMaxWidth(),
-                    ) {
-                        options.forEachIndexed { index, label ->
-                            SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-                                onClick = { selectedBrokerageIndex = index },
-                                selected = index == selectedBrokerageIndex,
-                            ) {
-                                Text(
-                                    text = label,
-                                    modifier = Modifier.padding(5.dp)
-                                )
+                    OutlinedTextField(
+                        value = discount,
+                        onValueChange = { newText ->
+                            // 驗證是否正浮點數
+                            val parsedValue = newText.toFloatOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..100f)) {
+                                discount = newText
+                                discount = newText
+                                isDiscountError = false
+                            } else {
+                                isDiscountError = true
                             }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        isError = isDiscountError,
+                        suffix = {
+                            Text(text = "%")
                         }
-                    }
+                    )
                 }
             }
+
+//            if (selectedStockMarketIndex == 1 && checked) {
+//                Row(
+//                    modifier = Modifier.padding(15.dp)
+//                ) {
+//                    Text(
+//                        text = "股票券商",
+//                        modifier = Modifier
+//                            .align(Alignment.CenterVertically)
+//                            .width(100.dp)
+//                            .padding(start = 10.dp, end = 20.dp),
+//                    )
+//                    val options = listOf("複委託", "海外券商")
+//                    SingleChoiceSegmentedButtonRow(
+//                        modifier = Modifier.fillMaxWidth(),
+//                    ) {
+//                        options.forEachIndexed { index, label ->
+//                            SegmentedButton(
+//                                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+//                                onClick = { selectedBrokerageIndex = index },
+//                                selected = index == selectedBrokerageIndex,
+//                            ) {
+//                                Text(
+//                                    text = label,
+//                                    modifier = Modifier.padding(5.dp)
+//                                )
+//                            }
+//                        }
+//                    }
+//                }
+//            }
 
 
             CurrencyDropdown(
@@ -382,4 +428,9 @@ fun AddAccountScreenHeader(
             }
         }
     )
+}
+
+fun roundToDecimal(value: Double, decimalPlaces: Int): Double {
+    val bd = BigDecimal(value)
+    return bd.setScale(decimalPlaces, RoundingMode.HALF_UP).toDouble()
 }

@@ -8,5 +8,4 @@ import androidx.lifecycle.ViewModel
 class StockViewModel() : ViewModel() {
     var selectedTab by mutableIntStateOf(0)
     var selectedSettingScreen by mutableIntStateOf(0)
-
 }

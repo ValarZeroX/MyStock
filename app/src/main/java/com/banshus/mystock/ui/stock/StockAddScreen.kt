@@ -1,4 +1,4 @@
-package com.banshus.mystock.ui
+package com.banshus.mystock.ui.stock
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -19,7 +19,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.MultiChoiceSegmentedButtonRow
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -29,13 +28,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavHostController
-import com.banshus.mystock.ui.stock.StockMainScreen
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -61,6 +58,12 @@ fun StockAddScreen(navController: NavHostController) {
     val nowTime: String = LocalTime.now().format(timeFormatter)
     val selectedTime = remember { mutableStateOf(nowTime) }
     val clockState = rememberUseCaseState()
+    // 手續費
+    var commission by remember { mutableStateOf("0") }
+    var isCommissionError by remember { mutableStateOf(false) }
+    // 證交稅
+    var transactionTax by remember { mutableStateOf("0") }
+    var isTransactionTaxError by remember { mutableStateOf(false) }
     Scaffold(
         topBar = {
             AddHeader()
@@ -70,22 +73,59 @@ fun StockAddScreen(navController: NavHostController) {
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(innerPadding),
         ) {
             item {
                 Row(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier
+                        .padding(10.dp)
                 ) {
+                    Text(
+                        text = "交易帳戶",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    Button(
+                        onClick = {
+                            navController.navigate("accountListScreen")
+                        }) {
+                        Text("國泰世華")
+                    }
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "股票代碼",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
                     var stockSymbol by remember {
                         mutableStateOf("")
                     }
                     OutlinedTextField(
                         value = stockSymbol,
                         onValueChange = { stockSymbol = it },
-                        label = { Text("股票代碼") },
+                        modifier = Modifier.padding(5.dp)
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "股票名稱",
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 5.dp)
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
                     )
                     var stockName by remember {
                         mutableStateOf("")
@@ -93,17 +133,21 @@ fun StockAddScreen(navController: NavHostController) {
                     OutlinedTextField(
                         value = stockName,
                         onValueChange = { stockName = it },
-                        label = { Text("股票名稱") },
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 5.dp)
+                        modifier = Modifier.padding(5.dp)
                     )
                 }
             }
             item {
                 Row(
-                    modifier = Modifier.padding(20.dp)
+                    modifier = Modifier.padding(10.dp)
                 ) {
+                    Text(
+                        text = "股數",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
                     var stockQuantity by remember {
                         mutableStateOf("")
                     }
@@ -119,14 +163,25 @@ fun StockAddScreen(navController: NavHostController) {
                                 isStockQuantityError = true
                             }
                         },
-                        label = { Text("股數") },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isStockQuantityError,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(end = 5.dp)
+                            .padding(5.dp)
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "每股價格",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
                     )
                     var stockPrice by remember {
                         mutableStateOf("")
@@ -145,18 +200,76 @@ fun StockAddScreen(navController: NavHostController) {
                                 isStockPriceError = true
                             }
                         },
-                        label = { Text("每股價格") },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isStockPriceError,
                         modifier = Modifier
-                            .weight(1f)
-                            .padding(start = 5.dp)
+                            .padding(5.dp)
                     )
                 }
             }
-
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "手續費",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    OutlinedTextField(
+                        value = commission,
+                        onValueChange = { newText ->
+                            val parsedValue = newText.toIntOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
+                                commission = newText
+                                isCommissionError = false
+                            } else {
+                                isCommissionError = true
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        isError = isCommissionError,
+                        modifier = Modifier.padding(5.dp)
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
+                        text = "證交稅",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    OutlinedTextField(
+                        value = transactionTax,
+                        onValueChange = { newText ->
+                            val parsedValue = newText.toIntOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
+                                transactionTax = newText
+                                isTransactionTaxError = false
+                            } else {
+                                isTransactionTaxError = true
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        isError = isTransactionTaxError,
+                        modifier = Modifier
+                            .padding(5.dp)
+                    )
+                }
+            }
             item {
                 Row(
                     modifier = Modifier
@@ -212,7 +325,10 @@ fun StockAddScreen(navController: NavHostController) {
                     ) {
                         options.forEachIndexed { index, label ->
                             SegmentedButton(
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = options.size
+                                ),
                                 onClick = { selectedStockTypeIndex = index },
                                 selected = index == selectedStockTypeIndex,
                             ) {
@@ -281,26 +397,6 @@ fun StockAddScreen(navController: NavHostController) {
                         is24HourFormat = true
                     )
                 )
-            }
-            item {
-                Row(
-                    modifier = Modifier
-                        .padding(10.dp)
-                ) {
-                    Text(
-                        text = "交易帳戶",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
-                    )
-                    Button(
-                        onClick = {
-                        navController.navigate("accountListScreen")
-                        }) {
-                        Text("國泰世華")
-                    }
-                }
             }
         }
     }

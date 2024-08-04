@@ -33,6 +33,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -80,6 +82,7 @@ fun AddAccountScreen(navController: NavHostController) {
     // 手續費折扣
     var discount by remember { mutableStateOf("100") }
     var isDiscountError by remember { mutableStateOf(false) }
+
     Scaffold(
         topBar = {
             AddAccountScreenHeader(

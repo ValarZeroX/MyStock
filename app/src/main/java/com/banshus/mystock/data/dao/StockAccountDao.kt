@@ -10,8 +10,11 @@ import com.banshus.mystock.data.entities.StockAccount
 @Dao
 interface StockAccountDao {
     @Query("SELECT * FROM stock_account")
-    fun getStockAccount(): LiveData<StockAccount>
+    fun getAllStockAccounts(): LiveData<List<StockAccount>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(stockAccount: StockAccount)
+
+    @Query("SELECT * FROM stock_account LIMIT 1")
+    fun getFirstStockAccount(): LiveData<StockAccount?>
 }

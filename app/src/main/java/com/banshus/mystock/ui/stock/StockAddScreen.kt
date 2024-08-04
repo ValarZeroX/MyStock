@@ -30,9 +30,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.repository.StockAccountRepository
+import com.banshus.mystock.viewmodels.StockAccountViewModel
+import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -47,7 +55,16 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockAddScreen(navController: NavHostController) {
+fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewModel) {
+    val context = LocalContext.current
+    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+    val factory = StockAccountViewModelFactory(repository)
+    val stockAccountViewModel: StockAccountViewModel = viewModel(
+        factory = factory
+    )
+    //撈第一筆帳戶
+    val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
+
     //日期
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     val today: String = LocalDate.now().format(dateFormatter)
@@ -64,6 +81,11 @@ fun StockAddScreen(navController: NavHostController) {
     // 證交稅
     var transactionTax by remember { mutableStateOf("0") }
     var isTransactionTaxError by remember { mutableStateOf(false) }
+
+    val selectedAccount by stockViewModel.selectedAccount.observeAsState()
+    val accountText = selectedAccount?.account ?: "No account selected"
+
+    println("Selected Account: $accountText")
     Scaffold(
         topBar = {
             AddHeader()
@@ -91,7 +113,7 @@ fun StockAddScreen(navController: NavHostController) {
                         onClick = {
                             navController.navigate("accountListScreen")
                         }) {
-                        Text("國泰世華")
+//                        Text(text = "Selected Account: ${selectedAccount?.account ?: "No account selected"}")
                     }
                 }
             }

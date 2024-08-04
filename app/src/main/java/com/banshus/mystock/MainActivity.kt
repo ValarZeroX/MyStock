@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -16,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,7 +40,6 @@ import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 class MainActivity : ComponentActivity() {
 //    private val userSettingsViewModel by viewModels<UserSettingsViewModel>()
     private lateinit var userSettingsViewModel: UserSettingsViewModel
-//    private val viewModel by viewModels<StockViewModel>()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -85,6 +86,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MyApp(navController: NavHostController) {
+//    val viewModel: StockViewModel = viewModel()
+    val stockViewModel: StockViewModel = viewModel()
     NavHost(navController = navController, startDestination = "StockAccountScreen") {
         composable("stockAccountScreen") {
             StockAccountScreen(navController)
@@ -93,7 +96,7 @@ fun MyApp(navController: NavHostController) {
             AddAccountScreen(navController)
         }
         composable("accountListScreen") {
-            AccountListScreen(navController)
+            AccountListScreen(navController, stockViewModel)
         }
         composable("stockSettingScreen") {
             StockSettingScreen(navController)
@@ -102,7 +105,7 @@ fun MyApp(navController: NavHostController) {
             ColorThemeScreen(navController)
         }
         composable("stockAddScreen") {
-            StockAddScreen(navController)
+            StockAddScreen(navController, stockViewModel)
         }
     }
 }

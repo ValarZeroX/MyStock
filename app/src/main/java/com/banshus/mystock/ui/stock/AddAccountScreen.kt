@@ -62,11 +62,16 @@ data class Currency(val code: String, val name: String)
 fun AddAccountScreen(navController: NavHostController) {
 
     val context = LocalContext.current
-    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-    val factory = StockAccountViewModelFactory(repository)
     val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = factory
+        factory = StockAccountViewModelFactory(
+            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+        )
     )
+//    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//    val factory = StockAccountViewModelFactory(repository)
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = factory
+//    )
 
     var accountName by remember { mutableStateOf("") }
     var selectedCurrency by remember { mutableStateOf<Currency?>(null) }

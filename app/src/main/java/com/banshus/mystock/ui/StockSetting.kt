@@ -13,12 +13,14 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -51,6 +53,37 @@ fun StockSettingScreen(navController: NavHostController){
                 .background(MaterialTheme.colorScheme.surface)
         ){
             item{
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp)
+                ) {
+                    Row{
+                        Text(
+                            text = "設定",
+                            style = MaterialTheme.typography.titleLarge,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(10.dp),
+                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    }
+                    ListItem(
+                        headlineContent = { Text("股票市場") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = "股票市場",
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate("stockMarketScreen")
+                        }
+                    )
+                    HorizontalDivider()
+                }
+            }
+            item{
                 Column{
                     Card(
                         modifier = Modifier
@@ -75,7 +108,6 @@ fun StockSettingScreen(navController: NavHostController){
                         Row (
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier.clickable {
-                                println("Hello")
                                 navController.navigate("colorThemeScreen")
                             }
                         ){

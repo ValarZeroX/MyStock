@@ -29,6 +29,7 @@ import com.banshus.mystock.ui.stock.StockAddScreen
 import com.banshus.mystock.ui.StockSettingScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
+import com.banshus.mystock.ui.setting.StockSymbolScreen
 import com.banshus.mystock.ui.stock.AccountHeader
 import com.banshus.mystock.ui.stock.AccountListScreen
 import com.banshus.mystock.ui.stock.AddAccountScreen
@@ -110,6 +111,9 @@ fun MyApp(navController: NavHostController) {
         }
         composable("stockMarketScreen") {
             StockMarketScreen(navController)
+        }
+        composable("stockSymbolScreen") {
+            StockSymbolScreen(navController)
         }
     }
 }

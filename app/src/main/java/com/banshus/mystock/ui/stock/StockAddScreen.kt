@@ -167,6 +167,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
     }
     val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
     var selectedStockSymbol by remember { mutableStateOf<StockSymbol?>(null) }
+//    var selectedStockSymbolId by remember { mutableIntStateOf(0) }
     println(stockSymbolList)
     Scaffold(
         topBar = {
@@ -175,7 +176,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     stockRecordViewModel.insertStockRecord(
                         accountId = selectedAccountId,
                         stockMarket = selectedStockMarket,
-                        stockSymbol = stockSymbol,
+                        stockSymbol = selectedStockSymbol?.stockSymbol ?: "",
                         stockType = selectedStockTypeIndex,
                         transactionType = selectedTransactionType,
                         transactionDate = transactionDate,
@@ -188,11 +189,11 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     )
                 },
                 onSaveStockSymbol = {
-                    stockSymbolViewModel.insertStockSymbol(
-                        stockSymbol = stockSymbol,
-                        stockName =  stockName,
-                        stockMarket = selectedStockMarket
-                    )
+//                    stockSymbolViewModel.insertStockSymbol(
+//                        stockSymbol = stockSymbol,
+//                        stockName =  stockName,
+//                        stockMarket = selectedStockMarket
+//                    )
                 }
             )
         },
@@ -260,33 +261,12 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     StockSymbolDropdown(
                         stockSymbols = stockSymbolList,
                         selectedStockSymbol = selectedStockSymbol,
-                        onStockSymbolSelected = { selectedStockSymbol = it }
+                        onStockSymbolSelected = {
+                            selectedStockSymbol = it
+                        }
                     )
-//                    OutlinedTextField(
-//                        value = stockSymbol,
-//                        onValueChange = { stockSymbol = it },
-//                        modifier = Modifier.padding(5.dp)
-//                    )
                 }
             }
-//            item {
-//                Row(
-//                    modifier = Modifier.padding(10.dp)
-//                ) {
-//                    Text(
-//                        text = "股票名稱",
-//                        modifier = Modifier
-//                            .align(Alignment.CenterVertically)
-//                            .width(100.dp)
-//                            .padding(start = 10.dp, end = 20.dp),
-//                    )
-//                    OutlinedTextField(
-//                        value = stockName,
-//                        onValueChange = { stockName = it },
-//                        modifier = Modifier.padding(5.dp)
-//                    )
-//                }
-//            }
             item {
                 Row(
                     modifier = Modifier.padding(10.dp)

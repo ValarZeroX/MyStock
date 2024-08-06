@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
@@ -21,15 +22,21 @@ class StockSymbolViewModel(private val repository: StockSymbolRepository) : View
     }
 
 
-    fun insertStockSymbol(stockSymbol: String, stockName: String, stockMarket: Int) {
-        viewModelScope.launch {
-            val stockSymbolEntity = StockSymbol(
-                stockSymbol = stockSymbol,
-                stockName = stockName,
-                stockMarket = stockMarket
-            )
-            repository.insertStockSymbol(stockSymbolEntity)
-        }
+//    fun insertStockSymbol(stockSymbol: String, stockName: String, stockMarket: Int) {
+//        viewModelScope.launch {
+//            val stockSymbolEntity = StockSymbol(
+//                stockSymbol = stockSymbol,
+//                stockName = stockName,
+//                stockMarket = stockMarket
+//            )
+//            repository.insertStockSymbol(stockSymbolEntity)
+//            fetchStockSymbolsListByMarket(stockMarket)
+//        }
+//    }
+
+    fun insertStockSymbol(stockSymbol: StockSymbol) = viewModelScope.launch {
+        repository.insertStockSymbol(stockSymbol)
+        fetchStockSymbolsListByMarket(stockSymbol.stockMarket)
     }
 }
 

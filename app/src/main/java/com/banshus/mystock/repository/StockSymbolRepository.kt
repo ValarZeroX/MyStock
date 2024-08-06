@@ -1,6 +1,7 @@
 package com.banshus.mystock.repository
 
 import com.banshus.mystock.data.dao.StockSymbolDao
+import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockSymbol
 
 class StockSymbolRepository(private val stockSymbolDao: StockSymbolDao) {

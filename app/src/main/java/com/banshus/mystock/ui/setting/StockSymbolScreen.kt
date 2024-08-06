@@ -1,34 +1,24 @@
 package com.banshus.mystock.ui.setting
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DragHandle
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.rounded.DragHandle
 import androidx.compose.material3.Button
-import androidx.compose.material3.Card
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -39,6 +29,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
@@ -52,71 +43,83 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.data.entities.StockMarket
-import com.banshus.mystock.repository.StockMarketRepository
-import com.banshus.mystock.viewmodels.StockMarketViewModel
-import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
-import sh.calvin.reorderable.ReorderableItem
-import sh.calvin.reorderable.rememberReorderableLazyListState
+import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.repository.StockSymbolRepository
+import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StockMarketScreen(navController: NavHostController) {
+fun StockSymbolScreen(navController: NavHostController) {
     val context = LocalContext.current
-    val stockMarketViewModel: StockMarketViewModel = viewModel(
-        factory = StockMarketViewModelFactory(
-            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
+    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
+        factory = StockSymbolViewModelFactory(
+            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
         )
     )
-    val stockMarketList by stockMarketViewModel.allStockMarkets.observeAsState(emptyList())
-    var showAddDialog by remember { mutableStateOf(false) }
 
-    val lazyListState = rememberLazyListState()
-    val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
-        val updatedList = stockMarketList.toMutableList().apply {
-            add(to.index, removeAt(from.index))
-        }
-        stockMarketViewModel.updateStockMarketsOrder(updatedList)
+    // Initialize search query and search active state
+    var showAddDialog by remember { mutableStateOf(false) }
+    var searchQuery by remember { mutableStateOf("") }
+    // Get the stock symbols list
+    val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
+    val stockMarketId = 0
+    LaunchedEffect(stockMarketId) {
+        stockSymbolViewModel.fetchStockSymbolsListByMarket(stockMarketId)
+    }
+
+    // Filtered stock symbols based on search query
+    val filteredStockSymbolList = stockSymbolList.filter {
+        it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
+                it.stockName.contains(searchQuery, ignoreCase = true)
     }
     Scaffold(
         topBar = {
-            StockMarketScreenHeader(navController, onAddClick = { showAddDialog = true })
+            StockSymbolScreenHeader(
+                navController,
+                onAddClick = { showAddDialog = true }
+            )
         },
     ) { innerPadding ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(innerPadding)
         ) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { newValue -> searchQuery = newValue },
+                label = { Text("搜索股票") },
+                modifier = Modifier.fillMaxWidth().padding(10.dp)
+            )
             LazyColumn(
-                modifier = Modifier.padding(top = 10.dp),
-                state = lazyListState
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(10.dp)
             ) {
-                itemsIndexed(stockMarketList, key = { _, item -> item.stockMarket }) { _, item ->
-                    ReorderableItem(reorderableState, item.stockMarket) {
-                        ListItem(
-                            headlineContent = { Text(item.stockMarketName) },
-                            trailingContent = {
-                                Icon(
-                                    Icons.Filled.DragHandle,
-                                    contentDescription = "Reorder",
-                                    modifier = Modifier.draggableHandle().padding(10.dp)
-                                )
-                            },
-                        )
-                    }
-                    HorizontalDivider()
+                items(filteredStockSymbolList) { stockSymbol ->
+                    ListItem(
+                        headlineContent = { Text(stockSymbol.stockSymbol) },
+                        supportingContent = { Text(stockSymbol.stockName)},
+                        trailingContent = {
+                            Icon(
+                                Icons.Filled.DragHandle,
+                                contentDescription = "Reorder",
+                            )
+                        },
+                    )
                 }
             }
         }
         if (showAddDialog) {
-            StockMarketAdd(
+            StockSymbolAdd(
                 onDismiss = { showAddDialog = false },
-                onAdd = { name ->
-                    stockMarketViewModel.insert(StockMarket(stockMarketName = name, stockMarketSort = stockMarketList.size + 1))
-                    showAddDialog = false
+                onAdd = { symbol, name ->
+                    if (symbol.isNotEmpty() && name.isNotEmpty()) {
+                        stockSymbolViewModel.insertStockSymbol(StockSymbol(stockSymbol = symbol, stockName = name, stockMarket = 0))
+                        showAddDialog = false
+                    }
                 }
             )
         }
@@ -124,7 +127,8 @@ fun StockMarketScreen(navController: NavHostController) {
 }
 
 @Composable
-fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
+fun StockSymbolAdd(onDismiss: () -> Unit, onAdd: (String, String) -> Unit) {
+    var symbol by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -135,8 +139,19 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "新增市場",
+                    text = "新增股票",
                     modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+                OutlinedTextField(
+                    value = symbol,
+                    onValueChange = { newName ->
+                        if (newName.length <= 20) {
+                            symbol = newName
+                        }
+                    },
+                    label = { Text("股票代碼") },
+                    modifier = Modifier.fillMaxWidth()
                 )
 
                 OutlinedTextField(
@@ -146,7 +161,7 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
                             name = newName
                         }
                     },
-                    label = { Text("市場名稱") },
+                    label = { Text("股票名稱") },
                     modifier = Modifier.fillMaxWidth()
                 )
 
@@ -160,9 +175,7 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            if (name.isNotEmpty()) {
-                                onAdd(name)
-                            }
+                            onAdd(symbol, name)
                         }
                     ) {
                         Text("新增")
@@ -175,11 +188,11 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockMarketScreenHeader(navController: NavHostController, onAddClick: () -> Unit) {
+fun StockSymbolScreenHeader(navController: NavHostController, onAddClick: () -> Unit) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "股市市場",
+                "股票代碼",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -192,13 +205,13 @@ fun StockMarketScreenHeader(navController: NavHostController, onAddClick: () -> 
                 )
             }
         },
-                actions = {
-                    IconButton(onClick = {  onAddClick() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "新增"
-                        )
-                    }
-                }
+        actions = {
+            IconButton(onClick = onAddClick) {
+                Icon(
+                    imageVector = Icons.Filled.Add,
+                    contentDescription = "新增"
+                )
+            }
+        }
     )
 }

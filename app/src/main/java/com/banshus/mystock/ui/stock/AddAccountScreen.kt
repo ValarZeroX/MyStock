@@ -49,8 +49,14 @@ import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
+import com.banshus.mystock.repository.StockMarketRepository
+import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
+import com.banshus.mystock.viewmodels.StockMarketViewModel
+import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
+import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import java.math.BigDecimal
 import java.math.MathContext
 import java.math.RoundingMode
@@ -65,6 +71,12 @@ fun AddAccountScreen(navController: NavHostController) {
     val stockAccountViewModel: StockAccountViewModel = viewModel(
         factory = StockAccountViewModelFactory(
             StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+        )
+    )
+
+    val stockMarketViewModel: StockMarketViewModel = viewModel(
+        factory = StockMarketViewModelFactory(
+            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
         )
     )
 //    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())

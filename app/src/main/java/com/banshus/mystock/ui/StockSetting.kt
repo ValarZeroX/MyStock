@@ -10,8 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.Card
@@ -78,6 +76,19 @@ fun StockSettingScreen(navController: NavHostController){
                         },
                         modifier = Modifier.clickable {
                             navController.navigate("stockMarketScreen")
+                        }
+                    )
+                    HorizontalDivider()
+                    ListItem(
+                        headlineContent = { Text("股票代碼") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = "股票代碼",
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate("stockSymbolScreen")
                         }
                     )
                     HorizontalDivider()

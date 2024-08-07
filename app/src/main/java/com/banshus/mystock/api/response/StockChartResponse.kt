@@ -9,7 +9,9 @@ data class StockChartResponse(
 
 data class Chart(
     @SerializedName("result")
-    val result: List<Result>
+    val result: List<Result>?,
+    @SerializedName("error")
+    val error: ErrorDetails?
 )
 
 data class Result(
@@ -39,4 +41,11 @@ data class Indicators(
 data class Quote(
     @SerializedName("close")
     val close: List<Double>
+)
+
+data class ErrorDetails(
+    @SerializedName("code")
+    val code: String,
+    @SerializedName("description")
+    val description: String
 )

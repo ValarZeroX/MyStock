@@ -65,8 +65,8 @@ abstract class AppDatabase : RoomDatabase() {
                 defaultSettings.forEach { userSettingsDao.insert(it) }
 
                 val defaultStockMarkets = listOf(
-                    StockMarket(stockMarketName = "美股", stockMarketCode = "US", stockMarketSort = 1),
-                    StockMarket(stockMarketName = "台股", stockMarketCode = "TW", stockMarketSort = 2)
+                    StockMarket(stockMarketName = "台股", stockMarketCode = "TW", stockMarketSort = 1),
+                    StockMarket(stockMarketName = "美股", stockMarketCode = "US", stockMarketSort = 2)
                 )
                 defaultStockMarkets.forEach { stockMarketDao.insertStockMarket(it) }
             }

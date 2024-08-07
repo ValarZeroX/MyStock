@@ -11,7 +11,7 @@ interface StockSymbolDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStockSymbol(stockSymbol: StockSymbol)
 
-    @Query("SELECT * FROM stock_symbol WHERE stockMarket = :stockMarket")
+    @Query("SELECT * FROM stock_symbol WHERE stockMarket = :stockMarket ORDER BY stockSymbol ASC")
     suspend fun fetchStockSymbolsListByMarket(stockMarket: Int): List<StockSymbol>
 
 //    @Query("SELECT COUNT(*) FROM stock_symbol WHERE stockSymbol = :stockSymbol AND stockMarket = :stockMarket")

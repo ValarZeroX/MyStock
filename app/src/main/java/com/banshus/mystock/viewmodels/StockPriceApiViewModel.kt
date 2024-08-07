@@ -1,5 +1,6 @@
 package com.banshus.mystock.viewmodels
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,13 +15,47 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
     private val _stockPrice = MutableLiveData<StockChartResponse>()
     val stockPrice: LiveData<StockChartResponse> get() = _stockPrice
 
-    fun fetchStockPrice(symbol: String, period1: Long, period2: Long) {
+    private val _error = MutableLiveData<String?>()
+//    val error: LiveData<String?> get() = _error
+
+//    fun fetchStockPrice(symbol: String, period1: Long, period2: Long) {
+//        viewModelScope.launch {
+//            try {
+//                val response = repository.getStockPrice(symbol, period1, period2)
+//                if (response.chart.error != null) {
+//                    _error.value = response.chart.error.description
+////                    _stockPrice.value = null // Clear the stock price if there is an error
+//                } else {
+//                    _stockPrice.value = response
+//                    _error.value = null
+//                }
+//            } catch (e: Exception) {
+//                _error.value = "Unable to fetch stock price. Please try again later."
+//                Log.e("StockPriceApiViewModel", "Error fetching stock price", e)
+//            }
+//        }
+//    }
+
+    fun fetchStockPriceResult(symbol: String, period1: Long, period2: Long, marketCode: String, onSuccess: (StockChartResponse) -> Unit) {
         viewModelScope.launch {
             try {
-                val response = repository.getStockPrice(symbol, period1, period2)
-                _stockPrice.value = response
+                val combinedSymbol:String = if (marketCode != "US") {
+                    "${symbol}.${marketCode}"
+                } else {
+                    symbol
+                }
+                val response = repository.getStockPrice(combinedSymbol, period1, period2)
+                if (response.chart.error != null) {
+                    _error.value = response.chart.error.description
+//                    _stockPrice.value = null // Clear the stock price if there is an error
+                } else {
+                    _stockPrice.value = response
+                    onSuccess(response)
+                    _error.value = null
+                }
             } catch (e: Exception) {
-                // Handle error
+                _error.value = "Unable to fetch stock price. Please try again later."
+                Log.e("StockPriceApiViewModel", "Error fetching stock price", e)
             }
         }
     }

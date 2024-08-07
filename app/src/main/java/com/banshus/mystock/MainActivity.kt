@@ -34,6 +34,7 @@ import com.banshus.mystock.ui.stock.AccountHeader
 import com.banshus.mystock.ui.stock.AccountListScreen
 import com.banshus.mystock.ui.stock.AddAccountScreen
 import com.banshus.mystock.ui.stock.StockAccountScreen
+import com.banshus.mystock.ui.stock.StockListScreen
 import com.banshus.mystock.ui.theme.MyStockTheme
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
@@ -114,6 +115,9 @@ fun MyApp(navController: NavHostController) {
         }
         composable("stockSymbolScreen") {
             StockSymbolScreen(navController)
+        }
+        composable("stockListScreen") {
+            StockListScreen(navController, stockViewModel)
         }
     }
 }

@@ -180,14 +180,14 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
         commission = if (autoCalculateChecked && (selectedTransactionType == 0 || selectedTransactionType == 1)) {
             calculatedCommission.toString()
         } else {
-            "0"
+            "0.0"
         }
 
         // 更新證交稅
         transactionTax = if (autoCalculateChecked && selectedTransactionType == 1) {
             calculatedTransactionTax.toString()
         } else {
-            "0"
+            "0.0"
         }
     }
 

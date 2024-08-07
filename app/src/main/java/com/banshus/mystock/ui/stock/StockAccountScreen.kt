@@ -1,6 +1,7 @@
 package com.banshus.mystock.ui.stock
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -53,12 +54,12 @@ fun StockAccountScreen(navController: NavHostController) {
             AccountHeader(navController)
         },
     ) { innerPadding ->
-        StockMainScreen(innerPadding)
+        StockMainScreen(innerPadding, navController)
     }
 }
 
 @Composable
-fun StockMainScreen(innerPadding: PaddingValues) {
+fun StockMainScreen(innerPadding: PaddingValues, navController: NavHostController) {
     val context = LocalContext.current
     val stockAccountViewModel: StockAccountViewModel = viewModel(
         factory = StockAccountViewModelFactory(
@@ -77,7 +78,8 @@ fun StockMainScreen(innerPadding: PaddingValues) {
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp),
+                    .padding(10.dp)
+                    .clickable { navController.navigate("stockListScreen") },
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),

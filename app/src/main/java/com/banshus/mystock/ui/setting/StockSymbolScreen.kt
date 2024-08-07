@@ -1,5 +1,6 @@
 package com.banshus.mystock.ui.setting
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -18,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Cached
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
@@ -46,21 +48,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.api.RetrofitInstance
+import com.banshus.mystock.api.response.StockChartResponse
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.StockMarketRepository
+import com.banshus.mystock.repository.StockPriceApiRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.ui.stock.Currency
 import com.banshus.mystock.viewmodels.StockMarketViewModel
 import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
+import com.banshus.mystock.viewmodels.StockPriceApiViewModel
+import com.banshus.mystock.viewmodels.StockPriceApiViewModelFactory
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 
@@ -79,6 +88,31 @@ fun StockSymbolScreen(navController: NavHostController) {
             StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
         )
     )
+
+    //使用api 初始化viewModel
+    val stockPriceApiViewModel: StockPriceApiViewModel = viewModel(
+        factory = StockPriceApiViewModelFactory(
+            StockPriceApiRepository(RetrofitInstance.api)
+        )
+    )
+    var stockChartResponses by remember { mutableStateOf<Map<String, StockChartResponse>>(emptyMap()) }
+
+//    var stockChartResponse by remember { mutableStateOf<StockChartResponse?>(null) }
+//    val stockPrice by stockPriceApiViewModel.stockPrice.observeAsState()
+//    LaunchedEffect(stockPrice) {
+//        stockChartResponse = stockPrice
+//    }
+//    LaunchedEffect(stockChartResponses) {
+//        Log.d("StockSymbolScreen", "股價數據: $stockChartResponses")
+//    }
+//    val stockPrices by remember { mutableStateOf<Map<String, String?>>(emptyMap()) }
+
+//    stockPriceApiViewModel.fetchStockPrice(
+//        symbol = "2330.TW",
+//        period1 = 1598889600L,
+//        period2 = 1599926400L
+//    )
+
     val stockMarketList by stockMarketViewModel.allStockMarkets.observeAsState(emptyList())
     var selectedStockMarket by remember { mutableStateOf<StockMarket?>(null) }
 
@@ -106,6 +140,24 @@ fun StockSymbolScreen(navController: NavHostController) {
         it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
                 it.stockName.contains(searchQuery, ignoreCase = true)
     }
+
+//    LaunchedEffect(stockSymbolList) {
+//        stockSymbolList.forEach { stockSymbol ->
+//            stockPriceApiViewModel.fetchStockPrice(
+//                symbol = "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode ?: ""}",
+//                period1 = 0,
+//                period2 = System.currentTimeMillis() / 1000
+//            )
+//        }
+//    }
+    stockPriceApiViewModel.stockPrice.observeAsState().value?.let { response ->
+        val symbol = response.chart.result.firstOrNull()?.meta?.symbol ?: return@let
+        stockChartResponses = stockChartResponses.toMutableMap().apply {
+            put(symbol, response)
+        }
+    }
+
+
     Scaffold(
         topBar = {
             StockSymbolScreenHeader(
@@ -143,8 +195,34 @@ fun StockSymbolScreen(navController: NavHostController) {
             ) {
                 items(filteredStockSymbolList) { stockSymbol ->
                     ListItem(
-                        headlineContent = { Text(stockSymbol.stockSymbol) },
-                        supportingContent = { Text(stockSymbol.stockName) },
+                        headlineContent = { Text("${stockSymbol.stockName} (${stockSymbol.stockSymbol})") },
+                        supportingContent = {
+                            Column {
+                                val combinedSymbol =
+                                    "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode}"
+                                val response = stockChartResponses[combinedSymbol]
+                                val price =
+                                    response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
+                                price?.let {
+                                    Text("股價: $it")
+                                } ?: Text("股價: N/A")
+                            }
+                        },
+                        leadingContent = {
+                            Icon(
+                                Icons.Filled.Cached,
+                                contentDescription = "Localized description",
+                                modifier = Modifier.clickable {
+                                    val combinedSymbol =
+                                        "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode}"
+                                    stockPriceApiViewModel.fetchStockPrice(
+                                        symbol = combinedSymbol,
+                                        period1 = (System.currentTimeMillis() - 1000) / 1000,
+                                        period2 = System.currentTimeMillis() / 1000
+                                    )
+                                }
+                            )
+                        },
                         trailingContent = {
                             Icon(
                                 Icons.Filled.Edit,
@@ -158,20 +236,48 @@ fun StockSymbolScreen(navController: NavHostController) {
         }
         if (showAddDialog) {
             StockSymbolAdd(
-                stockMarketList = stockMarketList,
+                selectedStockMarket = selectedStockMarket,
                 onDismiss = { showAddDialog = false },
                 onAdd = { symbol, name, selectedMarketId ->
                     if (symbol.isNotEmpty() && name.isNotEmpty()) {
+                        // 触发获取股票价格的操作
+                        stockPriceApiViewModel.fetchStockPrice(
+                            symbol = "${symbol}.${selectedStockMarket?.stockMarketCode ?: ""}",
+                            period1 = 0,
+                            period2 = System.currentTimeMillis() / 1000
+                        )
+
+                        val combinedSymbol = "${symbol}.${selectedStockMarket?.stockMarketCode}"
+                        val response = stockChartResponses[combinedSymbol]
+                        val price =
+                            response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
+                        val currentTime = System.currentTimeMillis()
                         stockSymbolViewModel.insertStockSymbol(
                             StockSymbol(
                                 stockSymbol = symbol,
                                 stockName = name,
-                                stockMarket = selectedMarketId
+                                stockMarket = selectedMarketId,
+                                stockPrice = price,
+                                lastUpdatedTime = currentTime
                             )
                         )
+
+
                         showAddDialog = false
                     }
                 }
+//                onAdd = { symbol, name, selectedMarketId ->
+//                    if (symbol.isNotEmpty() && name.isNotEmpty()) {
+//                        stockSymbolViewModel.insertStockSymbol(
+//                            StockSymbol(
+//                                stockSymbol = symbol,
+//                                stockName = name,
+//                                stockMarket = selectedMarketId
+//                            )
+//                        )
+//                        showAddDialog = false
+//                    }
+//                }
             )
         }
     }
@@ -179,18 +285,12 @@ fun StockSymbolScreen(navController: NavHostController) {
 
 @Composable
 fun StockSymbolAdd(
-    stockMarketList: List<StockMarket>,
+    selectedStockMarket: StockMarket?,
     onDismiss: () -> Unit,
     onAdd: (String, String, Int) -> Unit
 ) {
     var symbol by remember { mutableStateOf("") }
     var name by remember { mutableStateOf("") }
-    var selectedMarketId by remember { mutableIntStateOf(0) }
-    var searchQuery by remember { mutableStateOf("") }
-    // 根据搜索查询过滤市场列表
-    val filteredStockMarkets = stockMarketList.filter {
-        it.stockMarketName.contains(searchQuery, ignoreCase = true)
-    }
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -229,34 +329,6 @@ fun StockSymbolAdd(
                     label = { Text("股票名稱") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                // 搜索框
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = { newQuery ->
-                        searchQuery = newQuery
-                    },
-                    label = { Text("搜尋股票市場") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                // 显示股票市场列表
-                LazyColumn {
-                    items(filteredStockMarkets) { market ->
-                        ListItem(
-                            modifier = Modifier.clickable {
-                                selectedMarketId = market.stockMarket
-                            },
-                            headlineContent = { Text(market.stockMarketName) },
-                            trailingContent = {
-                                if (selectedMarketId == market.stockMarket) {
-                                    Icon(Icons.Filled.Check, contentDescription = "Selected")
-                                }
-                            }
-                        )
-                    }
-                }
-
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier
@@ -269,7 +341,8 @@ fun StockSymbolAdd(
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            onAdd(symbol, name, selectedMarketId)
+                            val marketId = selectedStockMarket?.stockMarket ?: -1
+                            onAdd(symbol, name, marketId)
                         }
                     ) {
                         Text("新增")
@@ -363,7 +436,10 @@ fun StockMarketDropdown(
                     .padding(15.dp)
             )
             val filteredStockMarkets = stockMarkets.filter {
-                it.stockMarketName.contains(searchQuery, ignoreCase = true) // 假設 stockMarketName 是股票市場的顯示名稱
+                it.stockMarketName.contains(
+                    searchQuery,
+                    ignoreCase = true
+                ) // 假設 stockMarketName 是股票市場的顯示名稱
             }
             filteredStockMarkets.forEach { stockMarket ->
                 DropdownMenuItem(

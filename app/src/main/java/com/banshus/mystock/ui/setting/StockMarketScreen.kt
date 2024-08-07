@@ -111,15 +111,15 @@ fun StockMarketScreen(navController: NavHostController) {
                 }
             }
         }
-        if (showAddDialog) {
-            StockMarketAdd(
-                onDismiss = { showAddDialog = false },
-                onAdd = { name ->
-                    stockMarketViewModel.insert(StockMarket(stockMarketName = name, stockMarketSort = stockMarketList.size + 1))
-                    showAddDialog = false
-                }
-            )
-        }
+//        if (showAddDialog) {
+//            StockMarketAdd(
+//                onDismiss = { showAddDialog = false },
+//                onAdd = { name ->
+//                    stockMarketViewModel.insert(StockMarket(stockMarketName = name, stockMarketSort = stockMarketList.size + 1))
+//                    showAddDialog = false
+//                }
+//            )
+//        }
     }
 }
 
@@ -192,13 +192,13 @@ fun StockMarketScreenHeader(navController: NavHostController, onAddClick: () -> 
                 )
             }
         },
-                actions = {
-                    IconButton(onClick = {  onAddClick() }) {
-                        Icon(
-                            imageVector = Icons.Filled.Add,
-                            contentDescription = "新增"
-                        )
-                    }
-                }
+//                actions = {
+//                    IconButton(onClick = {  onAddClick() }) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Add,
+//                            contentDescription = "新增"
+//                        )
+//                    }
+//                }
     )
 }

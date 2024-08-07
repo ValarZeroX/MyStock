@@ -9,5 +9,6 @@ import androidx.room.PrimaryKey
 data class StockMarket(
     @PrimaryKey(autoGenerate = true) val stockMarket: Int = 0,
     val stockMarketName: String, // 股票市場名稱
+    val stockMarketCode: String, //股票市場代碼
     var stockMarketSort: Int, //股票市場排序
 )

@@ -52,17 +52,23 @@ abstract class AppDatabase : RoomDatabase() {
                 super.onCreate(db)
                 INSTANCE?.let { database ->
                     CoroutineScope(Dispatchers.IO).launch {
-                        populateDatabase(database.userSettingsDao())
+                        populateDatabase(database.userSettingsDao(), database.stockMarketDao())
                     }
                 }
             }
 
-            suspend fun populateDatabase(userSettingsDao: UserSettingsDao) {
+            suspend fun populateDatabase(userSettingsDao: UserSettingsDao, stockMarketDao: StockMarketDao) {
                 // 插入预设值
                 val defaultSettings = listOf(
                     UserSettings(themeIndex = 0)
                 )
                 defaultSettings.forEach { userSettingsDao.insert(it) }
+
+                val defaultStockMarkets = listOf(
+                    StockMarket(stockMarketName = "美股", stockMarketCode = "US", stockMarketSort = 1),
+                    StockMarket(stockMarketName = "台股", stockMarketCode = "TW", stockMarketSort = 2)
+                )
+                defaultStockMarkets.forEach { stockMarketDao.insertStockMarket(it) }
             }
         }
 

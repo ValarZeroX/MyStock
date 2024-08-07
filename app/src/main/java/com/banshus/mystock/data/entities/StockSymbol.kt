@@ -11,5 +11,7 @@ import androidx.room.PrimaryKey
 data class StockSymbol(
     @PrimaryKey val stockSymbol: String, // 股票代碼
     val stockName: String, // 股票名稱
-    var stockMarket: Int, //股票分類(台股、美股)
+    val stockMarket: Int, //股票分類(台股、美股)
+    val stockPrice: Double? = null, // 股票價格
+    val lastUpdatedTime: Long? = null // 股票價格最後更新時間
 )

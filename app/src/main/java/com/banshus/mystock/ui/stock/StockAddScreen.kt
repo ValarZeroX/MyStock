@@ -492,7 +492,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    val options = listOf("一般", "ETF")
+                    val options = listOf("一般", "ETF", "當沖")
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth(),
                     ) {

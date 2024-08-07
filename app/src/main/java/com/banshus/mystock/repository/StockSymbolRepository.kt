@@ -12,4 +12,8 @@ class StockSymbolRepository(private val stockSymbolDao: StockSymbolDao) {
     suspend fun insertStockSymbol(stockSymbol: StockSymbol) {
         stockSymbolDao.insertStockSymbol(stockSymbol)
     }
+
+    suspend fun updateStockName(symbol: String, marketId: Int, newName: String) {
+        stockSymbolDao.updateStockName(symbol, marketId, newName)
+    }
 }

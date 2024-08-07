@@ -38,6 +38,11 @@ class StockSymbolViewModel(private val repository: StockSymbolRepository) : View
         repository.insertStockSymbol(stockSymbol)
         fetchStockSymbolsListByMarket(stockSymbol.stockMarket)
     }
+
+    fun updateStockName(symbol: String, marketId: Int, newName: String) = viewModelScope.launch {
+        repository.updateStockName(symbol, marketId, newName)
+        fetchStockSymbolsListByMarket(marketId)
+    }
 }
 
 class StockSymbolViewModelFactory(

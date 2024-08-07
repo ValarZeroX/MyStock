@@ -118,6 +118,9 @@ fun StockSymbolScreen(navController: NavHostController) {
 
     // Initialize search query and search active state
     var showAddDialog by remember { mutableStateOf(false) }
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var selectedStockSymbol by remember { mutableStateOf<StockSymbol?>(null) }
+
     var searchQuery by remember { mutableStateOf("") }
     val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
 
@@ -279,6 +282,10 @@ fun StockSymbolScreen(navController: NavHostController) {
                             Icon(
                                 Icons.Filled.Edit,
                                 contentDescription = "Edit",
+                                modifier = Modifier.clickable {
+                                    selectedStockSymbol = stockSymbol
+                                    showUpdateDialog = true
+                                }
                             )
                         },
                     )
@@ -327,6 +334,87 @@ fun StockSymbolScreen(navController: NavHostController) {
 //                    }
 //                }
             )
+        }
+        if (showUpdateDialog) {
+            StockSymbolUpdate(
+                stockSymbol = selectedStockSymbol!!.stockSymbol,
+                stockMarket = selectedStockSymbol!!.stockMarket,
+                onDismiss = { showUpdateDialog = false },
+                onUpdate = { symbol, nameUpdate, marketId ->
+                    if (nameUpdate.isNotEmpty()) {
+                        stockSymbolViewModel.updateStockName(symbol, marketId, nameUpdate)
+                        showUpdateDialog = false
+                    }
+                }
+            )
+        }
+    }
+}
+@Composable
+fun StockSymbolUpdate(
+    stockSymbol: String,
+    stockMarket: Int,
+    onDismiss: () -> Unit,
+    onUpdate: (String, String, Int) -> Unit
+) {
+    var nameUpdate by remember { mutableStateOf("") }
+
+    Dialog(onDismissRequest = onDismiss) {
+        Surface(
+            shape = MaterialTheme.shapes.medium,
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Text(
+                    text = "更新股票",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 8.dp),
+                    fontSize = 20.sp,
+                    textAlign = TextAlign.Center,
+                )
+                HorizontalDivider()
+
+                // 顯示股票代碼
+                Text(
+                    text = "股票代碼: $stockSymbol",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    fontSize = 16.sp
+                )
+
+                OutlinedTextField(
+                    value = nameUpdate,
+                    onValueChange = { newName ->
+                        if (newName.length <= 20) {
+                            nameUpdate = newName
+                        }
+                    },
+                    label = { Text("股票名稱") },
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(
+                    horizontalArrangement = Arrangement.End,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 16.dp)
+                ) {
+                    TextButton(onClick = onDismiss) {
+                        Text("取消")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = {
+                            onUpdate(stockSymbol, nameUpdate, stockMarket)
+                        }
+                    ) {
+                        Text("更新")
+                    }
+                }
+            }
         }
     }
 }

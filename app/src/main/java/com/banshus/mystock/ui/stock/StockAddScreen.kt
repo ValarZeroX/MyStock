@@ -32,6 +32,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -92,23 +93,6 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
             StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
         )
     )
-//    val stockAccountRepository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//    val stockAccountViewModelFactory = StockAccountViewModelFactory(stockAccountRepository)
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = stockAccountViewModelFactory
-//    )
-//
-//    val stockRecordRepository = StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-//    val stockRecordViewModelFactory = StockRecordViewModelFactory(stockRecordRepository)
-//    val stockRecordViewModel: StockRecordViewModel = viewModel(
-//        factory = stockRecordViewModelFactory
-//    )
-//
-//    val stockSymbolRepository = StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-//    val stockSymbolViewModelFactory = StockSymbolViewModelFactory(stockSymbolRepository)
-//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-//        factory = stockSymbolViewModelFactory
-//    )
 
     //撈第一筆帳戶
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
@@ -167,8 +151,46 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
     }
     val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
     var selectedStockSymbol by remember { mutableStateOf<StockSymbol?>(null) }
-//    var selectedStockSymbolId by remember { mutableIntStateOf(0) }
-    println(stockSymbolList)
+
+    //自動計算手續費
+    var autoCalculateChecked by remember { mutableStateOf(false) }
+    var selectedAutoCalculate by remember { mutableStateOf(false) }
+    var selectedCommissionDecimal by remember { mutableDoubleStateOf(0.0) }
+    var selectedTransactionTax by remember { mutableDoubleStateOf(0.0) }
+    var selectedDiscount by remember {mutableDoubleStateOf(0.0) }
+
+    // Calculate commission based on quantity, price and commission percentage
+    val calculatedCommission = remember(stockQuantity, stockPrice, selectedCommissionDecimal) {
+        val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
+        val price = stockPrice.toDoubleOrNull() ?: 0.0
+        val commissionPercent = selectedCommissionDecimal
+        quantity * price * commissionPercent * selectedDiscount
+    }
+
+    val calculatedTransactionTax = remember(stockQuantity, stockPrice, selectedTransactionTax) {
+        val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
+        val price = stockPrice.toDoubleOrNull() ?: 0.0
+        val transactionTaxPercent = selectedTransactionTax
+        quantity * price * transactionTaxPercent * selectedDiscount
+    }
+
+    // Update commission field automatically
+    LaunchedEffect(autoCalculateChecked, selectedTransactionType, calculatedCommission, calculatedTransactionTax) {
+        // 更新手續費
+        commission = if (autoCalculateChecked && (selectedTransactionType == 0 || selectedTransactionType == 1)) {
+            calculatedCommission.toString()
+        } else {
+            "0"
+        }
+
+        // 更新證交稅
+        transactionTax = if (autoCalculateChecked && selectedTransactionType == 1) {
+            calculatedTransactionTax.toString()
+        } else {
+            "0"
+        }
+    }
+
     Scaffold(
         topBar = {
             AddHeader(
@@ -233,10 +255,18 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                             accountText = firstStockAccount?.account ?: "No account selected"
                             selectedAccountId = firstStockAccount?.accountId ?: 0
                             selectedStockMarket= firstStockAccount?.stockMarket ?: 0
+                            selectedAutoCalculate = firstStockAccount?.autoCalculate ?: false
+                            selectedCommissionDecimal = firstStockAccount?.commissionDecimal ?: 0.0
+                            selectedTransactionTax = firstStockAccount?.transactionTaxDecimal ?: 0.0
+                            selectedDiscount = firstStockAccount?.discount ?: 1.0
                         } else {
                             accountText = selectedAccount?.account ?: "No account selected"
                             selectedAccountId = selectedAccount?.accountId ?: 0
                             selectedStockMarket= selectedAccount?.stockMarket ?: 0
+                            selectedAutoCalculate = selectedAccount?.autoCalculate ?: false
+                            selectedCommissionDecimal = selectedAccount?.commissionDecimal ?: 0.0
+                            selectedTransactionTax = selectedAccount?.transactionTaxDecimal ?: 0.0
+                            selectedDiscount = selectedAccount?.discount ?: 1.0
                         }
                         Button(
                             onClick = {
@@ -261,6 +291,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     StockSymbolDropdown(
                         stockSymbols = stockSymbolList,
                         selectedStockSymbol = selectedStockSymbol,
+                        navController = navController,
                         onStockSymbolSelected = {
                             selectedStockSymbol = it
                         }
@@ -338,6 +369,25 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
+                        text = "自動計算",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    Switch(
+                        checked = autoCalculateChecked,
+                        onCheckedChange = {
+                            autoCalculateChecked = it
+                        }
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
+                    Text(
                         text = "手續費",
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
@@ -347,8 +397,8 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     OutlinedTextField(
                         value = commission,
                         onValueChange = { newText ->
-                            val parsedValue = newText.toIntOrNull()
-                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
+                            val parsedValue = newText.toFloatOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
                                 commission = newText
                                 isCommissionError = false
                             } else {
@@ -359,6 +409,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isCommissionError,
+                        enabled = !autoCalculateChecked,
                         modifier = Modifier.padding(5.dp)
                     )
                 }
@@ -377,8 +428,8 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     OutlinedTextField(
                         value = transactionTax,
                         onValueChange = { newText ->
-                            val parsedValue = newText.toIntOrNull()
-                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
+                            val parsedValue = newText.toFloatOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
                                 transactionTax = newText
                                 isTransactionTaxError = false
                             } else {
@@ -389,6 +440,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isTransactionTaxError,
+                        enabled = !autoCalculateChecked,
                         modifier = Modifier
                             .padding(5.dp)
                     )
@@ -563,6 +615,7 @@ fun AddHeader(
 fun StockSymbolDropdown(
     stockSymbols: List<StockSymbol>,
     selectedStockSymbol: StockSymbol?,
+    navController: NavHostController,
     onStockSymbolSelected: (StockSymbol) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -579,6 +632,7 @@ fun StockSymbolDropdown(
                     imageVector = Icons.Default.Add,
                     contentDescription = "Dropdown Arrow",
                     modifier = Modifier.clickable {
+                        navController.navigate("stockSymbolScreen")
 //                        expanded = true
                     }
                 )

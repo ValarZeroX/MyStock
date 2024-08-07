@@ -86,7 +86,7 @@ fun AddAccountScreen(navController: NavHostController) {
 //    )
 
     var accountName by remember { mutableStateOf("") }
-    var selectedCurrency by remember { mutableStateOf<Currency?>(null) }
+//    var selectedCurrency by remember { mutableStateOf<Currency?>(null) }
     var selectedStockMarketIndex by remember { mutableIntStateOf(0) }
     var selectedBrokerageIndex by remember { mutableIntStateOf(0) }
     var checked by remember { mutableStateOf(false) }
@@ -106,7 +106,12 @@ fun AddAccountScreen(navController: NavHostController) {
                 navController,
                 onSave = {
                     // 在保存時，將帳戶名稱和所選幣別儲存到數據庫
-                    val currencyCode = selectedCurrency?.code ?: ""
+//                    val currencyCode = selectedCurrency?.code ?: ""
+                    val currencyCode = when (selectedStockMarketIndex) {
+                        1 -> "TWD"
+                        2 -> "USD"
+                        else -> "TWD"
+                    }
 
                     val commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)
                     val transactionTax = roundToDecimal(transactionTaxPercent.toDouble() / 100, 6)
@@ -133,15 +138,15 @@ fun AddAccountScreen(navController: NavHostController) {
                 .padding(innerPadding)
         ) {
 
-            val currencies = listOf(
-                Currency("TWD", "新台幣"),
-                Currency("USD", "美金"),
-                // 添加更多幣別
-            )
-            // 設定預設的貨幣為 USD
-            LaunchedEffect(currencies) {
-                selectedCurrency = currencies.find { it.code == "TWD" }
-            }
+//            val currencies = listOf(
+//                Currency("TWD", "新台幣"),
+//                Currency("USD", "美金"),
+//                // 添加更多幣別
+//            )
+//            // 設定預設的貨幣為 USD
+//            LaunchedEffect(currencies) {
+//                selectedCurrency = currencies.find { it.code == "TWD" }
+//            }
             Row(modifier = Modifier.padding(15.dp)){
                 Text(
                     text = "帳戶名稱",
@@ -337,11 +342,11 @@ fun AddAccountScreen(navController: NavHostController) {
 //            }
 
 
-            CurrencyDropdown(
-                currencies = currencies,
-                selectedCurrency = selectedCurrency,
-                onCurrencySelected = { selectedCurrency = it }
-            )
+//            CurrencyDropdown(
+//                currencies = currencies,
+//                selectedCurrency = selectedCurrency,
+//                onCurrencySelected = { selectedCurrency = it }
+//            )
         }
     }
 }

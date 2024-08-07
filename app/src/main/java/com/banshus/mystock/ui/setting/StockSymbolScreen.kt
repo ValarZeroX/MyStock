@@ -389,7 +389,7 @@ fun StockSymbolUpdate(
                 OutlinedTextField(
                     value = nameUpdate,
                     onValueChange = { newName ->
-                        if (newName.length <= 20) {
+                        if (newName.length <= 40) {
                             nameUpdate = newName
                         }
                     },
@@ -447,7 +447,7 @@ fun StockSymbolAdd(
                 OutlinedTextField(
                     value = symbol,
                     onValueChange = { newName ->
-                        if (newName.length <= 20) {
+                        if (newName.length <= 40) {
                             symbol = newName
                         }
                     },
@@ -458,7 +458,7 @@ fun StockSymbolAdd(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { newName ->
-                        if (newName.length <= 20) {
+                        if (newName.length <= 40) {
                             name = newName
                         }
                     },

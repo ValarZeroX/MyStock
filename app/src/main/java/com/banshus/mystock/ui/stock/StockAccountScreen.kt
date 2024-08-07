@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
@@ -27,41 +28,52 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.ui.theme.StockOrange
+import com.banshus.mystock.viewmodels.StockAccountViewModel
+import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
 fun StockAccountScreen(navController: NavHostController) {
-   Column {
+    Scaffold(
+        topBar = {
             AccountHeader(navController)
-            StockMainScreen()
-
+        },
+    ) { innerPadding ->
+        StockMainScreen(innerPadding)
     }
-
-//    Scaffold(
-//        topBar = {
-//            AccountHeader(navController)
-//        },
-//    ) { innerPadding ->
-//        StockMainScreen(innerPadding)
-//    }
 }
 
 @Composable
-fun StockMainScreen() {
+fun StockMainScreen(innerPadding: PaddingValues) {
+    val context = LocalContext.current
+    val stockAccountViewModel: StockAccountViewModel = viewModel(
+        factory = StockAccountViewModelFactory(
+            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+        )
+    )
+    val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-    ){
-        item {
+            .padding(innerPadding)
+    ) {
+        items(stockAccounts) { stockAccount ->
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -81,7 +93,7 @@ fun StockMainScreen() {
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
-                            text = "國泰世華",
+                            text = stockAccount.account,
                             style = MaterialTheme.typography.titleLarge,
                             modifier = Modifier.padding(bottom = 8.dp)
                         )
@@ -114,8 +126,14 @@ fun StockMainScreen() {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = formatNumber(700000), style = MaterialTheme.typography.bodyMedium)
-                            Text(text = formatNumber(600000), style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = formatNumber(700000),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = formatNumber(600000),
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),

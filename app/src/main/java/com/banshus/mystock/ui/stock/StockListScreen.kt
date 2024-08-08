@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
@@ -58,6 +59,14 @@ import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import androidx.compose.ui.viewinterop.AndroidView
+import com.banshus.mystock.data.entities.StockRecord
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.formatter.ValueFormatter
+import com.github.mikephil.charting.utils.ColorTemplate
 
 @Composable
 fun StockListScreen(navController: NavHostController, stockViewModel: StockViewModel) {
@@ -101,6 +110,10 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         accountId = selectedAccountForStockList?.accountId ?: -1,
         startDate = startDate,
         endDate = endDate
+    ).observeAsState(initial = emptyList())
+    //帳戶全部交易紀錄
+    val stockRecordsAll by stockRecordViewModel.getStockRecordsByAccountId(
+        accountId = selectedAccountForStockList?.accountId ?: -1,
     ).observeAsState(initial = emptyList())
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -178,22 +191,6 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                 }
                                 ListItem(
                                     headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
-//                                    leadingContent = {
-//                                        Row(
-////                                            verticalAlignment = Alignment.CenterVertically,
-//                                            modifier = Modifier
-//                                                .height(64.dp)
-//                                        ) {
-//                                            Box(
-//                                                modifier = Modifier
-//                                                    .fillMaxHeight()
-//                                                    .width(4.dp)
-//                                                    .background(
-//                                                        StockRed
-//                                                    )
-//                                            )
-//                                        }
-//                                    },
                                     supportingContent = {
                                         Column {
                                             Row(
@@ -220,12 +217,6 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                                     color = textColor
                                                 )
                                             }
-//                                            Row(
-//                                                modifier = Modifier.fillMaxWidth()
-//                                            ) {
-//                                                Spacer(modifier = Modifier.weight(1f))
-//                                                Text("總金额: ${record.totalAmount}", modifier = Modifier.weight(1f))
-//                                            }
                                         }
                                     },
                                     trailingContent = {
@@ -252,12 +243,15 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                     }
 
                     1 -> {
-                        // Display content for "支出" - placeholder content
+                        // Display content for "帳戶庫存" - placeholder content
                         Box(
                             contentAlignment = Alignment.Center,
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            Text("支出选项卡内容尚未实现")
+                            Column {
+
+//                                StockLineChart(stockRecords)
+                            }
                         }
                     }
                 }
@@ -339,4 +333,38 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
             Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Month")
         }
     }
+}
+
+@Composable
+fun StockLineChart(stockRecords: List<StockRecord>) {
+    // Convert StockRecord data to MPAndroidChart Entries
+    val entries = stockRecords.mapIndexed { index, record ->
+        Entry(index.toFloat(), record.pricePerUnit.toFloat())
+    }
+
+    val dataSet = LineDataSet(entries, "Stock Prices").apply {
+        color = ColorTemplate.COLORFUL_COLORS[0]
+        valueTextColor = ColorTemplate.COLORFUL_COLORS[0]
+        valueTextSize = 12f
+    }
+
+    val lineData = LineData(dataSet)
+
+    AndroidView(
+        factory = { context ->
+            LineChart(context).apply {
+                this.data = lineData
+                this.description.isEnabled = false
+                this.legend.isEnabled = true
+                this.xAxis.valueFormatter = object : ValueFormatter() {
+                    override fun getFormattedValue(value: Float): String {
+                        return "${value.toInt() + 1}"  // Custom format if needed
+                    }
+                }
+            }
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    )
 }

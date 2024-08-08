@@ -32,6 +32,10 @@ class StockRecordViewModel(private val repository: StockRecordRepository) : View
             repository.insertStockRecord(stockRecord)
         }
     }
+
+    fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>> {
+        return repository.getStockRecordsByAccountId(accountId)
+    }
 }
 
 class StockRecordViewModelFactory(

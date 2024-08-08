@@ -18,4 +18,7 @@ interface StockRecordDao {
         startDate: Long,
         endDate: Long
     ): LiveData<List<StockRecord>>
+
+    @Query("SELECT * FROM stock_record WHERE accountId = :accountId")
+    fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>>
 }

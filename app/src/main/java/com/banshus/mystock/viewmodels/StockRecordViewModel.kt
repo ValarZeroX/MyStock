@@ -9,6 +9,10 @@ import com.banshus.mystock.repository.StockRecordRepository
 import kotlinx.coroutines.launch
 
 class StockRecordViewModel(private val repository: StockRecordRepository) : ViewModel() {
+    fun getStockRecordsByDateRangeAndAccount(accountId: Int, startDate: Long, endDate: Long): LiveData<List<StockRecord>> {
+        return repository.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
+    }
+
     fun insertStockRecord(accountId: Int, stockMarket: Int, stockSymbol: String, stockType: Int, transactionType: Int, transactionDate: Long, quantity: Int, pricePerUnit: Double, totalAmount: Double, commission: Double, transactionTax: Double, note: String) {
         viewModelScope.launch {
             val stockRecord = StockRecord(

@@ -16,4 +16,8 @@ class StockAccountRepository(private val stockAccountDao: StockAccountDao) {
     fun getFirstStockAccount(): LiveData<StockAccount?> {
         return stockAccountDao.getFirstStockAccount()
     }
+
+    fun getStockAccountByID(accountId: Int): LiveData<StockAccount?> {
+        return stockAccountDao.getStockAccountByID(accountId)
+    }
 }

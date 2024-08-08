@@ -93,7 +93,7 @@ fun MyApp(navController: NavHostController) {
     val stockViewModel: StockViewModel = viewModel()
     NavHost(navController = navController, startDestination = "StockAccountScreen") {
         composable("stockAccountScreen") {
-            StockAccountScreen(navController)
+            StockAccountScreen(navController, stockViewModel)
         }
         composable("addAccountScreen") {
             AddAccountScreen(navController)

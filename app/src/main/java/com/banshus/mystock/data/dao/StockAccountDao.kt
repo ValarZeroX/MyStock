@@ -17,4 +17,7 @@ interface StockAccountDao {
 
     @Query("SELECT * FROM stock_account LIMIT 1")
     fun getFirstStockAccount(): LiveData<StockAccount?>
+
+    @Query("SELECT * FROM stock_account WHERE accountId = :accountId")
+    fun getStockAccountByID(accountId: Int): LiveData<StockAccount?>
 }

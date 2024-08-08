@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.ui.theme.StockOrange
@@ -48,18 +49,22 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun StockAccountScreen(navController: NavHostController) {
+fun StockAccountScreen(navController: NavHostController, stockViewModel: StockViewModel) {
     Scaffold(
         topBar = {
             AccountHeader(navController)
         },
     ) { innerPadding ->
-        StockMainScreen(innerPadding, navController)
+        StockMainScreen(innerPadding, navController, stockViewModel)
     }
 }
 
 @Composable
-fun StockMainScreen(innerPadding: PaddingValues, navController: NavHostController) {
+fun StockMainScreen(
+    innerPadding: PaddingValues,
+    navController: NavHostController,
+    stockViewModel: StockViewModel
+) {
     val context = LocalContext.current
     val stockAccountViewModel: StockAccountViewModel = viewModel(
         factory = StockAccountViewModelFactory(
@@ -67,6 +72,7 @@ fun StockMainScreen(innerPadding: PaddingValues, navController: NavHostControlle
         )
     )
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
+//    val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 
     LazyColumn(
         modifier = Modifier
@@ -79,7 +85,10 @@ fun StockMainScreen(innerPadding: PaddingValues, navController: NavHostControlle
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp)
-                    .clickable { navController.navigate("stockListScreen") },
+                    .clickable {
+                        stockViewModel.updateSelectedAccountForStockList(stockAccount)
+                        navController.navigate("stockListScreen")
+                    },
                 elevation = CardDefaults.cardElevation(
                     defaultElevation = 6.dp
                 ),

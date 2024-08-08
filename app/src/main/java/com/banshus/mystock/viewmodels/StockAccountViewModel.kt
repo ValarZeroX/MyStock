@@ -14,11 +14,31 @@ class StockAccountViewModel(private val repository: StockAccountRepository) : Vi
 
     val firstStockAccount: LiveData<StockAccount?> = repository.getFirstStockAccount()
 
-    fun insertStockAccount(accountName: String, currencyCode: String, stockMarket: Int, autoCalculate: Boolean, commissionDecimal: Double, transactionTaxDecimal: Double, discount: Double) {
+    fun insertStockAccount(
+        accountName: String,
+        currencyCode: String,
+        stockMarket: Int,
+        autoCalculate: Boolean,
+        commissionDecimal: Double,
+        transactionTaxDecimal: Double,
+        discount: Double
+    ) {
         viewModelScope.launch {
-            val stockAccount = StockAccount(account = accountName, currency = currencyCode, stockMarket = stockMarket, autoCalculate = autoCalculate, commissionDecimal = commissionDecimal, transactionTaxDecimal = transactionTaxDecimal, discount = discount)
+            val stockAccount = StockAccount(
+                account = accountName,
+                currency = currencyCode,
+                stockMarket = stockMarket,
+                autoCalculate = autoCalculate,
+                commissionDecimal = commissionDecimal,
+                transactionTaxDecimal = transactionTaxDecimal,
+                discount = discount
+            )
             repository.insertStockAccount(stockAccount)
         }
+    }
+
+    fun getStockAccountByID(accountId: Int): LiveData<StockAccount?> {
+        return repository.getStockAccountByID(accountId)
     }
 }
 

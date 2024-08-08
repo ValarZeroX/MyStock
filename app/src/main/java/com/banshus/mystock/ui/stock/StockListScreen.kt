@@ -12,19 +12,24 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,10 +44,16 @@ import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.repository.StockRecordRepository
+import com.banshus.mystock.repository.StockSymbolRepository
+import com.banshus.mystock.ui.theme.StockGreen
+import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModelFactory
+import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
+import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -66,12 +77,25 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         )
     )
 
-    val stockAccount by stockAccountViewModel.getStockAccountByID(selectedAccountForStockList?.accountId ?: -1).observeAsState()
+    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
+        factory = StockSymbolViewModelFactory(
+            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
+        )
+    )
+
+    val stockAccount by stockAccountViewModel.getStockAccountByID(
+        selectedAccountForStockList?.accountId ?: -1
+    ).observeAsState()
+
+    val stockSymbols by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
+
 
     var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 
     val startDate = currentMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val endDate = currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val endDate =
+        currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault())
+            .toInstant().toEpochMilli()
 
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRangeAndAccount(
         accountId = selectedAccountForStockList?.accountId ?: -1,
@@ -79,9 +103,14 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         endDate = endDate
     ).observeAsState(initial = emptyList())
 
+    var selectedTabIndex by remember { mutableIntStateOf(0) }
+
+    stockAccount?.let {
+        stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
+    }
     Scaffold(
         topBar = {
-            StockListHeader(navController, stockAccount)
+            StockListHeader(navController, stockAccount, stockViewModel)
         },
     ) { innerPadding ->
         Box(
@@ -91,13 +120,145 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                 .padding(innerPadding)
         ) {
             Column {
-                MonthSwitcher { newMonth ->
-                    currentMonth = newMonth
+                // TabRow for switching between tabs
+                TabRow(
+                    selectedTabIndex = selectedTabIndex,
+//                    containerColor = MaterialTheme.colorScheme.primary
+                ) {
+                    Tab(
+                        selected = selectedTabIndex == 0,
+                        onClick = { selectedTabIndex = 0 },
+                        text = { Text("交易紀錄") }
+                    )
+                    Tab(
+                        selected = selectedTabIndex == 1,
+                        onClick = { selectedTabIndex = 1 },
+                        text = { Text("帳戶庫存") }
+                    )
                 }
-                LazyColumn {
-                    items(stockRecords) { record ->
-                        // 根据 record 显示每个股票记录
-                        Text(text = record.stockSymbol)
+                // Display content based on the selected tab
+                when (selectedTabIndex) {
+                    0 -> {
+                        MonthSwitcher { newMonth ->
+                            currentMonth = newMonth
+                        }
+                        LazyColumn {
+                            items(stockRecords) { record ->
+                                val transactionType = when (record.transactionType) {
+                                    0 -> "買入"
+                                    1 -> "賣出"
+                                    2 -> "股利"
+                                    else -> "買入"
+                                }
+                                val stockType = when (record.stockType) {
+                                    0 -> "一般"
+                                    1 -> "ETF"
+                                    2 -> "當沖"
+                                    else -> "一般"
+                                }
+                                val textColor = when (record.transactionType) {
+                                    0 -> StockGreen
+                                    1 -> StockRed
+                                    else -> MaterialTheme.colorScheme.onSurface // 默认颜色
+                                }
+                                val totalAmount = when (record.transactionType) {
+                                    0 -> record.totalAmount * -1
+                                    1 -> record.totalAmount
+                                    2 -> record.totalAmount
+                                    else -> record.totalAmount
+                                }
+                                val stockSymbol =
+                                    stockSymbols.find { it.stockSymbol == record.stockSymbol }
+                                val stockName = stockSymbol?.stockName ?: "未知股票名稱"
+                                val priceName = when (record.transactionType) {
+                                    0 -> "每股價格"
+                                    1 -> "每股價格"
+                                    2 -> "每股股利"
+                                    else -> "每股價格"
+                                }
+                                ListItem(
+                                    headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
+//                                    leadingContent = {
+//                                        Row(
+////                                            verticalAlignment = Alignment.CenterVertically,
+//                                            modifier = Modifier
+//                                                .height(64.dp)
+//                                        ) {
+//                                            Box(
+//                                                modifier = Modifier
+//                                                    .fillMaxHeight()
+//                                                    .width(4.dp)
+//                                                    .background(
+//                                                        StockRed
+//                                                    )
+//                                            )
+//                                        }
+//                                    },
+                                    supportingContent = {
+                                        Column {
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text("股數", modifier = Modifier.weight(1f))
+                                                Text(priceName, modifier = Modifier.weight(1f))
+                                                Text("淨收付", modifier = Modifier.weight(1f))
+                                            }
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth()
+                                            ) {
+                                                Text(
+                                                    "${record.quantity}",
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                Text(
+                                                    "${record.pricePerUnit}",
+                                                    modifier = Modifier.weight(1f)
+                                                )
+                                                Text(
+                                                    "$totalAmount",
+                                                    modifier = Modifier.weight(1f),
+                                                    color = textColor
+                                                )
+                                            }
+//                                            Row(
+//                                                modifier = Modifier.fillMaxWidth()
+//                                            ) {
+//                                                Spacer(modifier = Modifier.weight(1f))
+//                                                Text("總金额: ${record.totalAmount}", modifier = Modifier.weight(1f))
+//                                            }
+                                        }
+                                    },
+                                    trailingContent = {
+                                        Column {
+                                            Text(
+                                                text = "${
+                                                    Instant.ofEpochMilli(record.transactionDate)
+                                                        .atZone(ZoneId.systemDefault())
+                                                        .toLocalDate()
+                                                }"
+                                            )
+                                            Text(
+                                                text = transactionType
+                                            )
+                                            Text(
+                                                text = stockType
+                                            )
+                                        }
+                                    }
+                                )
+                                HorizontalDivider()
+                            }
+                        }
+                    }
+
+                    1 -> {
+                        // Display content for "支出" - placeholder content
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Text("支出选项卡内容尚未实现")
+                        }
                     }
                 }
             }
@@ -107,7 +268,11 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockListHeader(navController: NavHostController, stockAccount: StockAccount?){
+fun StockListHeader(
+    navController: NavHostController,
+    stockAccount: StockAccount?,
+    stockViewModel: StockViewModel
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -119,21 +284,25 @@ fun StockListHeader(navController: NavHostController, stockAccount: StockAccount
         navigationIcon = {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
+                    imageVector = Icons.Filled.ArrowBackIosNew,
                     contentDescription = "關閉"
                 )
             }
         },
-//        actions = {
-//            IconButton(onClick = {
-//                navController.navigate("addAccountScreen")
-//            }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Add,
-//                    contentDescription = "新增"
-//                )
-//            }
-//        }
+        actions = {
+            // Ensure stockAccount is not null before calling updateSelectedAccount
+            stockAccount?.let {
+                IconButton(onClick = {
+                    stockViewModel.updateSelectedAccount(it)
+                    navController.navigate("stockAddScreen")
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Add,
+                        contentDescription = "新增"
+                    )
+                }
+            }
+        }
     )
 }
 
@@ -155,7 +324,11 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
         }
 
         Text(
-            text = "${formatter.format(currentMonth)} ~ ${formatter.format(currentMonth.plusMonths(1).minusDays(1))}",
+            text = "${formatter.format(currentMonth)} ~ ${
+                formatter.format(
+                    currentMonth.plusMonths(1).minusDays(1)
+                )
+            }",
 //            style = MaterialTheme.typography.body1
         )
 

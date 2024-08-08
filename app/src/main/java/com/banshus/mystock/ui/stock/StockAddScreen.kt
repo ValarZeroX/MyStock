@@ -16,9 +16,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -121,10 +120,10 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
     var selectedAccountId by remember { mutableIntStateOf(0) }
     //股票市場
     var selectedStockMarket by remember { mutableIntStateOf(0) }
-    //股票代碼
-    var stockSymbol by remember { mutableStateOf("") }
-    // 股票名稱
-    var stockName by remember { mutableStateOf("") }
+//    //股票代碼
+//    var stockSymbol by remember { mutableStateOf("") }
+//    // 股票名稱
+//    var stockName by remember { mutableStateOf("") }
     //股票類型
     var selectedStockTypeIndex by remember { mutableIntStateOf(0) }
     //交易類別
@@ -191,6 +190,12 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
         }
     }
 
+    val priceName = when(selectedTransactionType) {
+        0 -> "每股價格"
+        1 -> "每股價格"
+        else -> "每股股利"
+    }
+
     Scaffold(
         topBar = {
             AddHeader(
@@ -210,13 +215,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                         note = "",
                     )
                 },
-                onSaveStockSymbol = {
-//                    stockSymbolViewModel.insertStockSymbol(
-//                        stockSymbol = stockSymbol,
-//                        stockName =  stockName,
-//                        stockMarket = selectedStockMarket
-//                    )
-                }
+                navController
             )
         },
     ) { innerPadding ->
@@ -335,7 +334,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
-                        text = "每股價格",
+                        text = priceName,
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -579,7 +578,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
 @Composable
 fun AddHeader(
     onSaveStockRecord: () -> Unit,
-    onSaveStockSymbol: () -> Unit,
+    navController: NavHostController
     ) {
     CenterAlignedTopAppBar(
         title = {
@@ -590,17 +589,16 @@ fun AddHeader(
             )
         },
         navigationIcon = {
-            IconButton(onClick = { /* do something */ }) {
+            IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
-                    imageVector = Icons.Filled.Close,
-                    contentDescription = "關閉"
+                    imageVector = Icons.Filled.ArrowBackIosNew,
+                    contentDescription = "返回"
                 )
             }
         },
         actions = {
             IconButton(onClick = {
                 onSaveStockRecord()
-                onSaveStockSymbol()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Check,

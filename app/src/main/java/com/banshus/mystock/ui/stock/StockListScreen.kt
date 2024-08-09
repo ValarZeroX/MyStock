@@ -457,7 +457,8 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
 @Composable
 fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
     //圖例文字顏色
-    val legendTextColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
+    val m3Surface = MaterialTheme.colorScheme.surface.toArgb()
     val entries = holdings.map { (stockSymbol, holdingData) ->
         val (_, totalValue) = holdingData
         PieEntry(totalValue.toFloat(), stockSymbol)
@@ -501,24 +502,34 @@ fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
 
                 //圖例
                 this.legend.isEnabled = false
-                this.legend.textColor = legendTextColor
+                this.legend.textColor = m3OnSurface
                 this.legend.textSize = 13f
-//                this.setHoleColor(Color.TRANSPARENT)
                 this.setUsePercentValues(true)
 //                this.setDrawHoleEnabled(true)
+                this.isDrawHoleEnabled = true
                 this.holeRadius = 50f
+                this.setHoleColor(m3Surface)
+
+
+//                this.setHoleColor(Color.TRANSPARENT)  // 设置中央孔颜色为透明
+//
+//                // 确保透明圆设置正确
+//                this.setTransparentCircleColor(Color.TRANSPARENT)
+//                this.setTransparentCircleAlpha(0)
+
                 this.setDrawCenterText(true)
                 this.setCenterTextSize(20f)
-                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
-                this.setCenterTextColor(Color.parseColor("#222222"))
-                this.centerText = "Center\ntext"
+//                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
+                this.setCenterTextColor(m3OnSurface)
+                this.centerText = "持有比例"
                 this.setExtraOffsets(40f, 0f, 40f, 0f)
-                this.renderer = CustomPieChartRenderer(this, 10f)
+//                this.renderer = CustomPieChartRenderer(this, 10f)
+//                this.invalidate()
             }
         },
         modifier = Modifier
             .width(400.dp)  // 設定寬度
             .height(400.dp) // 設定高度
-            .padding(10.dp)
+            .padding(4.dp)
     )
 }

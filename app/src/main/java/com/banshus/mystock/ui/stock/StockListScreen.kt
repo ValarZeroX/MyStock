@@ -2,6 +2,7 @@ package com.banshus.mystock.ui.stock
 
 import android.graphics.Color
 import android.graphics.Typeface
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableIntStateOf
@@ -133,13 +135,13 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(Pair(emptyMap(), 0.0))
     val (holdings, totalCost) = holdingsAndTotalCost
-//    LaunchedEffect(holdingsAndTotalCost) {
-//        println("Holdings: $holdingsAndTotalCost")
-//    }
-    //帳戶總成本
-//    val totalCost by stockRecordViewModel.getTotalCost(
-//        accountId = selectedAccountForStockList?.accountId ?: -1
-//    ).observeAsState(initial = 0.0)
+    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
+
+    LaunchedEffect(holdings) {
+        // 更新状态
+        isDataReady = holdings.isNotEmpty()
+    }
+    
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
@@ -166,17 +168,93 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("交易紀錄") }
+                        text = { Text("帳戶庫存") }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("帳戶庫存") }
+                        text = { Text("交易紀錄") }
                     )
                 }
                 // Display content based on the selected tab
                 when (selectedTabIndex) {
                     0 -> {
+                        // Display content for "帳戶庫存" - placeholder content
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            Column {
+                                //畫圓餅圖
+                                if (isDataReady){
+                                    StockPieChart(holdings)
+                                } else {
+                                    Text(text = "Loading")
+                                }
+                                
+                                Text(text = "$totalCost")
+//                                StockLineChart(stockRecords)
+                                LazyColumn {
+                                    items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
+                                        val (totalQuantity, totalValue) = holdingData
+                                        val stockName =
+                                            stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName
+                                                ?: "未知股票名稱"
+
+                                        ListItem(
+                                            headlineContent = { Text(text = "$stockSymbol ($stockName)") },
+                                            supportingContent = {
+                                                Column {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Text(
+                                                            "持有股數",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "單位成本",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "總成本",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "市值",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Text(
+                                                            "$totalQuantity",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "$totalQuantity",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            formatNumber(totalValue),
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            formatNumber(totalValue),
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        )
+                                        HorizontalDivider()
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    1 -> {
                         MonthSwitcher { newMonth ->
                             currentMonth = newMonth
                         }
@@ -263,78 +341,6 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                     }
                                 )
                                 HorizontalDivider()
-                            }
-                        }
-                    }
-
-                    1 -> {
-                        // Display content for "帳戶庫存" - placeholder content
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Column {
-                                //畫圓餅圖
-                                StockPieChart(holdings)
-                                Text(text = "$totalCost")
-//                                StockLineChart(stockRecords)
-                                LazyColumn {
-                                    items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
-                                        val (totalQuantity, totalValue) = holdingData
-                                        val stockName =
-                                            stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName
-                                                ?: "未知股票名稱"
-
-                                        ListItem(
-                                            headlineContent = { Text(text = "$stockSymbol ($stockName)") },
-                                            supportingContent = {
-                                                Column {
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    ) {
-                                                        Text(
-                                                            "持有股數",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            "單位成本",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            "總成本",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            "市值",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                    }
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth()
-                                                    ) {
-                                                        Text(
-                                                            "$totalQuantity",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            "$totalQuantity",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            formatNumber(totalValue),
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                        Text(
-                                                            formatNumber(totalValue),
-                                                            modifier = Modifier.weight(1f)
-                                                        )
-                                                    }
-                                                }
-                                            }
-                                        )
-                                        HorizontalDivider()
-                                    }
-                                }
                             }
                         }
                     }
@@ -456,6 +462,8 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
 
 @Composable
 fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
+
+    Log.d("Char", "$holdings")
     //圖例文字顏色
     val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
     val m3Surface = MaterialTheme.colorScheme.surface.toArgb()

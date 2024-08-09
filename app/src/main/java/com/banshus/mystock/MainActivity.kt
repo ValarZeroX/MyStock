@@ -38,6 +38,7 @@ import com.banshus.mystock.ui.stock.StockListScreen
 import com.banshus.mystock.ui.theme.MyStockTheme
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
+import com.github.mikephil.charting.utils.Utils
 
 
 class MainActivity : ComponentActivity() {
@@ -46,6 +47,8 @@ class MainActivity : ComponentActivity() {
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        //圖表初始化
+        Utils.init(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 

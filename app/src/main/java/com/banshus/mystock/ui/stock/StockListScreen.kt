@@ -1,5 +1,7 @@
 package com.banshus.mystock.ui.stock
 
+import android.graphics.Color
+import android.graphics.Typeface
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -7,7 +9,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -35,6 +39,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,13 +65,20 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
+import com.banshus.mystock.CustomPieChartRenderer
+import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.data.entities.StockRecord
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.utils.ColorTemplate
+import java.text.NumberFormat
 
 @Composable
 fun StockListScreen(navController: NavHostController, stockViewModel: StockViewModel) {
@@ -116,9 +128,18 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
 //        accountId = selectedAccountForStockList?.accountId ?: -1,
 //    ).observeAsState(initial = emptyList())
 
-    val holdings by stockRecordViewModel.getCurrentHoldings(
+    //個股總成本、帳戶總成本
+    val holdingsAndTotalCost by stockRecordViewModel.getHoldingsAndTotalCost(
         accountId = selectedAccountForStockList?.accountId ?: -1
-    ).observeAsState(initial = emptyMap())
+    ).observeAsState(Pair(emptyMap(), 0.0))
+    val (holdings, totalCost) = holdingsAndTotalCost
+//    LaunchedEffect(holdingsAndTotalCost) {
+//        println("Holdings: $holdingsAndTotalCost")
+//    }
+    //帳戶總成本
+//    val totalCost by stockRecordViewModel.getTotalCost(
+//        accountId = selectedAccountForStockList?.accountId ?: -1
+//    ).observeAsState(initial = 0.0)
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
@@ -208,7 +229,7 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 Text(
-                                                    "${record.quantity}",
+                                                    formatNumber(record.quantity),
                                                     modifier = Modifier.weight(1f)
                                                 )
                                                 Text(
@@ -216,7 +237,7 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                                     modifier = Modifier.weight(1f)
                                                 )
                                                 Text(
-                                                    "$totalAmount",
+                                                    formatNumber(totalAmount),
                                                     modifier = Modifier.weight(1f),
                                                     color = textColor
                                                 )
@@ -253,21 +274,61 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                             modifier = Modifier.fillMaxSize()
                         ) {
                             Column {
-
+                                //畫圓餅圖
+                                StockPieChart(holdings)
+                                Text(text = "$totalCost")
 //                                StockLineChart(stockRecords)
                                 LazyColumn {
                                     items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
                                         val (totalQuantity, totalValue) = holdingData
-                                        val stockName = stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName ?: "未知股票名稱"
+                                        val stockName =
+                                            stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName
+                                                ?: "未知股票名稱"
 
                                         ListItem(
                                             headlineContent = { Text(text = "$stockSymbol ($stockName)") },
                                             supportingContent = {
-                                                Row(
-                                                    modifier = Modifier.fillMaxWidth()
-                                                ) {
-                                                    Text("持有股數: $totalQuantity", modifier = Modifier.weight(1f))
-                                                    Text("總價值: $totalValue", modifier = Modifier.weight(1f))
+                                                Column {
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Text(
+                                                            "持有股數",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "單位成本",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "總成本",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "市值",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ) {
+                                                        Text(
+                                                            "$totalQuantity",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "$totalQuantity",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            formatNumber(totalValue),
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            formatNumber(totalValue),
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                    }
                                                 }
                                             }
                                         )
@@ -358,36 +419,106 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
     }
 }
 
+//@Composable
+//fun StockLineChart(stockRecords: List<StockRecord>) {
+//    // Convert StockRecord data to MPAndroidChart Entries
+//    val entries = stockRecords.mapIndexed { index, record ->
+//        Entry(index.toFloat(), record.pricePerUnit.toFloat())
+//    }
+//
+//    val dataSet = LineDataSet(entries, "Stock Prices").apply {
+//        color = ColorTemplate.COLORFUL_COLORS[0]
+//        valueTextColor = ColorTemplate.COLORFUL_COLORS[0]
+//        valueTextSize = 12f
+//    }
+//
+//    val lineData = LineData(dataSet)
+//
+//    AndroidView(
+//        factory = { context ->
+//            LineChart(context).apply {
+//                this.data = lineData
+//                this.description.isEnabled = false
+//                this.legend.isEnabled = true
+//                this.xAxis.valueFormatter = object : ValueFormatter() {
+//                    override fun getFormattedValue(value: Float): String {
+//                        return "${value.toInt() + 1}"  // Custom format if needed
+//                    }
+//                }
+//            }
+//        },
+//        modifier = Modifier
+//            .fillMaxSize()
+//            .padding(16.dp)
+//    )
+//}
+
+
 @Composable
-fun StockLineChart(stockRecords: List<StockRecord>) {
-    // Convert StockRecord data to MPAndroidChart Entries
-    val entries = stockRecords.mapIndexed { index, record ->
-        Entry(index.toFloat(), record.pricePerUnit.toFloat())
+fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
+    //圖例文字顏色
+    val legendTextColor = MaterialTheme.colorScheme.onSurface.toArgb()
+    val entries = holdings.map { (stockSymbol, holdingData) ->
+        val (_, totalValue) = holdingData
+        PieEntry(totalValue.toFloat(), stockSymbol)
     }
 
-    val dataSet = LineDataSet(entries, "Stock Prices").apply {
-        color = ColorTemplate.COLORFUL_COLORS[0]
-        valueTextColor = ColorTemplate.COLORFUL_COLORS[0]
-        valueTextSize = 12f
+    val dataSet = PieDataSet(entries, "Stock Holdings").apply {
+        colors = listOf(
+            Color.parseColor("#4777c0"),
+            Color.parseColor("#a374c6"),
+            Color.parseColor("#4fb3e8"),
+            Color.parseColor("#99cf43"),
+            Color.parseColor("#fdc135"),
+            Color.parseColor("#fd9a47"),
+            Color.parseColor("#eb6e7a"),
+            Color.parseColor("#6785c2")
+        )
+        setValueTextColors(colors)
+        valueLinePart1Length = 0.6f
+        valueLinePart2Length = 0.3f
+        valueLineWidth = 2f
+        valueLinePart1OffsetPercentage = 115f
+        isUsingSliceColorAsValueLineColor = true
+        yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+        valueTextSize = 16f
+        valueTypeface = Typeface.DEFAULT_BOLD
+        valueFormatter = object : ValueFormatter() {
+            private val formatter = NumberFormat.getPercentInstance()
+
+            override fun getFormattedValue(value: Float) =
+                formatter.format(value / 100f)
+        }
     }
 
-    val lineData = LineData(dataSet)
+    val pieData = PieData(dataSet)
 
     AndroidView(
         factory = { context ->
-            LineChart(context).apply {
-                this.data = lineData
+            PieChart(context).apply {
+                this.data = pieData
                 this.description.isEnabled = false
-                this.legend.isEnabled = true
-                this.xAxis.valueFormatter = object : ValueFormatter() {
-                    override fun getFormattedValue(value: Float): String {
-                        return "${value.toInt() + 1}"  // Custom format if needed
-                    }
-                }
+
+                //圖例
+                this.legend.isEnabled = false
+                this.legend.textColor = legendTextColor
+                this.legend.textSize = 13f
+//                this.setHoleColor(Color.TRANSPARENT)
+                this.setUsePercentValues(true)
+//                this.setDrawHoleEnabled(true)
+                this.holeRadius = 50f
+                this.setDrawCenterText(true)
+                this.setCenterTextSize(20f)
+                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
+                this.setCenterTextColor(Color.parseColor("#222222"))
+                this.centerText = "Center\ntext"
+                this.setExtraOffsets(40f, 0f, 40f, 0f)
+                this.renderer = CustomPieChartRenderer(this, 10f)
             }
         },
         modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
+            .width(400.dp)  // 設定寬度
+            .height(400.dp) // 設定高度
+            .padding(10.dp)
     )
 }

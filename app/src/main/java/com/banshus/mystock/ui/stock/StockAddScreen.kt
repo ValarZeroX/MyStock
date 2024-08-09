@@ -599,6 +599,7 @@ fun AddHeader(
         actions = {
             IconButton(onClick = {
                 onSaveStockRecord()
+                navController.popBackStack()
             }) {
                 Icon(
                     imageVector = Icons.Filled.Check,

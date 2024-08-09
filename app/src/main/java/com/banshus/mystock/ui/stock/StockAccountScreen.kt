@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
@@ -189,9 +190,4 @@ fun AccountHeader(navController: NavHostController) {
             }
         }
     )
-}
-
-fun formatNumber(number: Int): String {
-    val numberFormat = NumberFormat.getNumberInstance(Locale.getDefault())
-    return numberFormat.format(number)
 }

@@ -38,9 +38,9 @@ class StockRecordViewModel(private val repository: StockRecordRepository) : View
         return repository.getStockRecordsByAccountId(accountId)
     }
 
-    fun getCurrentHoldings(accountId: Int): LiveData<Map<String, Pair<Int, Double>>> {
+    fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
         return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
-            stockRecords.groupBy { it.stockSymbol }
+            val holdings = stockRecords.groupBy { it.stockSymbol }
                 .mapValues { (_, records) ->
                     val totalQuantity = records.sumOf { record ->
                         when (record.transactionType) {
@@ -58,8 +58,43 @@ class StockRecordViewModel(private val repository: StockRecordRepository) : View
                     }
                     totalQuantity to totalValue
                 }
+
+            // Calculate total cost
+            val totalCost = holdings.values.sumOf { (_, totalValue) -> totalValue }
+
+            holdings to totalCost
         }
     }
+
+//    fun getCurrentHoldings(accountId: Int): LiveData<Map<String, Pair<Int, Double>>> {
+//        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
+//            stockRecords.groupBy { it.stockSymbol }
+//                .mapValues { (_, records) ->
+//                    val totalQuantity = records.sumOf { record ->
+//                        when (record.transactionType) {
+//                            0 -> record.quantity // 0: 買入
+//                            1 -> -record.quantity // 1: 賣出
+//                            else -> 0
+//                        }
+//                    }
+//                    val totalValue = records.sumOf { record ->
+//                        when (record.transactionType) {
+//                            0 -> record.totalAmount // 0: 買入
+//                            1 -> -record.totalAmount // 1: 賣出
+//                            else -> 0.0
+//                        }
+//                    }
+//                    totalQuantity to totalValue
+//                }
+//        }
+//    }
+//
+//    //帳戶總成本
+//    fun getTotalCost(accountId: Int): LiveData<Double> {
+//        return getCurrentHoldings(accountId).map { holdings ->
+//            holdings.values.sumOf { (_, totalValue) -> totalValue }
+//        }
+//    }
 }
 
 class StockRecordViewModelFactory(

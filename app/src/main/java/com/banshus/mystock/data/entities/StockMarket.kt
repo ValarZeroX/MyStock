@@ -7,7 +7,7 @@ import androidx.room.PrimaryKey
     tableName = "stock_market",
 )
 data class StockMarket(
-    @PrimaryKey(autoGenerate = true) val stockMarket: Int = 0,
+    @PrimaryKey val stockMarket: Int,
     val stockMarketName: String, // 股票市場名稱
     val stockMarketCode: String, //股票市場代碼
     var stockMarketSort: Int, //股票市場排序

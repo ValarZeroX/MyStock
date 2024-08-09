@@ -30,6 +30,14 @@ data class Meta(
     val currency: String,
     @SerializedName("regularMarketPrice")
     val regularMarketPrice: Double,
+    @SerializedName("regularMarketDayHigh")
+    val regularMarketDayHigh: Double,
+    @SerializedName("regularMarketDayLow")
+    val regularMarketDayLow: Double,
+    @SerializedName("shortName")
+    val shortName: String,
+    @SerializedName("chartPreviousClose")
+    val chartPreviousClose: Double,
     // Add other fields as needed
 )
 

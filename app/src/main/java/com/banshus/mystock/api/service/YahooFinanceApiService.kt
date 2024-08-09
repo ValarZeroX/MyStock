@@ -1,4 +1,4 @@
-package com.banshus.mystock.api
+package com.banshus.mystock.api.service
 
 import com.banshus.mystock.api.response.StockChartResponse
 import retrofit2.http.GET
@@ -12,6 +12,6 @@ interface YahooFinanceApiService {
         @Query("period1") period1: Long,
         @Query("period2") period2: Long,
         @Query("interval") interval: String = "1d",
-        @Query("events") events: String = "history"
+        @Query("events") events: String = ""
     ): StockChartResponse
 }

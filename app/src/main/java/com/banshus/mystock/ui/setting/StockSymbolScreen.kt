@@ -1,6 +1,7 @@
 package com.banshus.mystock.ui.setting
 
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -33,6 +34,8 @@ import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -43,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -67,6 +71,7 @@ import com.banshus.mystock.viewmodels.StockPriceApiViewModel
 import com.banshus.mystock.viewmodels.StockPriceApiViewModelFactory
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
+import kotlinx.coroutines.launch
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -75,6 +80,11 @@ import java.util.Locale
 
 @Composable
 fun StockSymbolScreen(navController: NavHostController) {
+    // 创建 ScaffoldState
+    val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
+
+
     val decimalFormat = DecimalFormat("#.00")
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     val context = LocalContext.current
@@ -93,7 +103,7 @@ fun StockSymbolScreen(navController: NavHostController) {
     //使用api 初始化viewModel
     val stockPriceApiViewModel: StockPriceApiViewModel = viewModel(
         factory = StockPriceApiViewModelFactory(
-            StockPriceApiRepository(RetrofitInstance.api)
+            StockPriceApiRepository(RetrofitInstance.yahooApi)
         )
     )
     var stockChartResponses by remember { mutableStateOf<Map<String, StockChartResponse>>(emptyMap()) }
@@ -135,20 +145,7 @@ fun StockSymbolScreen(navController: NavHostController) {
                 it.stockName.contains(searchQuery, ignoreCase = true)
     }
 
-//    LaunchedEffect(stockSymbolList) {
-//        stockSymbolList.forEach { stockSymbol ->
-//            stockPriceApiViewModel.fetchStockPrice(
-//                symbol = "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode ?: ""}",
-//                period1 = 0,
-//                period2 = System.currentTimeMillis() / 1000
-//            )
-//        }
-//    }
     stockPriceApiViewModel.stockPrice.observeAsState().value?.let { response ->
-//        val symbol = response.chart.result.firstOrNull()?.meta?.symbol ?: return@let
-//        stockChartResponses = stockChartResponses.toMutableMap().apply {
-//            put(symbol, response)
-//        }
         val result = response.chart.result ?: return@let
         val symbol = result.firstOrNull()?.meta?.symbol ?: return@let
         stockChartResponses = stockChartResponses.toMutableMap().apply {
@@ -156,33 +153,16 @@ fun StockSymbolScreen(navController: NavHostController) {
         }
     }
 
-//    val stockPrice by stockPriceApiViewModel.stockPrice.observeAsState()
-//    LaunchedEffect(stockPrice) {
-//        stockPrice?.let { response ->
-//            val symbol = response.chart.result.firstOrNull()?.meta?.symbol ?: return@let
-//            stockChartResponses = stockChartResponses.toMutableMap().apply {
-//                put(symbol, response)
-//            }
-//        }
-//    }
-    //api錯誤跳 Snack bar
-//    val error by stockPriceApiViewModel.error.observeAsState()
-//    val snackBarHostState = remember { SnackbarHostState() }
-//    LaunchedEffect(error) {
-//        error?.let {
-//            snackBarHostState.showSnackbar(it)
-//        }
-//    }
     Scaffold(
         topBar = {
             StockSymbolScreenHeader(
                 navController,
-                onAddClick = { showAddDialog = true }
+//                onAddClick = { showAddDialog = true }
             )
         },
-//        snackbarHost = {
-//            SnackbarHost(snackBarHostState)
-//        }
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
     ) { innerPadding ->
         Column(
             modifier = Modifier
@@ -195,7 +175,8 @@ fun StockSymbolScreen(navController: NavHostController) {
                 selectedStockMarket = selectedStockMarket,
                 onStockMarketSelected = { market ->
                     selectedStockMarket = market
-                }
+                },
+                onAddClick = { showAddDialog = true }
 
             )
             OutlinedTextField(
@@ -242,32 +223,32 @@ fun StockSymbolScreen(navController: NavHostController) {
                             }
                         },
                         leadingContent = {
-                            Icon(
-                                Icons.Filled.Cached,
-                                contentDescription = "Localized description",
-                                modifier = Modifier.clickable {
-                                    stockPriceApiViewModel.fetchStockPriceResult(
-                                        symbol = stockSymbol.stockSymbol,
-                                        period1 = (System.currentTimeMillis() - 1000) / 1000,
-                                        period2 = System.currentTimeMillis() / 1000,
-                                        marketCode = selectedStockMarket?.stockMarketCode ?: ""
-                                    ){ response ->
-                                        val price = response.chart.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
-                                        val roundedPrice = price?.let { decimalFormat.format(it).toDouble() }
-                                        val currentTime = System.currentTimeMillis()
-                                        stockSymbolViewModel.insertStockSymbol(
-                                            StockSymbol(
-                                                stockSymbol = stockSymbol.stockSymbol,
-                                                stockName = stockSymbol.stockName,
-                                                stockMarket = stockSymbol.stockMarket,
-                                                stockPrice = roundedPrice,
-                                                lastUpdatedTime = currentTime
-                                            )
-                                        )
-                                        showAddDialog = false
-                                    }
-                                }
-                            )
+//                            Icon(
+//                                Icons.Filled.Cached,
+//                                contentDescription = "Localized description",
+//                                modifier = Modifier.clickable {
+//                                    stockPriceApiViewModel.fetchStockPriceResult(
+//                                        symbol = stockSymbol.stockSymbol,
+//                                        period1 = (System.currentTimeMillis() - 1000) / 1000,
+//                                        period2 = System.currentTimeMillis() / 1000,
+//                                        marketCode = selectedStockMarket?.stockMarketCode ?: ""
+//                                    ){ response ->
+//                                        val price = response.chart.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
+//                                        val roundedPrice = price?.let { decimalFormat.format(it).toDouble() }
+//                                        val currentTime = System.currentTimeMillis()
+//                                        stockSymbolViewModel.insertStockSymbol(
+//                                            StockSymbol(
+//                                                stockSymbol = stockSymbol.stockSymbol,
+//                                                stockName = stockSymbol.stockName,
+//                                                stockMarket = stockSymbol.stockMarket,
+//                                                stockPrice = roundedPrice,
+//                                                lastUpdatedTime = currentTime
+//                                            )
+//                                        )
+//                                        showAddDialog = false
+//                                    }
+//                                }
+//                            )
                         },
                         trailingContent = {
                             Icon(
@@ -289,27 +270,51 @@ fun StockSymbolScreen(navController: NavHostController) {
                 selectedStockMarket = selectedStockMarket,
                 onDismiss = { showAddDialog = false },
                 onAdd = { symbol, name, selectedMarketId ->
-                    if (symbol.isNotEmpty() && name.isNotEmpty()) {
+                    Log.d("StockSymbolAdd","No")
+                    if (symbol.isNotEmpty()) {
+                        Log.d("StockSymbolAdd","Go")
                         stockPriceApiViewModel.fetchStockPriceResult(
                             symbol = symbol,
-                            period1 = 0,
+                            period1 = System.currentTimeMillis() / 1000,
                             period2 = System.currentTimeMillis() / 1000,
-                            marketCode = selectedStockMarket?.stockMarketCode ?: ""
-                        ) { response ->
-                            val price = response.chart.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
-                            val roundedPrice = price?.let { decimalFormat.format(it).toDouble() }
-                            val currentTime = System.currentTimeMillis()
-                            stockSymbolViewModel.insertStockSymbol(
-                                StockSymbol(
-                                    stockSymbol = symbol,
-                                    stockName = name,
-                                    stockMarket = selectedMarketId,
-                                    stockPrice = roundedPrice,
-                                    lastUpdatedTime = currentTime
+                            marketCode = selectedStockMarket?.stockMarketCode ?: "",
+                            onSuccess = { response ->
+                                Log.d("StockChartResponse", "Meta Short Name: ${response?.chart?.result?.firstOrNull()?.meta?.shortName}")
+                                val result = response?.chart?.result?.firstOrNull()
+                                val meta = result?.meta
+
+                                val regularMarketPrice = meta?.regularMarketPrice
+                                val regularMarketDayHigh = meta?.regularMarketDayHigh
+                                val regularMarketDayLow = meta?.regularMarketDayLow
+//                                val shortName = meta?.shortName
+                                val chartPreviousClose = meta?.chartPreviousClose
+//                                Log.d("StockSymbolAdd Name","$shortName")
+                                val roundedPrice = regularMarketPrice?.let { decimalFormat.format(it).toDouble() }
+                                val currentTime = System.currentTimeMillis()
+                                stockSymbolViewModel.insertStockSymbol(
+                                    StockSymbol(
+                                        stockSymbol = symbol,
+                                        stockName = name,
+                                        stockMarket = selectedMarketId,
+                                        stockPrice = roundedPrice,
+                                        regularMarketDayLow = regularMarketDayLow,
+                                        regularMarketDayHigh = regularMarketDayHigh,
+                                        chartPreviousClose =chartPreviousClose,
+                                        lastUpdatedTime = currentTime
+                                    )
                                 )
-                            )
-                            showAddDialog = false
-                        }
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("新增成功")
+                                }
+                            },
+                            onError = { errorMessage ->
+                                scope.launch {
+                                    snackbarHostState.showSnackbar("$errorMessage")
+                                }
+//                                showAddDialog = false
+                            }
+                        )
+                        showAddDialog = false
                     }
                 }
 //                onAdd = { symbol, name, selectedMarketId ->
@@ -482,7 +487,7 @@ fun StockSymbolAdd(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockSymbolScreenHeader(navController: NavHostController, onAddClick: () -> Unit) {
+fun StockSymbolScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -499,14 +504,14 @@ fun StockSymbolScreenHeader(navController: NavHostController, onAddClick: () -> 
                 )
             }
         },
-        actions = {
-            IconButton(onClick = onAddClick) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "新增"
-                )
-            }
-        }
+//        actions = {
+//            IconButton(onClick = onAddClick) {
+//                Icon(
+//                    imageVector = Icons.Filled.Add,
+//                    contentDescription = "新增"
+//                )
+//            }
+//        }
     )
 }
 
@@ -514,7 +519,8 @@ fun StockSymbolScreenHeader(navController: NavHostController, onAddClick: () -> 
 fun StockMarketDropdown(
     stockMarkets: List<StockMarket>, // 替換為你的股票市場數據類型
     selectedStockMarket: StockMarket?,
-    onStockMarketSelected: (StockMarket) -> Unit
+    onStockMarketSelected: (StockMarket) -> Unit,
+    onAddClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
@@ -527,9 +533,11 @@ fun StockMarketDropdown(
             readOnly = true,
             trailingIcon = {
                 Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown Arrow",
-                    modifier = Modifier.clickable { expanded = true }
+                    imageVector = Icons.Default.Add,
+                    contentDescription = "Add",
+                    modifier = Modifier.clickable {
+                        onAddClick()
+                    }
                 )
             },
             interactionSource = remember { MutableInteractionSource() }

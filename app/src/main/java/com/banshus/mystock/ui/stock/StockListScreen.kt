@@ -112,9 +112,13 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         endDate = endDate
     ).observeAsState(initial = emptyList())
     //帳戶全部交易紀錄
-    val stockRecordsAll by stockRecordViewModel.getStockRecordsByAccountId(
-        accountId = selectedAccountForStockList?.accountId ?: -1,
-    ).observeAsState(initial = emptyList())
+//    val stockRecordsAll by stockRecordViewModel.getStockRecordsByAccountId(
+//        accountId = selectedAccountForStockList?.accountId ?: -1,
+//    ).observeAsState(initial = emptyList())
+
+    val holdings by stockRecordViewModel.getCurrentHoldings(
+        accountId = selectedAccountForStockList?.accountId ?: -1
+    ).observeAsState(initial = emptyMap())
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
@@ -251,6 +255,25 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                             Column {
 
 //                                StockLineChart(stockRecords)
+                                LazyColumn {
+                                    items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
+                                        val (totalQuantity, totalValue) = holdingData
+                                        val stockName = stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName ?: "未知股票名稱"
+
+                                        ListItem(
+                                            headlineContent = { Text(text = "$stockSymbol ($stockName)") },
+                                            supportingContent = {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Text("持有股數: $totalQuantity", modifier = Modifier.weight(1f))
+                                                    Text("總價值: $totalValue", modifier = Modifier.weight(1f))
+                                                }
+                                            }
+                                        )
+                                        HorizontalDivider()
+                                    }
+                                }
                             }
                         }
                     }

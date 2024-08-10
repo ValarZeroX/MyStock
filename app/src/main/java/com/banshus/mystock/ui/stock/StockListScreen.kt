@@ -35,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,24 +68,18 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
-import com.banshus.mystock.CustomPieChartRenderer
 import com.banshus.mystock.NumberUtils.formatNumber
-import com.banshus.mystock.data.entities.StockRecord
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.charts.PieChart
-import com.github.mikephil.charting.data.LineData
-import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
-import com.github.mikephil.charting.utils.ColorTemplate
+import java.text.DecimalFormat
 import java.text.NumberFormat
 
 @Composable
 fun StockListScreen(navController: NavHostController, stockViewModel: StockViewModel) {
-
+    val decimalFormat = DecimalFormat("#.00")
     val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 
     val context = LocalContext.current
@@ -94,15 +89,17 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         )
     )
 
+    val stockRecordRepository =
+        StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
+    val stockSymbolRepository =
+        StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
     val stockRecordViewModel: StockRecordViewModel = viewModel(
-        factory = StockRecordViewModelFactory(
-            StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-        )
+        factory = StockRecordViewModelFactory(stockRecordRepository)
     )
 
     val stockSymbolViewModel: StockSymbolViewModel = viewModel(
         factory = StockSymbolViewModelFactory(
-            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
+            stockSymbolRepository
         )
     )
 
@@ -137,17 +134,42 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
     val (holdings, totalCost) = holdingsAndTotalCost
     var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
 
+//    //總股數
+//    var totalQuantityAll = 0
+    //總成本
+    var totalCostBasis = 0.0
+    //總市值
+    var totalPrice by remember { mutableDoubleStateOf(0.0) }
+    for ((_, pair) in holdings) {
+        val (_, costBasis) = pair
+//        totalQuantityAll += quantity
+        totalCostBasis += costBasis
+    }
+
+
+    val computedTotalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
+        val (totalQuantity, totalValue) = holdingData
+        val currentPrice = stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
+        totalQuantity * currentPrice
+    }
+
+    LaunchedEffect(computedTotalPrice) {
+        totalPrice = computedTotalPrice
+    }
+
     LaunchedEffect(holdings) {
+        Log.d("hold", "$holdings")
         // 更新状态
         isDataReady = holdings.isNotEmpty()
     }
-    
+
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     stockAccount?.let {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
     }
+
     Scaffold(
         topBar = {
             StockListHeader(navController, stockAccount, stockViewModel)
@@ -180,27 +202,105 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                 when (selectedTabIndex) {
                     0 -> {
                         // Display content for "帳戶庫存" - placeholder content
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.fillMaxSize()
-                        ) {
+                        Box {
                             Column {
-                                //畫圓餅圖
-                                if (isDataReady){
-                                    StockPieChart(holdings)
-                                } else {
-                                    Text(text = "Loading")
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(text = "帳戶市值", modifier = Modifier.weight(1f))
+                                        Text(text = "投資成本", modifier = Modifier.weight(1f))
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(text = formatNumber(totalPrice), modifier = Modifier.weight(1f))
+                                        Text(text = formatNumber(totalCostBasis), modifier = Modifier.weight(1f))
+                                    }
                                 }
-                                
-                                Text(text = "$totalCost")
+//                                Row {
+//
+//                                }
+//                                Column(modifier = Modifier.padding(16.dp)) {
+//                                    Row {
+//                                        Text(text = "总成本: ")
+//                                        Text(text = formatNumber(totalExpenditure))
+//                                    }
+//                                    Row {
+//                                        Text(text = "帐户现值: ")
+//                                        Text(text = formatNumber(totalMarketValue))
+//                                    }
+//                                    Row {
+//                                        Text(text = "支出: ")
+//                                        Text(text = formatNumber(totalExpenditure))
+//                                    }
+//                                    Row {
+//                                        Text(text = "收入: ")
+//                                        Text(text = formatNumber(totalIncome))
+//                                    }
+//                                    Row {
+//                                        Text(text = "现现金利: ")
+//                                        Text(text = formatNumber(dividendIncome))
+//                                    }
+//                                    Row {
+//                                        Text(text = "已实现损益: ")
+//                                        Text(text = formatNumber(totalRealizedProfit))
+//                                    }
+//                                    Row {
+//                                        Text(text = "库存损益: ")
+//                                        Text(text = formatNumber(totalMarketValue - totalExpenditure))
+//                                    }
+//                                    Row {
+//                                        Text(text = "总手續費成本: ")
+//                                        Text(text = formatNumber(totalCommission))
+//                                    }
+//                                    Row {
+//                                        Text(text = "总交易税成本: ")
+//                                        Text(text = formatNumber(totalTransactionTax))
+//                                    }
+//                                }
+//                                Row(
+//                                    modifier = Modifier
+//                                        .fillMaxWidth()
+//                                        .padding(8.dp),
+////                                        .height(IntrinsicSize.Min),
+//                                    verticalAlignment = Alignment.CenterVertically,
+//                                    horizontalArrangement = Arrangement.Center
+//                                ){
+//                                    Box(
+//                                        modifier = Modifier
+//                                            .weight(1f)
+////                                            .aspectRatio(1f)  // 保持圓餅圖的長寬比例為1:1
+//                                            .align(Alignment.CenterVertically)
+//                                    ) {
+//                                        //畫圓餅圖
+//                                        if (isDataReady){
+//                                            StockPieChart(holdings)
+//                                        } else {
+//                                            Text(text = "Loading")
+//                                        }
+//                                    }
+//                                    Text(text = "$totalCost")
+//                                }
+
 //                                StockLineChart(stockRecords)
                                 LazyColumn {
                                     items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
+                                        Log.d(
+                                            "ttt",
+                                            "Stock: $stockSymbol, Total Value: $holdingData"
+                                        )
                                         val (totalQuantity, totalValue) = holdingData
                                         val stockName =
                                             stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName
                                                 ?: "未知股票名稱"
-
+                                        val averageQuantity = totalValue / totalQuantity
+                                        val formattedAverage = decimalFormat.format(averageQuantity)
+                                        val currentPrice =
+                                            stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice
+                                                ?: 0.0
+                                        val marketValue = totalQuantity * currentPrice
+//                                        totalPrice += marketValue
                                         ListItem(
                                             headlineContent = { Text(text = "$stockSymbol ($stockName)") },
                                             supportingContent = {
@@ -233,7 +333,7 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            "$totalQuantity",
+                                                            formattedAverage,
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
@@ -241,7 +341,7 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            formatNumber(totalValue),
+                                                            formatNumber(marketValue),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                     }
@@ -254,6 +354,7 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                             }
                         }
                     }
+
                     1 -> {
                         MonthSwitcher { newMonth ->
                             currentMonth = newMonth
@@ -462,14 +563,12 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
 
 @Composable
 fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
-
-    Log.d("Char", "$holdings")
     //圖例文字顏色
     val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
     val m3Surface = MaterialTheme.colorScheme.surface.toArgb()
     val entries = holdings.map { (stockSymbol, holdingData) ->
-        val (_, totalValue) = holdingData
-        PieEntry(totalValue.toFloat(), stockSymbol)
+        val (totalQuantity, _) = holdingData
+        PieEntry(totalQuantity.toFloat(), stockSymbol)
     }
 
     val dataSet = PieDataSet(entries, "Stock Holdings").apply {
@@ -515,7 +614,7 @@ fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
                 this.setUsePercentValues(true)
 //                this.setDrawHoleEnabled(true)
                 this.isDrawHoleEnabled = true
-                this.holeRadius = 50f
+                this.holeRadius = 70f
                 this.setHoleColor(m3Surface)
 
 
@@ -526,18 +625,18 @@ fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
 //                this.setTransparentCircleAlpha(0)
 
                 this.setDrawCenterText(true)
-                this.setCenterTextSize(20f)
+                this.setCenterTextSize(14f)
 //                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
                 this.setCenterTextColor(m3OnSurface)
                 this.centerText = "持有比例"
-                this.setExtraOffsets(40f, 0f, 40f, 0f)
+                this.setExtraOffsets(0f, 20f, 0f, 20f)
 //                this.renderer = CustomPieChartRenderer(this, 10f)
 //                this.invalidate()
             }
         },
         modifier = Modifier
-            .width(400.dp)  // 設定寬度
-            .height(400.dp) // 設定高度
-            .padding(4.dp)
+            .width(200.dp)  // 設定寬度
+            .height(200.dp) // 設定高度
+//            .padding(40.dp)
     )
 }

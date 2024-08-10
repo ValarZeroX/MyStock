@@ -47,6 +47,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.repository.StockRecordRepository
@@ -65,6 +66,7 @@ import com.maxkeppeler.sheets.calendar.models.CalendarStyle
 import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockConfig
 import com.maxkeppeler.sheets.clock.models.ClockSelection
+import java.text.DecimalFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -81,10 +83,9 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
         )
     )
 
+    val stockRecordRepository = StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
     val stockRecordViewModel: StockRecordViewModel = viewModel(
-        factory = StockRecordViewModelFactory(
-            StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-        )
+        factory = StockRecordViewModelFactory(stockRecordRepository)
     )
 
     val stockSymbolViewModel: StockSymbolViewModel = viewModel(
@@ -158,21 +159,21 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
     var selectedTransactionTax by remember { mutableDoubleStateOf(0.0) }
     var selectedDiscount by remember {mutableDoubleStateOf(0.0) }
 
+    val decimalFormat = DecimalFormat("#.00")
     // Calculate commission based on quantity, price and commission percentage
     val calculatedCommission = remember(stockQuantity, stockPrice, selectedCommissionDecimal) {
         val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
         val price = stockPrice.toDoubleOrNull() ?: 0.0
         val commissionPercent = selectedCommissionDecimal
-        quantity * price * commissionPercent * selectedDiscount
+        decimalFormat.format(quantity * price * commissionPercent * selectedDiscount)
     }
 
     val calculatedTransactionTax = remember(stockQuantity, stockPrice, selectedTransactionTax) {
         val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
         val price = stockPrice.toDoubleOrNull() ?: 0.0
         val transactionTaxPercent = selectedTransactionTax
-        quantity * price * transactionTaxPercent * selectedDiscount
+        decimalFormat.format(quantity * price * transactionTaxPercent * selectedDiscount)
     }
-
     // Update commission field automatically
     LaunchedEffect(autoCalculateChecked, selectedTransactionType, calculatedCommission, calculatedTransactionTax) {
         // 更新手續費
@@ -181,7 +182,6 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
         } else {
             "0.0"
         }
-
         // 更新證交稅
         transactionTax = if (autoCalculateChecked && selectedTransactionType == 1) {
             calculatedTransactionTax.toString()
@@ -200,7 +200,7 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
         topBar = {
             AddHeader(
                 onSaveStockRecord = {
-                    stockRecordViewModel.insertStockRecord(
+                    val stockRecord = StockRecord(
                         accountId = selectedAccountId,
                         stockMarket = selectedStockMarket,
                         stockSymbol = selectedStockSymbol?.stockSymbol ?: "",
@@ -212,8 +212,9 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
                         totalAmount = quantityInt * pricePerUnitDouble,
                         commission = commissionDouble,
                         transactionTax = transactionTaxDouble,
-                        note = "",
+                        note = ""
                     )
+                    stockRecordViewModel.insertStockRecord(stockRecord)
                 },
                 navController
             )

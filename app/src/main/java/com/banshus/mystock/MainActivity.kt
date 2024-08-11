@@ -22,7 +22,13 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.banshus.mystock.api.RetrofitInstance
 import com.banshus.mystock.data.database.AppDatabase
+import com.banshus.mystock.repository.StockAccountRepository
+import com.banshus.mystock.repository.StockMarketRepository
+import com.banshus.mystock.repository.StockPriceApiRepository
+import com.banshus.mystock.repository.StockRecordRepository
+import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.stock.StockAddScreen
@@ -36,6 +42,16 @@ import com.banshus.mystock.ui.stock.AddAccountScreen
 import com.banshus.mystock.ui.stock.StockAccountScreen
 import com.banshus.mystock.ui.stock.StockListScreen
 import com.banshus.mystock.ui.theme.MyStockTheme
+import com.banshus.mystock.viewmodels.StockAccountViewModel
+import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
+import com.banshus.mystock.viewmodels.StockMarketViewModel
+import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
+import com.banshus.mystock.viewmodels.StockPriceApiViewModel
+import com.banshus.mystock.viewmodels.StockPriceApiViewModelFactory
+import com.banshus.mystock.viewmodels.StockRecordViewModel
+import com.banshus.mystock.viewmodels.StockRecordViewModelFactory
+import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 import com.github.mikephil.charting.utils.Utils
@@ -44,7 +60,11 @@ import com.github.mikephil.charting.utils.Utils
 class MainActivity : ComponentActivity() {
 //    private val userSettingsViewModel by viewModels<UserSettingsViewModel>()
     private lateinit var userSettingsViewModel: UserSettingsViewModel
-
+    private lateinit var stockAccountViewModel: StockAccountViewModel
+    private lateinit var stockRecordViewModel: StockRecordViewModel
+    private lateinit var stockSymbolViewModel: StockSymbolViewModel
+    private lateinit var stockMarketViewModel: StockMarketViewModel
+    private lateinit var stockPriceApiViewModel: StockPriceApiViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //圖表初始化
@@ -57,10 +77,21 @@ class MainActivity : ComponentActivity() {
         val factory = UserSettingsViewModelFactory(repository)
         userSettingsViewModel = ViewModelProvider(this, factory)[UserSettingsViewModel::class.java]
 
-//        userSettingsViewModel = ViewModelProvider(
-//            this,
-//            UserSettingsViewModelFactory(repository)
-//        )[UserSettingsViewModel::class.java]
+        // 数据库和 Repository 的初始化
+        val database = AppDatabase.getDatabase(this)
+        val stockAccountRepository = StockAccountRepository(database.stockAccountDao())
+        val stockRecordRepository = StockRecordRepository(database.stockRecordDao())
+        val stockSymbolRepository = StockSymbolRepository(database.stockSymbolDao())
+        val stockMarketRepository = StockMarketRepository(database.stockMarketDao())
+        val stockPriceApiRepository = StockPriceApiRepository(RetrofitInstance.yahooApi)
+
+        // ViewModel 的初始化
+        stockAccountViewModel = ViewModelProvider(this, StockAccountViewModelFactory(stockAccountRepository))[StockAccountViewModel::class.java]
+        stockRecordViewModel = ViewModelProvider(this, StockRecordViewModelFactory(stockRecordRepository))[StockRecordViewModel::class.java]
+        stockSymbolViewModel = ViewModelProvider(this, StockSymbolViewModelFactory(stockSymbolRepository))[StockSymbolViewModel::class.java]
+        stockMarketViewModel = ViewModelProvider(this, StockMarketViewModelFactory(stockMarketRepository))[StockMarketViewModel::class.java]
+        stockPriceApiViewModel = ViewModelProvider(this, StockPriceApiViewModelFactory(stockPriceApiRepository))[StockPriceApiViewModel::class.java]
+
 
         setContent {
             MyStockTheme(
@@ -81,7 +112,14 @@ class MainActivity : ComponentActivity() {
                         topBar = {}
                     ) { innerPadding ->
                         Box(modifier = Modifier.padding(PaddingValues(bottom = innerPadding.calculateBottomPadding()))) {
-                            MyApp(navController)
+                            MyApp(
+                                navController,
+                                stockAccountViewModel = stockAccountViewModel,
+                                stockRecordViewModel = stockRecordViewModel,
+                                stockSymbolViewModel = stockSymbolViewModel,
+                                stockMarketViewModel = stockMarketViewModel,
+                                stockPriceApiViewModel = stockPriceApiViewModel
+                            )
                         }
                     }
                 }
@@ -91,18 +129,25 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MyApp(navController: NavHostController) {
+fun MyApp(
+    navController: NavHostController,
+    stockAccountViewModel: StockAccountViewModel,
+    stockRecordViewModel: StockRecordViewModel,
+    stockSymbolViewModel: StockSymbolViewModel,
+    stockMarketViewModel: StockMarketViewModel,
+    stockPriceApiViewModel: StockPriceApiViewModel
+) {
 //    val viewModel: StockViewModel = viewModel()
     val stockViewModel: StockViewModel = viewModel()
     NavHost(navController = navController, startDestination = "StockAccountScreen") {
         composable("stockAccountScreen") {
-            StockAccountScreen(navController, stockViewModel)
+            StockAccountScreen(navController, stockViewModel, stockAccountViewModel)
         }
         composable("addAccountScreen") {
-            AddAccountScreen(navController)
+            AddAccountScreen(navController, stockAccountViewModel)
         }
         composable("accountListScreen") {
-            AccountListScreen(navController, stockViewModel)
+            AccountListScreen(navController, stockViewModel, stockAccountViewModel)
         }
         composable("stockSettingScreen") {
             StockSettingScreen(navController)
@@ -111,16 +156,16 @@ fun MyApp(navController: NavHostController) {
             ColorThemeScreen(navController)
         }
         composable("stockAddScreen") {
-            StockAddScreen(navController, stockViewModel)
+            StockAddScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
         composable("stockMarketScreen") {
-            StockMarketScreen(navController)
+            StockMarketScreen(navController,stockMarketViewModel)
         }
         composable("stockSymbolScreen") {
-            StockSymbolScreen(navController)
+            StockSymbolScreen(navController,stockSymbolViewModel,stockMarketViewModel, stockPriceApiViewModel )
         }
         composable("stockListScreen") {
-            StockListScreen(navController, stockViewModel)
+            StockListScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
     }
 }

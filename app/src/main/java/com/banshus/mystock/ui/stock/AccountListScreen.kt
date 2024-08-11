@@ -40,13 +40,13 @@ import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 
 @Composable
-fun AccountListScreen(navController: NavHostController, stockViewModel: StockViewModel){
-    val context = LocalContext.current
-    val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = StockAccountViewModelFactory(
-            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-        )
-    )
+fun AccountListScreen(navController: NavHostController, stockViewModel: StockViewModel,stockAccountViewModel: StockAccountViewModel){
+//    val context = LocalContext.current
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = StockAccountViewModelFactory(
+//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//        )
+//    )
 //    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
 //    val factory = StockAccountViewModelFactory(repository)
 //    val stockAccountViewModel: StockAccountViewModel = viewModel(

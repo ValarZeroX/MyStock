@@ -35,11 +35,17 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
@@ -75,24 +81,30 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewModel) {
-    val context = LocalContext.current
-    val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = StockAccountViewModelFactory(
-            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-        )
-    )
-
-    val stockRecordRepository = StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-    val stockRecordViewModel: StockRecordViewModel = viewModel(
-        factory = StockRecordViewModelFactory(stockRecordRepository)
-    )
-
-    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-        factory = StockSymbolViewModelFactory(
-            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-        )
-    )
+fun StockAddScreen(
+    navController: NavHostController,
+    stockViewModel: StockViewModel,
+    stockAccountViewModel: StockAccountViewModel,
+    stockRecordViewModel: StockRecordViewModel,
+    stockSymbolViewModel: StockSymbolViewModel
+) {
+//    val context = LocalContext.current
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = StockAccountViewModelFactory(
+//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//        )
+//    )
+//
+//    val stockRecordRepository = StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
+//    val stockRecordViewModel: StockRecordViewModel = viewModel(
+//        factory = StockRecordViewModelFactory(stockRecordRepository)
+//    )
+//
+//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
+//        factory = StockSymbolViewModelFactory(
+//            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
+//        )
+//    )
 
     //撈第一筆帳戶
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
@@ -121,10 +133,6 @@ fun StockAddScreen(navController: NavHostController, stockViewModel: StockViewMo
     var selectedAccountId by remember { mutableIntStateOf(0) }
     //股票市場
     var selectedStockMarket by remember { mutableIntStateOf(0) }
-//    //股票代碼
-//    var stockSymbol by remember { mutableStateOf("") }
-//    // 股票名稱
-//    var stockName by remember { mutableStateOf("") }
     //股票類型
     var selectedStockTypeIndex by remember { mutableIntStateOf(0) }
     //交易類別

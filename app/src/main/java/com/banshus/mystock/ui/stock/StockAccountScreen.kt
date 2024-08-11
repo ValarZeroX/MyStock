@@ -50,13 +50,13 @@ import java.text.NumberFormat
 import java.util.Locale
 
 @Composable
-fun StockAccountScreen(navController: NavHostController, stockViewModel: StockViewModel) {
+fun StockAccountScreen(navController: NavHostController, stockViewModel: StockViewModel,stockAccountViewModel: StockAccountViewModel) {
     Scaffold(
         topBar = {
             AccountHeader(navController)
         },
     ) { innerPadding ->
-        StockMainScreen(innerPadding, navController, stockViewModel)
+        StockMainScreen(innerPadding, navController, stockViewModel, stockAccountViewModel)
     }
 }
 
@@ -64,14 +64,15 @@ fun StockAccountScreen(navController: NavHostController, stockViewModel: StockVi
 fun StockMainScreen(
     innerPadding: PaddingValues,
     navController: NavHostController,
-    stockViewModel: StockViewModel
+    stockViewModel: StockViewModel,
+    stockAccountViewModel: StockAccountViewModel
 ) {
-    val context = LocalContext.current
-    val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = StockAccountViewModelFactory(
-            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-        )
-    )
+//    val context = LocalContext.current
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = StockAccountViewModelFactory(
+//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//        )
+//    )
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
 //    val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 

@@ -45,30 +45,24 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.data.entities.StockMarket
-import com.banshus.mystock.repository.StockMarketRepository
 import com.banshus.mystock.viewmodels.StockMarketViewModel
-import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StockMarketScreen(navController: NavHostController) {
-    val context = LocalContext.current
-    val stockMarketViewModel: StockMarketViewModel = viewModel(
-        factory = StockMarketViewModelFactory(
-            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
-        )
-    )
+fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: StockMarketViewModel) {
+//    val context = LocalContext.current
+//    val stockMarketViewModel: StockMarketViewModel = viewModel(
+//        factory = StockMarketViewModelFactory(
+//            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
+//        )
+//    )
     val stockMarketList by stockMarketViewModel.allStockMarkets.observeAsState(emptyList())
     var showAddDialog by remember { mutableStateOf(false) }
 

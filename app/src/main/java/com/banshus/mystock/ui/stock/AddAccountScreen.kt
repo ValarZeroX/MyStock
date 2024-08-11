@@ -65,20 +65,20 @@ data class Currency(val code: String, val name: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddAccountScreen(navController: NavHostController) {
+fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: StockAccountViewModel) {
 
-    val context = LocalContext.current
-    val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = StockAccountViewModelFactory(
-            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-        )
-    )
+//    val context = LocalContext.current
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = StockAccountViewModelFactory(
+//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//        )
+//    )
 
-    val stockMarketViewModel: StockMarketViewModel = viewModel(
-        factory = StockMarketViewModelFactory(
-            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
-        )
-    )
+//    val stockMarketViewModel: StockMarketViewModel = viewModel(
+//        factory = StockMarketViewModelFactory(
+//            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
+//        )
+//    )
 //    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
 //    val factory = StockAccountViewModelFactory(repository)
 //    val stockAccountViewModel: StockAccountViewModel = viewModel(

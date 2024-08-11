@@ -69,6 +69,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.viewmodels.RealizedResult
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -78,30 +79,37 @@ import java.text.DecimalFormat
 import java.text.NumberFormat
 
 @Composable
-fun StockListScreen(navController: NavHostController, stockViewModel: StockViewModel) {
+fun StockListScreen(
+    navController: NavHostController,
+    stockViewModel: StockViewModel,
+    stockAccountViewModel: StockAccountViewModel,
+    stockRecordViewModel: StockRecordViewModel,
+    stockSymbolViewModel: StockSymbolViewModel
+) {
     val decimalFormat = DecimalFormat("#.00")
     val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 
-    val context = LocalContext.current
-    val stockAccountViewModel: StockAccountViewModel = viewModel(
-        factory = StockAccountViewModelFactory(
-            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-        )
-    )
+//    val context = LocalContext.current
+//    val stockAccountViewModel: StockAccountViewModel = viewModel(
+//        factory = StockAccountViewModelFactory(
+//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
+//        )
+//    )
+//    val stockRecordRepository =
+//        StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
+//    val stockSymbolRepository =
+//        StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
+//
+//    val stockRecordViewModel: StockRecordViewModel = viewModel(
+//        factory = StockRecordViewModelFactory(stockRecordRepository)
+//    )
+//
+//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
+//        factory = StockSymbolViewModelFactory(
+//            stockSymbolRepository
+//        )
+//    )
 
-    val stockRecordRepository =
-        StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-    val stockSymbolRepository =
-        StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-    val stockRecordViewModel: StockRecordViewModel = viewModel(
-        factory = StockRecordViewModelFactory(stockRecordRepository)
-    )
-
-    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-        factory = StockSymbolViewModelFactory(
-            stockSymbolRepository
-        )
-    )
 
     val stockAccount by stockAccountViewModel.getStockAccountByID(
         selectedAccountForStockList?.accountId ?: -1
@@ -132,36 +140,56 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(Pair(emptyMap(), 0.0))
     val (holdings, totalCost) = holdingsAndTotalCost
-    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
+//    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
 
-//    //總股數
-//    var totalQuantityAll = 0
+    val realizedGainsAndLosses by stockRecordViewModel.getRealizedGainsAndLosses(
+        accountId = selectedAccountForStockList?.accountId ?: -1
+    ).observeAsState(emptyMap())
+Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
+
+    //已實現
+    val totalRealizedResult = realizedGainsAndLosses.values.fold(RealizedResult(0.0, 0.0, 0.0, 0.0, 0.0)) { acc, result ->
+        RealizedResult(
+            buyCost = acc.buyCost + result.buyCost,
+            sellIncome = acc.sellIncome + result.sellIncome,
+            dividendIncome = acc.dividendIncome + result.dividendIncome,
+            totalCommission = acc.totalCommission + result.totalCommission,
+            totalTransactionTax = acc.totalTransactionTax + result.totalTransactionTax
+        )
+    }
+    Log.d("totalRealizedResult", "$totalRealizedResult")
+//    LaunchedEffect(totalRealizedResult) {
+//        Log.d("totalRealizedResult", "$totalRealizedResult")
+//    }
     //總成本
     var totalCostBasis = 0.0
-    //總市值
-    var totalPrice by remember { mutableDoubleStateOf(0.0) }
+
+//    var totalPrice by remember { mutableDoubleStateOf(0.0) }
+
+
     for ((_, pair) in holdings) {
         val (_, costBasis) = pair
 //        totalQuantityAll += quantity
         totalCostBasis += costBasis
     }
 
-
-    val computedTotalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
+    //總市值
+    val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
         val (totalQuantity, totalValue) = holdingData
         val currentPrice = stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
         totalQuantity * currentPrice
     }
 
-    LaunchedEffect(computedTotalPrice) {
-        totalPrice = computedTotalPrice
-    }
+//    LaunchedEffect(computedTotalPrice) {
+//        totalPrice = computedTotalPrice
+//    }
 
-    LaunchedEffect(holdings) {
-        Log.d("hold", "$holdings")
-        // 更新状态
-        isDataReady = holdings.isNotEmpty()
-    }
+//    LaunchedEffect(holdings) {
+//        Log.d("hold", "$holdings")
+//        // 更新状态
+//        isDataReady = holdings.isNotEmpty()
+//    }
+
 
 
     var selectedTabIndex by remember { mutableIntStateOf(0) }
@@ -216,6 +244,18 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
                                     ) {
                                         Text(text = formatNumber(totalPrice), modifier = Modifier.weight(1f))
                                         Text(text = formatNumber(totalCostBasis), modifier = Modifier.weight(1f))
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(text = "已實現損益", modifier = Modifier.weight(1f))
+                                        Text(text = "股利", modifier = Modifier.weight(1f))
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(text = formatNumber(totalRealizedResult.sellIncome), modifier = Modifier.weight(1f))
+                                        Text(text = formatNumber(totalRealizedResult.totalCommission), modifier = Modifier.weight(1f))
                                     }
                                 }
 //                                Row {
@@ -286,10 +326,10 @@ fun StockListScreen(navController: NavHostController, stockViewModel: StockViewM
 //                                StockLineChart(stockRecords)
                                 LazyColumn {
                                     items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
-                                        Log.d(
-                                            "ttt",
-                                            "Stock: $stockSymbol, Total Value: $holdingData"
-                                        )
+//                                        Log.d(
+//                                            "ttt",
+//                                            "Stock: $stockSymbol, Total Value: $holdingData"
+//                                        )
                                         val (totalQuantity, totalValue) = holdingData
                                         val stockName =
                                             stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName

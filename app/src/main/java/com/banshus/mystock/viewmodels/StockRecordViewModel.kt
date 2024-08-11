@@ -12,6 +12,14 @@ import com.banshus.mystock.repository.StockRecordRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
 
+data class RealizedResult(
+    val buyCost: Double,       // 买入成本
+    val sellIncome: Double,    // 卖出收入
+    val dividendIncome: Double, // 股利收入
+    val totalCommission: Double, // 手续费总和
+    val totalTransactionTax: Double // 交易税总和
+)
+
 class StockRecordViewModel(
     private val repository: StockRecordRepository
 ) : ViewModel() {
@@ -82,63 +90,65 @@ class StockRecordViewModel(
         }
     }
 
-//    fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
-//        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
-//            val holdings = stockRecords.groupBy { it.stockSymbol }
-//                .mapValues { (_, records) ->
-//                    val totalQuantity = records.sumOf { record ->
-//                        when (record.transactionType) {
-//                            0 -> record.quantity // 0: 買入
-//                            1 -> -record.quantity // 1: 賣出
-//                            else -> 0
-//                        }
-//                    }
-//                    val totalValue = records.sumOf { record ->
-//                        when (record.transactionType) {
-//                            0 -> record.totalAmount // 0: 買入
-//                            1 -> -record.totalAmount // 1: 賣出
-//                            else -> 0.0
-//                        }
-//                    }
-//                    totalQuantity to totalValue
-//                }
-//
-//            // Calculate total cost
-//            val totalCost = holdings.values.sumOf { (_, totalValue) -> totalValue }
-//
-//            holdings to totalCost
-//        }
-//    }
 
-//    fun getCurrentHoldings(accountId: Int): LiveData<Map<String, Pair<Int, Double>>> {
-//        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
-//            stockRecords.groupBy { it.stockSymbol }
-//                .mapValues { (_, records) ->
-//                    val totalQuantity = records.sumOf { record ->
-//                        when (record.transactionType) {
-//                            0 -> record.quantity // 0: 買入
-//                            1 -> -record.quantity // 1: 賣出
-//                            else -> 0
-//                        }
-//                    }
-//                    val totalValue = records.sumOf { record ->
-//                        when (record.transactionType) {
-//                            0 -> record.totalAmount // 0: 買入
-//                            1 -> -record.totalAmount // 1: 賣出
-//                            else -> 0.0
-//                        }
-//                    }
-//                    totalQuantity to totalValue
-//                }
-//        }
-//    }
-//
-//    //帳戶總成本
-//    fun getTotalCost(accountId: Int): LiveData<Double> {
-//        return getCurrentHoldings(accountId).map { holdings ->
-//            holdings.values.sumOf { (_, totalValue) -> totalValue }
-//        }
-//    }
+
+    fun getRealizedGainsAndLosses(accountId: Int): LiveData<Map<String, RealizedResult>> {
+        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
+            val results = mutableMapOf<String, RealizedResult>()
+
+            stockRecords.groupBy { it.stockSymbol }.forEach { (stockSymbol, records) ->
+                var realizedIncome = 0.0
+                var realizedExpenditure = 0.0
+                var dividendIncome = 0.0
+                var totalCommission = 0.0
+                var totalTransactionTax = 0.0
+
+                val buyRecords = mutableListOf<Pair<Int, Double>>() // Pair of quantity and price
+
+                for (record in records) {
+                    totalCommission += record.commission
+                    totalTransactionTax += record.transactionTax
+
+                    when (record.transactionType) {
+                        0 -> { // 买入
+                            buyRecords.add(record.quantity to (record.totalAmount / record.quantity))
+                        }
+                        1 -> { // 卖出
+                            var quantityToSell = record.quantity
+                            var totalCostForThisSell = 0.0
+
+                            while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
+                                val (buyQuantity, buyPrice) = buyRecords.removeAt(0)
+                                val quantityToRemove = minOf(quantityToSell, buyQuantity)
+                                quantityToSell -= quantityToRemove
+                                totalCostForThisSell += quantityToRemove * buyPrice
+
+                                if (buyQuantity > quantityToRemove) {
+                                    buyRecords.add(0, (buyQuantity - quantityToRemove) to buyPrice)
+                                }
+                            }
+
+                            realizedExpenditure += totalCostForThisSell // 卖出的对应买入成本
+                            realizedIncome += record.totalAmount // 卖出收入
+                        }
+                        2 -> { // 股利
+                            dividendIncome += record.quantity * record.pricePerUnit // 股利收入
+                        }
+                    }
+                }
+
+                results[stockSymbol] = RealizedResult(
+                    buyCost = realizedExpenditure,
+                    sellIncome = realizedIncome,
+                    dividendIncome = dividendIncome,
+                    totalCommission = totalCommission,
+                    totalTransactionTax = totalTransactionTax
+                )
+            }
+
+            results
+        }
+    }
 }
 
 class StockRecordViewModelFactory(

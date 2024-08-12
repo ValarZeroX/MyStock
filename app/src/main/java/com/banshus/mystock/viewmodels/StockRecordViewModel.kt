@@ -1,5 +1,8 @@
 package com.banshus.mystock.viewmodels
 
+import android.util.Log
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -8,16 +11,17 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
 import com.banshus.mystock.data.entities.StockRecord
+import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.repository.RealizedResult
 import com.banshus.mystock.repository.StockRecordRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
 
-data class RealizedResult(
-    val buyCost: Double,       // 买入成本
-    val sellIncome: Double,    // 卖出收入
-    val dividendIncome: Double, // 股利收入
-    val totalCommission: Double, // 手续费总和
-    val totalTransactionTax: Double // 交易税总和
+data class StockMetrics(
+    val totalCostBasis: Double,
+    val totalPrice: Double,
+    val totalProfit: Double,
+    val totalProfitPercent: Double
 )
 
 class StockRecordViewModel(
@@ -37,116 +41,62 @@ class StockRecordViewModel(
         }
     }
 
-//    fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>> {
-//        return repository.getStockRecordsByAccountId(accountId)
-//    }
-
     fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
-        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
-            val holdings = stockRecords.groupBy { it.stockSymbol }
-                .mapValues { (_, records) ->
-                    var totalQuantity = 0
-                    var costBasis = 0.0
+        return repository.getHoldingsAndTotalCost(accountId)
+    }
 
-                    val buyRecords = mutableListOf<Pair<Int, Double>>()
+    fun getRealizedGainsAndLosses(accountId: Int): LiveData<Map<String, RealizedResult>> {
+        return repository.getRealizedGainsAndLosses(accountId)
+    }
 
-                    for (record in records) {
-                        when (record.transactionType) {
-                            0 -> {
-                                totalQuantity += record.quantity
-                                buyRecords.add(record.quantity to (record.totalAmount / record.quantity))
-                                costBasis += record.totalAmount
-                            }
+    private val _stockSymbols = mutableStateOf<List<StockSymbol>>(emptyList())
+    private val stockSymbols: State<List<StockSymbol>> = _stockSymbols
 
-                            1 -> {
-                                if (totalQuantity > 0) {
-                                    var quantityToSell = record.quantity
+    fun setStockSymbols(symbols: List<StockSymbol>) {
+        _stockSymbols.value = symbols
+    }
 
-                                    while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
-                                        val (buyQuantity, buyPrice) = buyRecords.removeAt(0)
-                                        val quantityToRemove = minOf(quantityToSell, buyQuantity)
-                                        quantityToSell -= quantityToRemove
-                                        totalQuantity -= quantityToRemove
-                                        costBasis -= quantityToRemove * buyPrice
-                                        if (buyQuantity > quantityToRemove) {
-                                            buyRecords.add(
-                                                0,
-                                                (buyQuantity - quantityToRemove) to buyPrice
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
+    fun calculateTotalCostAndProfit(accountId: Int): LiveData<StockMetrics> {
+        return getHoldingsAndTotalCost(accountId).map { (holdings, _) ->
+            val totalCostBasis = holdings.values.sumOf { (_, costBasis) -> costBasis }
 
-                    totalQuantity to costBasis
-                }
+            val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
+                val (totalQuantity, _) = holdingData
+                val currentPrice = stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
+                totalQuantity * currentPrice
+            }
 
-            val totalCost = holdings.values.sumOf { (_, costBasis) -> costBasis }
+            val totalProfit = totalPrice - totalCostBasis
+            val totalProfitPercent = if (totalCostBasis != 0.0) {
+                (totalProfit / totalCostBasis) * 100
+            } else {
+                0.0
+            }
 
-            holdings to totalCost
-
+            StockMetrics(totalCostBasis, totalPrice, totalProfit, totalProfitPercent)
         }
     }
 
+    fun calculateTotalCostAndProfitForAllAccounts(): LiveData<Map<Int, StockMetrics>> {
+        return repository.getHoldingsAndTotalCostForAllAccounts().map { holdingsByAccount ->
+            holdingsByAccount.mapValues { (_, holdingsAndTotalCost) ->
+                val (holdings, _) = holdingsAndTotalCost
 
-
-    fun getRealizedGainsAndLosses(accountId: Int): LiveData<Map<String, RealizedResult>> {
-        return repository.getStockRecordsByAccountId(accountId).map { stockRecords ->
-            val results = mutableMapOf<String, RealizedResult>()
-
-            stockRecords.groupBy { it.stockSymbol }.forEach { (stockSymbol, records) ->
-                var realizedIncome = 0.0
-                var realizedExpenditure = 0.0
-                var dividendIncome = 0.0
-                var totalCommission = 0.0
-                var totalTransactionTax = 0.0
-
-                val buyRecords = mutableListOf<Pair<Int, Double>>() // Pair of quantity and price
-
-                for (record in records) {
-                    totalCommission += record.commission
-                    totalTransactionTax += record.transactionTax
-
-                    when (record.transactionType) {
-                        0 -> { // 买入
-                            buyRecords.add(record.quantity to (record.totalAmount / record.quantity))
-                        }
-                        1 -> { // 卖出
-                            var quantityToSell = record.quantity
-                            var totalCostForThisSell = 0.0
-
-                            while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
-                                val (buyQuantity, buyPrice) = buyRecords.removeAt(0)
-                                val quantityToRemove = minOf(quantityToSell, buyQuantity)
-                                quantityToSell -= quantityToRemove
-                                totalCostForThisSell += quantityToRemove * buyPrice
-
-                                if (buyQuantity > quantityToRemove) {
-                                    buyRecords.add(0, (buyQuantity - quantityToRemove) to buyPrice)
-                                }
-                            }
-
-                            realizedExpenditure += totalCostForThisSell // 卖出的对应买入成本
-                            realizedIncome += record.totalAmount // 卖出收入
-                        }
-                        2 -> { // 股利
-                            dividendIncome += record.quantity * record.pricePerUnit // 股利收入
-                        }
-                    }
+                val totalCostBasis = holdings.values.sumOf { (_, costBasis) -> costBasis }
+                val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
+                    val (totalQuantity, _) = holdingData
+                    val currentPrice = stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
+                    totalQuantity * currentPrice
+                }
+                val totalProfit = totalPrice - totalCostBasis
+                val totalProfitPercent = if (totalCostBasis != 0.0) {
+                    (totalProfit / totalCostBasis) * 100
+                } else {
+                    0.0
                 }
 
-                results[stockSymbol] = RealizedResult(
-                    buyCost = realizedExpenditure,
-                    sellIncome = realizedIncome,
-                    dividendIncome = dividendIncome,
-                    totalCommission = totalCommission,
-                    totalTransactionTax = totalTransactionTax
-                )
+                StockMetrics(totalCostBasis, totalPrice, totalProfit, totalProfitPercent)
             }
-
-            results
         }
     }
 }

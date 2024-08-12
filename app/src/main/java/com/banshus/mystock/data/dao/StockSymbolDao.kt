@@ -19,6 +19,9 @@ interface StockSymbolDao {
     @Query("UPDATE stock_symbol SET stockName = :newName WHERE stockSymbol = :symbol AND stockMarket = :marketId")
     suspend fun updateStockName(symbol: String, marketId: Int, newName: String)
 
+    @Query("SELECT * FROM stock_symbol ORDER BY stockSymbol ASC")
+    suspend fun fetchAllStockSymbols(): List<StockSymbol>
+
 //    @Query("SELECT COUNT(*) FROM stock_symbol WHERE stockSymbol = :stockSymbol AND stockMarket = :stockMarket")
 //    suspend fun countBySymbolAndMarket(stockSymbol: String, stockMarket: Int): Int
 

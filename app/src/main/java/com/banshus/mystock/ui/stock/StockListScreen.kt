@@ -75,7 +75,8 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
-import com.banshus.mystock.viewmodels.RealizedResult
+import com.banshus.mystock.repository.RealizedResult
+import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
@@ -95,34 +96,19 @@ fun StockListScreen(
     val decimalFormat = DecimalFormat("#.00")
     val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 
-//    val context = LocalContext.current
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = StockAccountViewModelFactory(
-//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//        )
-//    )
-//    val stockRecordRepository =
-//        StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-//    val stockSymbolRepository =
-//        StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-//
-//    val stockRecordViewModel: StockRecordViewModel = viewModel(
-//        factory = StockRecordViewModelFactory(stockRecordRepository)
-//    )
-//
-//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-//        factory = StockSymbolViewModelFactory(
-//            stockSymbolRepository
-//        )
-//    )
-
-
     val stockAccount by stockAccountViewModel.getStockAccountByID(
         selectedAccountForStockList?.accountId ?: -1
     ).observeAsState()
 
     val stockSymbols by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
 
+    LaunchedEffect(stockSymbols) {
+        stockRecordViewModel.setStockSymbols(stockSymbols)
+    }
+
+    val metrics by stockRecordViewModel.calculateTotalCostAndProfit(
+        accountId = selectedAccountForStockList?.accountId ?: -1
+    ).observeAsState(StockMetrics(0.0, 0.0, 0.0, 0.0))
 
     var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 
@@ -145,58 +131,26 @@ fun StockListScreen(
     val holdingsAndTotalCost by stockRecordViewModel.getHoldingsAndTotalCost(
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(Pair(emptyMap(), 0.0))
-    val (holdings, totalCost) = holdingsAndTotalCost
+    val (holdings, _) = holdingsAndTotalCost
 //    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
 
 
     //已實現
-    val realizedGainsAndLosses by stockRecordViewModel.getRealizedGainsAndLosses(
-        accountId = selectedAccountForStockList?.accountId ?: -1
-    ).observeAsState(emptyMap())
-Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
-
-    val totalRealizedResult = realizedGainsAndLosses.values.fold(RealizedResult(0.0, 0.0, 0.0, 0.0, 0.0)) { acc, result ->
-        RealizedResult(
-            buyCost = acc.buyCost + result.buyCost,
-            sellIncome = acc.sellIncome + result.sellIncome,
-            dividendIncome = acc.dividendIncome + result.dividendIncome,
-            totalCommission = acc.totalCommission + result.totalCommission,
-            totalTransactionTax = acc.totalTransactionTax + result.totalTransactionTax
-        )
-    }
-    Log.d("totalRealizedResult", "$totalRealizedResult")
-//    LaunchedEffect(totalRealizedResult) {
-//        Log.d("totalRealizedResult", "$totalRealizedResult")
+//    val realizedGainsAndLosses by stockRecordViewModel.getRealizedGainsAndLosses(
+//        accountId = selectedAccountForStockList?.accountId ?: -1
+//    ).observeAsState(emptyMap())
+//Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
+//
+//    val totalRealizedResult = realizedGainsAndLosses.values.fold(RealizedResult(0.0, 0.0, 0.0, 0.0, 0.0)) { acc, result ->
+//        RealizedResult(
+//            buyCost = acc.buyCost + result.buyCost,
+//            sellIncome = acc.sellIncome + result.sellIncome,
+//            dividendIncome = acc.dividendIncome + result.dividendIncome,
+//            totalCommission = acc.totalCommission + result.totalCommission,
+//            totalTransactionTax = acc.totalTransactionTax + result.totalTransactionTax
+//        )
 //    }
-    //總成本
-    var totalCostBasis = 0.0
-
-//    var totalPrice by remember { mutableDoubleStateOf(0.0) }
-
-
-    for ((_, pair) in holdings) {
-        val (_, costBasis) = pair
-//        totalQuantityAll += quantity
-        totalCostBasis += costBasis
-    }
-
-    //總市值
-    val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
-        val (totalQuantity, totalValue) = holdingData
-        val currentPrice = stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
-        totalQuantity * currentPrice
-    }
-
-    //未實現損益
-    var totalProfit = 0.0
-    totalProfit = totalPrice - totalCostBasis
-    //未實現損益率
-    var totalProfitPercent = 0.0
-    totalProfitPercent = if (totalCostBasis != 0.0) {
-        (totalProfit / totalCostBasis) * 100
-    } else {
-        0.0
-    }
+//    Log.d("totalRealizedResult", "$totalRealizedResult")
 
 //    LaunchedEffect(computedTotalPrice) {
 //        totalPrice = computedTotalPrice
@@ -217,14 +171,14 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
     }
 
     val profitColor = when {
-        totalProfit > 0 -> StockRed
-        totalProfit < 0 -> StockGreen
+        metrics.totalProfit > 0 -> StockRed
+        metrics.totalProfit < 0 -> StockGreen
         else -> MaterialTheme.colorScheme.onSurface
     }
 
     val profitPercentColor = when {
-        totalProfitPercent > 0 -> StockRed
-        totalProfitPercent < 0 -> StockGreen
+        metrics.totalProfitPercent > 0 -> StockRed
+        metrics.totalProfitPercent < 0 -> StockGreen
         else -> MaterialTheme.colorScheme.onSurface
     }
 
@@ -282,7 +236,7 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
                                     Row(
                                         modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
                                     ) {
-                                        Text(text = formatNumber(totalPrice), modifier = Modifier.weight(1f), fontSize = 24.sp)
+                                        Text(text = formatNumber(metrics.totalPrice), modifier = Modifier.weight(1f), fontSize = 24.sp)
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
@@ -294,9 +248,9 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = formatNumber(totalCostBasis), modifier = Modifier.weight(1f))
-                                        Text(text = formatNumber(totalProfit), modifier = Modifier.weight(1f), color = profitColor)
-                                        Text(text = "${formatNumber(totalProfitPercent)}%", modifier = Modifier.weight(1f), color = profitPercentColor )
+                                        Text(text = formatNumber(metrics.totalCostBasis), modifier = Modifier.weight(1f))
+                                        Text(text = formatNumber(metrics.totalProfit), modifier = Modifier.weight(1f), color = profitColor)
+                                        Text(text = "${formatNumber(metrics.totalProfitPercent)}%", modifier = Modifier.weight(1f), color = profitPercentColor )
                                     }
 //                                    Row(
 //                                        modifier = Modifier.fillMaxWidth()

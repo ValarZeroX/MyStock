@@ -9,6 +9,10 @@ class StockSymbolRepository(private val stockSymbolDao: StockSymbolDao) {
         return stockSymbolDao.fetchStockSymbolsListByMarket(stockMarket)
     }
 
+    suspend fun fetchAllStockSymbols(): List<StockSymbol> {
+        return stockSymbolDao.fetchAllStockSymbols() // 调用新方法
+    }
+
     suspend fun insertStockSymbol(stockSymbol: StockSymbol) {
         stockSymbolDao.insertStockSymbol(stockSymbol)
     }

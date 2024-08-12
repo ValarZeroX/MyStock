@@ -14,10 +14,21 @@ class StockSymbolViewModel(private val repository: StockSymbolRepository) : View
     private val _stockSymbolsListByMarket = MutableLiveData<List<StockSymbol>>()
     val stockSymbolsListByMarket: LiveData<List<StockSymbol>> = _stockSymbolsListByMarket
 
+    private val _allStockSymbols = MutableLiveData<List<StockSymbol>>()
+    val allStockSymbols: LiveData<List<StockSymbol>> = _allStockSymbols
+
+
     fun fetchStockSymbolsListByMarket(stockMarket: Int) {
         viewModelScope.launch {
             val stockSymbols = repository.fetchStockSymbolsListByMarket(stockMarket)
             _stockSymbolsListByMarket.value = stockSymbols
+        }
+    }
+
+    fun fetchAllStockSymbols() {
+        viewModelScope.launch {
+            val stockSymbols = repository.fetchAllStockSymbols()
+            _allStockSymbols.value = stockSymbols
         }
     }
 

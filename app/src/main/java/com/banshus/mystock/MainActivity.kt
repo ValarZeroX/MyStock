@@ -141,7 +141,7 @@ fun MyApp(
     val stockViewModel: StockViewModel = viewModel()
     NavHost(navController = navController, startDestination = "StockAccountScreen") {
         composable("stockAccountScreen") {
-            StockAccountScreen(navController, stockViewModel, stockAccountViewModel)
+            StockAccountScreen(navController, stockViewModel, stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
         composable("addAccountScreen") {
             AddAccountScreen(navController, stockAccountViewModel)

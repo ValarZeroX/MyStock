@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
@@ -88,27 +92,8 @@ fun StockAddScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ) {
-//    val context = LocalContext.current
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = StockAccountViewModelFactory(
-//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//        )
-//    )
-//
-//    val stockRecordRepository = StockRecordRepository(AppDatabase.getDatabase(context).stockRecordDao())
-//    val stockRecordViewModel: StockRecordViewModel = viewModel(
-//        factory = StockRecordViewModelFactory(stockRecordRepository)
-//    )
-//
-//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-//        factory = StockSymbolViewModelFactory(
-//            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-//        )
-//    )
-
     //撈第一筆帳戶
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
-
 
     //日期
     val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -168,7 +153,7 @@ fun StockAddScreen(
     var selectedDiscount by remember {mutableDoubleStateOf(0.0) }
 
     val decimalFormat = DecimalFormat("#.00")
-    // Calculate commission based on quantity, price and commission percentage
+//     Calculate commission based on quantity, price and commission percentage
     val calculatedCommission = remember(stockQuantity, stockPrice, selectedCommissionDecimal) {
         val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
         val price = stockPrice.toDoubleOrNull() ?: 0.0
@@ -197,13 +182,40 @@ fun StockAddScreen(
             "0.0"
         }
     }
-
+//
     val priceName = when(selectedTransactionType) {
         0 -> "每股價格"
         1 -> "每股價格"
         else -> "每股股利"
     }
+    val accountText: String
+    if (firstStockAccount != null) {
+        if (selectedAccount == null) {
+            accountText = firstStockAccount?.account ?: "No account selected"
+            selectedAccountId = firstStockAccount?.accountId ?: 0
+            selectedStockMarket= firstStockAccount?.stockMarket ?: 0
+            selectedAutoCalculate = firstStockAccount?.autoCalculate ?: false
+            selectedCommissionDecimal = firstStockAccount?.commissionDecimal ?: 0.0
+            selectedTransactionTax = firstStockAccount?.transactionTaxDecimal ?: 0.0
+            selectedDiscount = firstStockAccount?.discount ?: 1.0
+        } else {
+            accountText = selectedAccount?.account ?: "No account selected"
+            selectedAccountId = selectedAccount?.accountId ?: 0
+            selectedStockMarket= selectedAccount?.stockMarket ?: 0
+            selectedAutoCalculate = selectedAccount?.autoCalculate ?: false
+            selectedCommissionDecimal = selectedAccount?.commissionDecimal ?: 0.0
+            selectedTransactionTax = selectedAccount?.transactionTaxDecimal ?: 0.0
+            selectedDiscount = selectedAccount?.discount ?: 1.0
+        }
+    } else {
+        accountText = "No account selected"
+    }
 
+
+    var isStockQuantityError by remember { mutableStateOf(false) }
+    var isStockPriceError by remember { mutableStateOf(false) }
+    val optionsTransactionType = listOf("買入", "賣出", "股利")
+    val optionsStockType = listOf("一般", "ETF")
     Scaffold(
         topBar = {
             AddHeader(
@@ -247,41 +259,29 @@ fun StockAddScreen(
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     if (firstStockAccount == null) {
-                        Button(
-                            onClick = {
-                                navController.navigate("addAccountScreen")
-                            }) {
-                            Text(text = "新增帳戶")
-                            Icon(
-                                imageVector = Icons.Filled.Add,
-                                contentDescription = "新增帳戶"
-                            )
-                        }
+                        AssistChip(
+                            onClick = { navController.navigate("addAccountScreen") },
+                            label = { Text("新增帳戶") },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.Add,
+                                    contentDescription = "新增帳戶",
+                                    Modifier.size(AssistChipDefaults.IconSize)
+                                )
+                            }
+                        )
                     } else {
-                        val accountText: String
-                        if (selectedAccount == null) {
-                            accountText = firstStockAccount?.account ?: "No account selected"
-                            selectedAccountId = firstStockAccount?.accountId ?: 0
-                            selectedStockMarket= firstStockAccount?.stockMarket ?: 0
-                            selectedAutoCalculate = firstStockAccount?.autoCalculate ?: false
-                            selectedCommissionDecimal = firstStockAccount?.commissionDecimal ?: 0.0
-                            selectedTransactionTax = firstStockAccount?.transactionTaxDecimal ?: 0.0
-                            selectedDiscount = firstStockAccount?.discount ?: 1.0
-                        } else {
-                            accountText = selectedAccount?.account ?: "No account selected"
-                            selectedAccountId = selectedAccount?.accountId ?: 0
-                            selectedStockMarket= selectedAccount?.stockMarket ?: 0
-                            selectedAutoCalculate = selectedAccount?.autoCalculate ?: false
-                            selectedCommissionDecimal = selectedAccount?.commissionDecimal ?: 0.0
-                            selectedTransactionTax = selectedAccount?.transactionTaxDecimal ?: 0.0
-                            selectedDiscount = selectedAccount?.discount ?: 1.0
-                        }
-                        Button(
-                            onClick = {
-                                navController.navigate("accountListScreen")
-                            }) {
-                            Text(text = accountText)
-                        }
+                        AssistChip(
+                            onClick = { navController.navigate("accountListScreen") },
+                            label = { Text(accountText) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.AccountBalance,
+                                    contentDescription = "帳戶",
+                                    Modifier.size(AssistChipDefaults.IconSize)
+                                )
+                            }
+                        )
                     }
                 }
             }
@@ -317,7 +317,6 @@ fun StockAddScreen(
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    var isStockQuantityError by remember { mutableStateOf(false) }
                     OutlinedTextField(
                         value = stockQuantity,
                         onValueChange = { newText ->
@@ -349,7 +348,6 @@ fun StockAddScreen(
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    var isStockPriceError by remember { mutableStateOf(false) }
                     OutlinedTextField(
                         value = stockPrice,
                         onValueChange = { newText ->
@@ -469,15 +467,14 @@ fun StockAddScreen(
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    val options = listOf("買入", "賣出", "股利")
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        options.forEachIndexed { index, label ->
+                        optionsTransactionType.forEachIndexed { index, label ->
                             SegmentedButton(
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
-                                    count = options.size
+                                    count = optionsTransactionType.size
                                 ),
                                 onClick = { selectedTransactionType = index },
                                 selected = index == selectedTransactionType,
@@ -503,15 +500,14 @@ fun StockAddScreen(
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    val options = listOf("一般", "ETF")
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        options.forEachIndexed { index, label ->
+                        optionsStockType.forEachIndexed { index, label ->
                             SegmentedButton(
                                 shape = SegmentedButtonDefaults.itemShape(
                                     index = index,
-                                    count = options.size
+                                    count = optionsStockType.size
                                 ),
                                 onClick = { selectedStockTypeIndex = index },
                                 selected = index == selectedStockTypeIndex,

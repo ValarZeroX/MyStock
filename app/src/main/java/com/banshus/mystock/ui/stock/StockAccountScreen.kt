@@ -1,26 +1,27 @@
 package com.banshus.mystock.ui.stock
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,34 +30,43 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.StockViewModel
-import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.ui.theme.StockOrange
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
-import java.text.NumberFormat
-import java.util.Locale
+import com.banshus.mystock.viewmodels.StockMetrics
+import com.banshus.mystock.viewmodels.StockRecordViewModel
+import com.banshus.mystock.viewmodels.StockSymbolViewModel
 
 @Composable
-fun StockAccountScreen(navController: NavHostController, stockViewModel: StockViewModel,stockAccountViewModel: StockAccountViewModel) {
+fun StockAccountScreen(
+    navController: NavHostController,
+    stockViewModel: StockViewModel,
+    stockAccountViewModel: StockAccountViewModel,
+    stockRecordViewModel: StockRecordViewModel,
+    stockSymbolViewModel: StockSymbolViewModel,
+) {
     Scaffold(
         topBar = {
             AccountHeader(navController)
         },
     ) { innerPadding ->
-        StockMainScreen(innerPadding, navController, stockViewModel, stockAccountViewModel)
+        StockMainScreen(
+            innerPadding,
+            navController,
+            stockViewModel,
+            stockAccountViewModel,
+            stockRecordViewModel,
+            stockSymbolViewModel
+        )
     }
 }
 
@@ -65,17 +75,30 @@ fun StockMainScreen(
     innerPadding: PaddingValues,
     navController: NavHostController,
     stockViewModel: StockViewModel,
-    stockAccountViewModel: StockAccountViewModel
+    stockAccountViewModel: StockAccountViewModel,
+    stockRecordViewModel: StockRecordViewModel,
+    stockSymbolViewModel: StockSymbolViewModel,
 ) {
-//    val context = LocalContext.current
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = StockAccountViewModelFactory(
-//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//        )
-//    )
+    val stockSymbols by stockSymbolViewModel.allStockSymbols.observeAsState(emptyList())
+    //calculateTotalCostAndProfitForAllAccounts 需要
+    stockSymbolViewModel.fetchAllStockSymbols()
+    LaunchedEffect(stockSymbols) {
+        stockRecordViewModel.setStockSymbols(stockSymbols)
+    }
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
-//    val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
+    val costAndProfitForAllAccounts by stockRecordViewModel.calculateTotalCostAndProfitForAllAccounts()
+        .observeAsState(emptyMap())
+//    val stockRecordsHoldings by stockRecordViewModel.getHoldingsAndTotalCostGroupedByAccount().observeAsState(initial = emptyMap())
 
+
+//    val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
+//    Log.d("costAndProfitForAllAccounts", "$costAndProfitForAllAccounts")
+//    Log.d("stockRecordsHoldings", "$stockRecordsHoldings")
+//    LaunchedEffect(costAndProfitForAllAccounts) {
+//        costAndProfitForAllAccounts.let {
+//            Log.d("TotalCostAndProfit", it.toString())
+//        }
+//    }
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -83,6 +106,9 @@ fun StockMainScreen(
             .padding(innerPadding)
     ) {
         items(stockAccounts) { stockAccount ->
+//            val holdingsAndTotalCost = stockRecordsHoldings[stockAccount.accountId]
+//            val realizedGainsAndLosses = stockRecordsRealizedGainsAndLosses[stockAccount.accountId]
+//            val totalCostBasis = holdingsAndTotalCost?.second ?: 0.0
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -103,12 +129,22 @@ fun StockMainScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         Text(
                             text = stockAccount.account,
                             style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(bottom = 8.dp)
+                            modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+                        )
+                        AssistChip(
+                            onClick = {  },
+                            label = { Text(stockAccount.currency) },
+                            leadingIcon = {
+                                Icon(
+                                    Icons.Filled.AttachMoney,
+                                    contentDescription = "Localized description",
+                                    Modifier.size(AssistChipDefaults.IconSize)
+                                )
+                            }
                         )
                         IconButton(onClick = {
                         }) {
@@ -130,37 +166,66 @@ fun StockMainScreen(
                     ) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(text = "帳戶現值", style = MaterialTheme.typography.bodyMedium)
-                            Text(text = "投資成本", style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
                             Text(
-                                text = formatNumber(700000),
-                                style = MaterialTheme.typography.bodyMedium
+                                text = "帳戶現值",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = formatNumber(600000),
-                                style = MaterialTheme.typography.bodyMedium
+                                text = "投資成本",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
                             )
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "報酬率", style = MaterialTheme.typography.bodyMedium)
-                            Text(text = "實現損益", style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                text = formatNumber(
+                                    costAndProfitForAllAccounts[stockAccount.accountId]?.totalPrice
+                                        ?: 0.0
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = formatNumber(
+                                    costAndProfitForAllAccounts[stockAccount.accountId]?.totalCostBasis
+                                        ?: 0.0
+                                ),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                         Row(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "13.4%", color = StockOrange)
-                            Text(text = formatNumber(35938), color = StockOrange)
+                            Text(
+                                text = "實現損益",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "報酬率",
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                text = formatNumber(
+                                    costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfit
+                                        ?: 0.0
+                                ), color = StockOrange, modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = "${formatNumber(costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfitPercent ?: 0.0)} %",
+                                color = StockOrange,
+                                modifier = Modifier.weight(1f)
+                            )
                         }
                     }
                 }

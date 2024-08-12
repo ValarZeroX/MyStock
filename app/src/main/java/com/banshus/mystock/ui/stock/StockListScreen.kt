@@ -12,14 +12,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -46,6 +51,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
@@ -142,12 +148,13 @@ fun StockListScreen(
     val (holdings, totalCost) = holdingsAndTotalCost
 //    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
 
+
+    //已實現
     val realizedGainsAndLosses by stockRecordViewModel.getRealizedGainsAndLosses(
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(emptyMap())
 Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
 
-    //已實現
     val totalRealizedResult = realizedGainsAndLosses.values.fold(RealizedResult(0.0, 0.0, 0.0, 0.0, 0.0)) { acc, result ->
         RealizedResult(
             buyCost = acc.buyCost + result.buyCost,
@@ -180,6 +187,17 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
         totalQuantity * currentPrice
     }
 
+    //未實現損益
+    var totalProfit = 0.0
+    totalProfit = totalPrice - totalCostBasis
+    //未實現損益率
+    var totalProfitPercent = 0.0
+    totalProfitPercent = if (totalCostBasis != 0.0) {
+        (totalProfit / totalCostBasis) * 100
+    } else {
+        0.0
+    }
+
 //    LaunchedEffect(computedTotalPrice) {
 //        totalPrice = computedTotalPrice
 //    }
@@ -196,6 +214,18 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
 
     stockAccount?.let {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
+    }
+
+    val profitColor = when {
+        totalProfit > 0 -> StockRed
+        totalProfit < 0 -> StockGreen
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+
+    val profitPercentColor = when {
+        totalProfitPercent > 0 -> StockRed
+        totalProfitPercent < 0 -> StockGreen
+        else -> MaterialTheme.colorScheme.onSurface
     }
 
     Scaffold(
@@ -236,27 +266,50 @@ Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = "帳戶市值", modifier = Modifier.weight(1f))
-                                        Text(text = "投資成本", modifier = Modifier.weight(1f))
+                                        Text(text = "帳戶市值", modifier = Modifier.weight(1f), fontSize = 24.sp)
+                                        AssistChip(
+                                            onClick = {  },
+                                            label = { Text("${stockAccount?.currency}") },
+                                            leadingIcon = {
+                                                Icon(
+                                                    Icons.Filled.AttachMoney,
+                                                    contentDescription = "Localized description",
+                                                    Modifier.size(AssistChipDefaults.IconSize)
+                                                )
+                                            }
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                                    ) {
+                                        Text(text = formatNumber(totalPrice), modifier = Modifier.weight(1f), fontSize = 24.sp)
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = formatNumber(totalPrice), modifier = Modifier.weight(1f))
+                                        Text(text = "帳戶成本", modifier = Modifier.weight(1f))
+                                        Text(text = "未實現損益", modifier = Modifier.weight(1f))
+                                        Text(text = "未實現損益率", modifier = Modifier.weight(1f))
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
                                         Text(text = formatNumber(totalCostBasis), modifier = Modifier.weight(1f))
+                                        Text(text = formatNumber(totalProfit), modifier = Modifier.weight(1f), color = profitColor)
+                                        Text(text = "${formatNumber(totalProfitPercent)}%", modifier = Modifier.weight(1f), color = profitPercentColor )
                                     }
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(text = "已實現損益", modifier = Modifier.weight(1f))
-                                        Text(text = "股利", modifier = Modifier.weight(1f))
-                                    }
-                                    Row(
-                                        modifier = Modifier.fillMaxWidth()
-                                    ) {
-                                        Text(text = formatNumber(totalRealizedResult.sellIncome), modifier = Modifier.weight(1f))
-                                        Text(text = formatNumber(totalRealizedResult.totalCommission), modifier = Modifier.weight(1f))
-                                    }
+//                                    Row(
+//                                        modifier = Modifier.fillMaxWidth()
+//                                    ) {
+//                                        Text(text = "已實現損益", modifier = Modifier.weight(1f))
+//                                        Text(text = "股利", modifier = Modifier.weight(1f))
+//                                    }
+//                                    Row(
+//                                        modifier = Modifier.fillMaxWidth()
+//                                    ) {
+//                                        Text(text = formatNumber(totalRealizedResult.sellIncome), modifier = Modifier.weight(1f))
+//                                        Text(text = formatNumber(totalRealizedResult.dividendIncome), modifier = Modifier.weight(1f))
+//                                    }
                                 }
 //                                Row {
 //

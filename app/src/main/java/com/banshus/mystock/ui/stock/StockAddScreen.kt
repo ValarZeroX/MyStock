@@ -373,22 +373,25 @@ fun StockAddScreen(
                 }
             }
             item {
-                Row(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = "自動計算",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
-                    )
-                    Switch(
-                        checked = autoCalculateChecked,
-                        onCheckedChange = {
-                            autoCalculateChecked = it
-                        }
-                    )
+                //台股支援自動計算
+                if (selectedStockMarket == 0 ) {
+                    Row(
+                        modifier = Modifier.padding(10.dp)
+                    ) {
+                        Text(
+                            text = "自動計算",
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .width(100.dp)
+                                .padding(start = 10.dp, end = 20.dp),
+                        )
+                        Switch(
+                            checked = autoCalculateChecked,
+                            onCheckedChange = {
+                                autoCalculateChecked = it
+                            }
+                        )
+                    }
                 }
             }
             item {
@@ -500,7 +503,7 @@ fun StockAddScreen(
                             .width(100.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
-                    val options = listOf("一般", "ETF", "當沖")
+                    val options = listOf("一般", "ETF")
                     SingleChoiceSegmentedButtonRow(
                         modifier = Modifier.fillMaxWidth(),
                     ) {

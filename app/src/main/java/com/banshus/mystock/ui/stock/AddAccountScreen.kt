@@ -108,8 +108,8 @@ fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: Sto
                     // 在保存時，將帳戶名稱和所選幣別儲存到數據庫
 //                    val currencyCode = selectedCurrency?.code ?: ""
                     val currencyCode = when (selectedStockMarketIndex) {
-                        1 -> "TWD"
-                        2 -> "USD"
+                        0 -> "TWD"
+                        1 -> "USD"
                         else -> "TWD"
                     }
 
@@ -197,27 +197,27 @@ fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: Sto
                 }
             }
 
+            if (selectedStockMarketIndex == 0) {
+                Row(
+                    modifier = Modifier.padding(15.dp)
+                ) {
+                    Text(
+                        text = "進階設定",
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(100.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
 
-            Row(
-                modifier = Modifier.padding(15.dp)
-            ) {
-                Text(
-                    text = "進階設定",
-                    modifier = Modifier
-                        .align(Alignment.CenterVertically)
-                        .width(100.dp)
-                        .padding(start = 10.dp, end = 20.dp),
-                )
-
-                Switch(
-                    checked = checked,
-                    onCheckedChange = {
-                        checked = it
-                    }
-                )
+                    Switch(
+                        checked = checked,
+                        onCheckedChange = {
+                            checked = it
+                        }
+                    )
+                }
             }
-
-            if (checked) {
+            if (checked && selectedStockMarketIndex == 0) {
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
                         text = "手續費",

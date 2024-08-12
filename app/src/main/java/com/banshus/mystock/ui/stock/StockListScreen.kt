@@ -49,6 +49,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -75,6 +77,7 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.repository.RealizedResult
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
@@ -170,17 +173,8 @@ fun StockListScreen(
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
     }
 
-    val profitColor = when {
-        metrics.totalProfit > 0 -> StockRed
-        metrics.totalProfit < 0 -> StockGreen
-        else -> MaterialTheme.colorScheme.onSurface
-    }
-
-    val profitPercentColor = when {
-        metrics.totalProfitPercent > 0 -> StockRed
-        metrics.totalProfitPercent < 0 -> StockGreen
-        else -> MaterialTheme.colorScheme.onSurface
-    }
+    val profitColor = getProfitColor(metrics.totalProfit, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
+    val profitPercentColor = getProfitColor(metrics.totalProfitPercent, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
 
     Scaffold(
         topBar = {
@@ -347,7 +341,9 @@ fun StockListScreen(
                                             stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice
                                                 ?: 0.0
                                         val marketValue = totalQuantity * currentPrice
-//                                        totalPrice += marketValue
+                                        val profitValue =  marketValue - totalValue
+                                        val profitPercentValue = (profitValue / totalValue) * 100
+                                        val profitValueColor = getProfitColor(profitValue, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
                                         ListItem(
                                             headlineContent = { Text(text = "$stockSymbol ($stockName)") },
                                             supportingContent = {
@@ -367,10 +363,6 @@ fun StockListScreen(
                                                             "總成本",
                                                             modifier = Modifier.weight(1f)
                                                         )
-                                                        Text(
-                                                            "市值",
-                                                            modifier = Modifier.weight(1f)
-                                                        )
                                                     }
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth()
@@ -387,9 +379,47 @@ fun StockListScreen(
                                                             formatNumber(totalValue),
                                                             modifier = Modifier.weight(1f)
                                                         )
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ){
+                                                        Text(
+                                                            "市值",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "損益",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            "損益率",
+                                                            modifier = Modifier.weight(1f)
+                                                        )
+                                                    }
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth()
+                                                    ){
                                                         Text(
                                                             formatNumber(marketValue),
                                                             modifier = Modifier.weight(1f)
+                                                        )
+                                                        Text(
+                                                            formatNumber(profitValue),
+                                                            modifier = Modifier.weight(1f),
+                                                            color = profitValueColor,
+//                                                            style = TextStyle(
+//                                                                fontWeight = FontWeight.Bold,
+//                                                                fontSize = 16.sp
+//                                                            )
+                                                        )
+                                                        Text(
+                                                            "${formatNumber(profitPercentValue)}%",
+                                                            modifier = Modifier.weight(1f),
+                                                            color = profitValueColor,
+//                                                            style = TextStyle(
+//                                                                fontWeight = FontWeight.Bold,
+//                                                                fontSize = 16.sp
+//                                                            )
                                                         )
                                                     }
                                                 }

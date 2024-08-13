@@ -4,6 +4,7 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -167,7 +168,7 @@ fun StockListScreen(
 
 
 
-    var selectedTabIndex by remember { mutableIntStateOf(0) }
+//    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     stockAccount?.let {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
@@ -175,6 +176,8 @@ fun StockListScreen(
 
     val profitColor = getProfitColor(metrics.totalProfit, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
     val profitPercentColor = getProfitColor(metrics.totalProfitPercent, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
+
+    var selectedTabIndex by stockViewModel.selectedTabIndex
 
     Scaffold(
         topBar = {
@@ -470,7 +473,21 @@ fun StockListScreen(
                                     2 -> "每股股利"
                                     else -> "每股價格"
                                 }
+                                //時間
+                                val recordDateMillis = record.transactionDate
+                                val dateTime = Instant.ofEpochMilli(recordDateMillis)
+                                    .atZone(ZoneId.systemDefault())
+                                    .toLocalDateTime()
+                                val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+                                val formattedDateTime = dateTime.format(formatter)
                                 ListItem(
+                                    modifier = Modifier.clickable {
+                                        stockAccount?.let { nonNullAccount ->
+                                            stockViewModel.updateSelectedAccount(nonNullAccount)
+                                        }
+                                        stockViewModel.updateSelectedStock(record)
+                                        navController.navigate("stockDetailScreen")
+                                    },
                                     headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
                                     supportingContent = {
                                         Column {
@@ -503,11 +520,7 @@ fun StockListScreen(
                                     trailingContent = {
                                         Column {
                                             Text(
-                                                text = "${
-                                                    Instant.ofEpochMilli(record.transactionDate)
-                                                        .atZone(ZoneId.systemDefault())
-                                                        .toLocalDate()
-                                                }"
+                                                text = formattedDateTime
                                             )
                                             Text(
                                                 text = transactionType

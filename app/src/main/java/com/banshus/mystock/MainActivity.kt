@@ -40,6 +40,7 @@ import com.banshus.mystock.ui.stock.AccountHeader
 import com.banshus.mystock.ui.stock.AccountListScreen
 import com.banshus.mystock.ui.stock.AddAccountScreen
 import com.banshus.mystock.ui.stock.StockAccountScreen
+import com.banshus.mystock.ui.stock.StockDetailScreen
 import com.banshus.mystock.ui.stock.StockListScreen
 import com.banshus.mystock.ui.theme.MyStockTheme
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -166,6 +167,9 @@ fun MyApp(
         }
         composable("stockListScreen") {
             StockListScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
+        }
+        composable("stockDetailScreen") {
+            StockDetailScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
     }
 }

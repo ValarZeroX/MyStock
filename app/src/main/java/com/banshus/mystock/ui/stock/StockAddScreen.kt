@@ -55,6 +55,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.StockRecord
@@ -214,8 +215,8 @@ fun StockAddScreen(
 
     var isStockQuantityError by remember { mutableStateOf(false) }
     var isStockPriceError by remember { mutableStateOf(false) }
-    val optionsTransactionType = listOf("買入", "賣出", "股利")
-    val optionsStockType = listOf("一般", "ETF")
+    val optionsTransactionType = SharedOptions.optionsTransactionType
+    val optionsStockType = SharedOptions.optionsStockType
     Scaffold(
         topBar = {
             AddHeader(
@@ -586,7 +587,7 @@ fun StockAddScreen(
 @Composable
 fun AddHeader(
     onSaveStockRecord: () -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
     ) {
     CenterAlignedTopAppBar(
         title = {

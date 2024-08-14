@@ -41,6 +41,12 @@ class StockRecordViewModel(
         }
     }
 
+    fun updateStockRecord(stockRecord: StockRecord) {
+        viewModelScope.launch {
+            repository.updateStockRecord(stockRecord)
+        }
+    }
+
     fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
         return repository.getHoldingsAndTotalCost(accountId)
     }

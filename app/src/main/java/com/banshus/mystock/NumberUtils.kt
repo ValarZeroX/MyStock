@@ -23,6 +23,18 @@ object NumberUtils {
         return decimalFormat.format(number)
     }
 
+    fun formatNumberNoDecimalPoint(number: Int): String {
+        // 使用不带小数点的格式化模式
+        val decimalFormat = DecimalFormat("#,##0")
+        return decimalFormat.format(number)
+    }
+
+    fun formatNumberNoDecimalPoint(number: Double): String {
+        // 使用不带小数点的格式化模式
+        val decimalFormat = DecimalFormat("#,##0")
+        return decimalFormat.format(number)
+    }
+
     fun getProfitColor(value: Double, positiveColor: Color, negativeColor: Color, defaultColor: Color): Color {
         return when {
             value > 0 -> positiveColor

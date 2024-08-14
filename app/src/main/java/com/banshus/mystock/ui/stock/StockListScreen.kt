@@ -4,11 +4,13 @@ import android.graphics.Color
 import android.graphics.Typeface
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,16 +19,17 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,36 +44,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableDoubleStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
-import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.StockAccount
-import com.banshus.mystock.repository.StockAccountRepository
-import com.banshus.mystock.repository.StockRecordRepository
-import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 import com.banshus.mystock.viewmodels.StockRecordViewModel
-import com.banshus.mystock.viewmodels.StockRecordViewModelFactory
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
-import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -78,8 +69,10 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
-import com.banshus.mystock.repository.RealizedResult
+import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
@@ -167,18 +160,43 @@ fun StockListScreen(
 //    }
 
 
-
 //    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     stockAccount?.let {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
     }
 
-    val profitColor = getProfitColor(metrics.totalProfit, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
-    val profitPercentColor = getProfitColor(metrics.totalProfitPercent, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
+    val profitColor = getProfitColor(
+        metrics.totalProfit,
+        StockRed,
+        StockGreen,
+        MaterialTheme.colorScheme.onSurface
+    )
+    val profitPercentColor = getProfitColor(
+        metrics.totalProfitPercent,
+        StockRed,
+        StockGreen,
+        MaterialTheme.colorScheme.onSurface
+    )
 
     var selectedTabIndex by stockViewModel.selectedTabIndex
+    Log.d("stockAccount", "$stockAccount")
 
+//    val isLoading = remember { mutableStateOf(true) }
+//
+//    LaunchedEffect(stockAccount) {
+//        if (stockAccount != null) {
+//            isLoading.value = false
+//        }
+//    }
+//
+//    if (isLoading.value) {
+//        // 显示加载指示器
+//        CircularProgressIndicator()
+//    } else {
+//        // 显示数据
+//        // 你的界面代码
+//    }
     Scaffold(
         topBar = {
             StockListHeader(navController, stockAccount, stockViewModel)
@@ -217,23 +235,82 @@ fun StockListScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = "帳戶市值", modifier = Modifier.weight(1f), fontSize = 24.sp)
-                                        AssistChip(
-                                            onClick = {  },
-                                            label = { Text("${stockAccount?.currency}") },
-                                            leadingIcon = {
+                                        Text(
+                                            text = "帳戶市值",
+                                            modifier = Modifier.weight(1f),
+                                            fontSize = 24.sp
+                                        )
+//                                        Box(
+//                                            modifier = Modifier
+//                                                .border(
+//                                                    width = 1.dp,
+//                                                    color = Gray1,
+//                                                    shape = RoundedCornerShape(8.dp)
+//                                                )
+//                                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
+//                                        ) {
+//                                            Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
+//                                                Text(
+//                                                    text = optionStockMarket[stockAccount!!.stockMarket],
+//                                                    fontSize = 14.sp,
+//                                                    fontWeight = FontWeight.Bold
+//                                                )
+//                                            }
+//                                        }
+                                        Box(
+                                            modifier = Modifier
+                                                .border(
+                                                    width = 1.dp,
+                                                    color = Gray1,
+                                                    shape = RoundedCornerShape(8.dp)
+                                                )
+                                                .padding(
+                                                    top = 1.dp,
+                                                    bottom = 1.dp,
+                                                    start = 10.dp,
+                                                    end = 10.dp
+                                                )
+                                        ) {
+                                            Row(
+                                                modifier = Modifier.padding(vertical = 3.dp),
+                                                verticalAlignment = Alignment.CenterVertically
+                                            ) {
                                                 Icon(
                                                     Icons.Filled.AttachMoney,
                                                     contentDescription = "Localized description",
-                                                    Modifier.size(AssistChipDefaults.IconSize)
+                                                    modifier = Modifier.size(18.dp),
+                                                    tint = MaterialTheme.colorScheme.primary
+                                                )
+                                                Spacer(modifier = Modifier.width(4.dp))
+                                                Text(
+                                                    text = "${stockAccount?.currency}",
+                                                    fontSize = 14.sp,
+                                                    fontWeight = FontWeight.Bold
                                                 )
                                             }
-                                        )
+                                        }
+//                                        AssistChip(
+//                                            onClick = {  },
+//                                            label = { Text("${stockAccount?.currency}") },
+//                                            leadingIcon = {
+//                                                Icon(
+//                                                    Icons.Filled.AttachMoney,
+//                                                    contentDescription = "Localized description",
+//                                                    Modifier.size(AssistChipDefaults.IconSize)
+//                                                )
+//                                            }
+//                                        )
                                     }
                                     Row(
-                                        modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp)
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(bottom = 10.dp)
                                     ) {
-                                        Text(text = formatNumber(metrics.totalPrice), modifier = Modifier.weight(1f), fontSize = 24.sp)
+                                        Text(
+                                            text = formatNumber(metrics.totalPrice),
+                                            modifier = Modifier.weight(1f),
+                                            fontSize = 24.sp
+                                        )
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
@@ -245,9 +322,20 @@ fun StockListScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = formatNumber(metrics.totalCostBasis), modifier = Modifier.weight(1f))
-                                        Text(text = formatNumber(metrics.totalProfit), modifier = Modifier.weight(1f), color = profitColor)
-                                        Text(text = "${formatNumber(metrics.totalProfitPercent)}%", modifier = Modifier.weight(1f), color = profitPercentColor )
+                                        Text(
+                                            text = formatNumber(metrics.totalCostBasis),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = formatNumber(metrics.totalProfit),
+                                            modifier = Modifier.weight(1f),
+                                            color = profitColor
+                                        )
+                                        Text(
+                                            text = "${formatNumber(metrics.totalProfitPercent)}%",
+                                            modifier = Modifier.weight(1f),
+                                            color = profitPercentColor
+                                        )
                                     }
 //                                    Row(
 //                                        modifier = Modifier.fillMaxWidth()
@@ -344,9 +432,14 @@ fun StockListScreen(
                                             stockSymbols.find { it.stockSymbol == stockSymbol }?.stockPrice
                                                 ?: 0.0
                                         val marketValue = totalQuantity * currentPrice
-                                        val profitValue =  marketValue - totalValue
+                                        val profitValue = marketValue - totalValue
                                         val profitPercentValue = (profitValue / totalValue) * 100
-                                        val profitValueColor = getProfitColor(profitValue, StockRed, StockGreen, MaterialTheme.colorScheme.onSurface)
+                                        val profitValueColor = getProfitColor(
+                                            profitValue,
+                                            StockRed,
+                                            StockGreen,
+                                            MaterialTheme.colorScheme.onSurface
+                                        )
                                         ListItem(
                                             headlineContent = { Text(text = "$stockSymbol ($stockName)") },
                                             supportingContent = {
@@ -385,7 +478,7 @@ fun StockListScreen(
                                                     }
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth()
-                                                    ){
+                                                    ) {
                                                         Text(
                                                             "市值",
                                                             modifier = Modifier.weight(1f)
@@ -401,7 +494,7 @@ fun StockListScreen(
                                                     }
                                                     Row(
                                                         modifier = Modifier.fillMaxWidth()
-                                                    ){
+                                                    ) {
                                                         Text(
                                                             formatNumber(marketValue),
                                                             modifier = Modifier.weight(1f)
@@ -478,7 +571,8 @@ fun StockListScreen(
                                 val dateTime = Instant.ofEpochMilli(recordDateMillis)
                                     .atZone(ZoneId.systemDefault())
                                     .toLocalDateTime()
-                                val formatter = DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
+                                val formatter =
+                                    DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
                                 val formattedDateTime = dateTime.format(formatter)
                                 ListItem(
                                     modifier = Modifier.clickable {
@@ -502,7 +596,7 @@ fun StockListScreen(
                                                 modifier = Modifier.fillMaxWidth()
                                             ) {
                                                 Text(
-                                                    formatNumber(record.quantity),
+                                                    formatNumberNoDecimalPoint(record.quantity),
                                                     modifier = Modifier.weight(1f)
                                                 )
                                                 Text(
@@ -532,6 +626,7 @@ fun StockListScreen(
                                     }
                                 )
                                 HorizontalDivider()
+
                             }
                         }
                     }

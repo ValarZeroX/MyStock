@@ -2,17 +2,23 @@ package com.banshus.mystock.ui.stock
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
@@ -35,11 +41,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockOrange
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockMetrics
@@ -133,19 +143,52 @@ fun StockMainScreen(
                         Text(
                             text = stockAccount.account,
                             style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.padding(bottom = 8.dp).weight(1f)
+                            modifier = Modifier
+                                .padding(bottom = 8.dp)
+                                .weight(1f)
                         )
-                        AssistChip(
-                            onClick = {  },
-                            label = { Text(stockAccount.currency) },
-                            leadingIcon = {
+                        Box(
+                            modifier = Modifier
+                                .border(
+                                    width = 1.dp,
+                                    color = Gray1,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
+                        ) {
+                            Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = optionStockMarket[stockAccount.stockMarket],
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Box(
+                            modifier = Modifier
+                                .border(
+                                    width = 1.dp,
+                                    color = Gray1,
+                                    shape = RoundedCornerShape(8.dp)
+                                )
+                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
+                        ) {
+                            Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
                                 Icon(
                                     Icons.Filled.AttachMoney,
                                     contentDescription = "Localized description",
-                                    Modifier.size(AssistChipDefaults.IconSize)
+                                    modifier = Modifier.size(18.dp),
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Text(
+                                    text = stockAccount.currency,
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold
                                 )
                             }
-                        )
+                        }
                         IconButton(onClick = {
                         }) {
                             Icon(

@@ -19,6 +19,10 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         stockRecordDao.insertStockRecord(stockRecord)
     }
 
+    suspend fun updateStockRecord(stockRecord: StockRecord) {
+        stockRecordDao.updateStockRecord(stockRecord)
+    }
+
     fun getStockRecordsByDateRangeAndAccount(accountId: Int, startDate: Long, endDate: Long): LiveData<List<StockRecord>> {
         return stockRecordDao.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
     }

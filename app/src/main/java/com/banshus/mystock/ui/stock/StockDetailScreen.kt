@@ -63,6 +63,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
@@ -95,6 +96,13 @@ fun StockDetailScreen(
     var isStockQuantityError by remember { mutableStateOf(false) }
     var isStockPriceError by remember { mutableStateOf(false) }
 
+    // 手續費
+    var commission by remember { mutableStateOf("0") }
+    var isCommissionError by remember { mutableStateOf(false) }
+    // 證交稅
+    var transactionTax by remember { mutableStateOf("0") }
+    var isTransactionTaxError by remember { mutableStateOf(false) }
+
     //交易類別
     var selectedTransactionType by remember { mutableIntStateOf(0) }
     //股票類型
@@ -106,6 +114,8 @@ fun StockDetailScreen(
             selectedStockSymbol = stockSymbolList.find { it.stockSymbol == stock.stockSymbol }
             selectedTransactionType = selectedStock!!.transactionType
             selectedStockTypeIndex = selectedStock!!.stockType
+            commission = selectedStock!!.commission.toString()
+            transactionTax = selectedStock!!.transactionTax.toString()
         }
     }
     val priceName = when(selectedTransactionType) {
@@ -115,7 +125,6 @@ fun StockDetailScreen(
     }
     val optionsTransactionType = SharedOptions.optionsTransactionType
     val optionsStockType = SharedOptions.optionsStockType
-    Log.d("stock", "$selectedStock")
 
     //日期選擇棄
     val initialDate = selectedStock?.transactionDate ?: Calendar.getInstance().timeInMillis
@@ -160,9 +169,32 @@ fun StockDetailScreen(
         }
         formatter.format(cal.time)
     }
+
+    val combinedTimestamp: Long = combineDateAndTime(selectedDate, selectedTime, selectedStock!!.transactionDate)
+
     Scaffold(
         topBar = {
-            StockDetailHeader(navController)
+            StockDetailHeader(
+                navController,
+                onSaveStockRecord = {
+                    val stockRecord = StockRecord(
+                        recordId = selectedStock!!.recordId,
+                        accountId = selectedStock!!.accountId,
+                        stockMarket = selectedStock!!.stockMarket,
+                        stockSymbol = selectedStockSymbol?.stockSymbol ?: "",
+                        stockType = selectedStockTypeIndex,
+                        transactionType = selectedTransactionType,
+                        transactionDate = combinedTimestamp,
+                        quantity = stockQuantity.toInt(),
+                        pricePerUnit = stockPrice.toDouble(),
+                        totalAmount = stockQuantity.toInt() * stockPrice.toDouble(),
+                        commission = commission.toDouble(),
+                        transactionTax = transactionTax.toDouble(),
+                        note = ""
+                    )
+                    stockRecordViewModel.updateStockRecord(stockRecord)
+                },
+            )
         },
     ) { innerPadding ->
         Box(
@@ -197,13 +229,6 @@ fun StockDetailScreen(
                     Row(
                         modifier = Modifier.padding(10.dp)
                     ) {
-                        Text(
-                            text = "股數",
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
-                        )
                         OutlinedTextField(
                             value = stockQuantity,
                             onValueChange = { newText ->
@@ -215,25 +240,12 @@ fun StockDetailScreen(
                                     isStockQuantityError = true
                                 }
                             },
+                            label = { Text(text = "股數")},
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number
                             ),
                             isError = isStockQuantityError,
-                            modifier = Modifier
-                                .padding(5.dp)
-                        )
-                    }
-                }
-                item {
-                    Row(
-                        modifier = Modifier.padding(10.dp)
-                    ) {
-                        Text(
-                            text = priceName,
-                            modifier = Modifier
-                                .align(Alignment.CenterVertically)
-                                .width(100.dp)
-                                .padding(start = 10.dp, end = 20.dp),
+                            modifier = Modifier.weight(1f).padding(end = 5.dp)
                         )
                         OutlinedTextField(
                             value = stockPrice,
@@ -248,12 +260,55 @@ fun StockDetailScreen(
                                     isStockPriceError = true
                                 }
                             },
+                            label = { Text(text = priceName)},
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number
                             ),
                             isError = isStockPriceError,
-                            modifier = Modifier
-                                .padding(5.dp)
+                            modifier = Modifier.weight(1f).padding(start = 5.dp)
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier.padding(10.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = commission,
+                            onValueChange = { newText ->
+                                val parsedValue = newText.toFloatOrNull()
+                                if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
+                                    commission = newText
+                                    isCommissionError = false
+                                } else {
+                                    isCommissionError = true
+                                }
+                            },
+                            label = { Text(text = "手續費")},
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Number
+                            ),
+                            isError = isCommissionError,
+//                            enabled = !autoCalculateChecked,
+                            modifier = Modifier.weight(1f).padding(end = 5.dp)
+                        )
+                        OutlinedTextField(
+                            value = transactionTax,
+                            onValueChange = { newText ->
+                                val parsedValue = newText.toFloatOrNull()
+                                if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
+                                    transactionTax = newText
+                                    isTransactionTaxError = false
+                                } else {
+                                    isTransactionTaxError = true
+                                }
+                            },
+                            label = { Text(text = "證交稅")},
+                            keyboardOptions = KeyboardOptions.Default.copy(
+                                keyboardType = KeyboardType.Number
+                            ),
+                            isError = isTransactionTaxError,
+                            modifier = Modifier.weight(1f).padding(start = 5.dp)
                         )
                     }
                 }
@@ -386,6 +441,7 @@ fun StockDetailScreen(
 @Composable
 fun StockDetailHeader(
     navController: NavHostController,
+    onSaveStockRecord: () -> Unit,
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -405,6 +461,7 @@ fun StockDetailHeader(
         },
         actions = {
                 IconButton(onClick = {
+                    onSaveStockRecord()
                     navController.popBackStack()
                 }) {
                     Icon(
@@ -551,4 +608,24 @@ fun DatePickerModal(
             state = datePickerState
         )
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun combineDateAndTime(selectedDate: Long?, selectedTime: TimePickerState, transactionDate: Long): Long {
+    // 如果日期或时间为空，则返回 null
+    if (selectedDate == null) return transactionDate
+
+    // 创建 Calendar 实例
+    val calendar = Calendar.getInstance().apply {
+        // 设置日期部分
+        timeInMillis = selectedDate
+        // 设置时间部分
+        set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+        set(Calendar.MINUTE, selectedTime.minute)
+        set(Calendar.SECOND, 0) // 可选，设置秒钟
+        set(Calendar.MILLISECOND, 0) // 可选，设置毫秒
+    }
+
+    // 返回时间戳
+    return calendar.timeInMillis
 }

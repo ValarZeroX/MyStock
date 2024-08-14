@@ -539,7 +539,9 @@ fun StockListScreen(
                                                     .background(MaterialTheme.colorScheme.primaryContainer)
                                                     .clickable {
                                                         stockAccount?.let { nonNullAccount ->
-                                                            stockViewModel.updateSelectedAccount(nonNullAccount)
+                                                            stockViewModel.updateSelectedAccount(
+                                                                nonNullAccount
+                                                            )
                                                         }
                                                         stockViewModel.updateSelectedStock(record)
                                                         navController.navigate("stockDetailScreen")
@@ -549,10 +551,10 @@ fun StockListScreen(
                                                     modifier = Modifier.align(Alignment.Center),
                                                     horizontalAlignment = Alignment.CenterHorizontally
                                                 ) {
-                                                    Icon(
-                                                        imageVector = Icons.Filled.Edit,
-                                                        contentDescription = "新增"
-                                                    )
+                                                        Icon(
+                                                            imageVector = Icons.Filled.Edit,
+                                                            contentDescription = "Edit"
+                                                        )
                                                     Text(
                                                         text = "編輯",
                                                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -569,14 +571,10 @@ fun StockListScreen(
                                                     modifier = Modifier.align(Alignment.Center),
                                                     horizontalAlignment = Alignment.CenterHorizontally
                                                 ) {
-                                                    IconButton(onClick = {
-                                                        // 添加點擊事件處理邏輯
-                                                    }) {
                                                         Icon(
                                                             imageVector = Icons.Filled.Delete,
-                                                            contentDescription = "刪除"
+                                                            contentDescription = "Delete"
                                                         )
-                                                    }
                                                     Text(
                                                         text = "刪除",
                                                         color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -587,13 +585,6 @@ fun StockListScreen(
                                     }
                                 ) {
                                     ListItem(
-//                                        modifier = Modifier.clickable {
-//                                            stockAccount?.let { nonNullAccount ->
-//                                                stockViewModel.updateSelectedAccount(nonNullAccount)
-//                                            }
-//                                            stockViewModel.updateSelectedStock(record)
-//                                            navController.navigate("stockDetailScreen")
-//                                        },
                                         headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
                                         supportingContent = {
                                             Column {

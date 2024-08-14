@@ -47,6 +47,12 @@ class StockRecordViewModel(
         }
     }
 
+    fun deleteStockRecordById(recordId: Int) {
+        viewModelScope.launch {
+            repository.deleteStockRecordById(recordId)
+        }
+    }
+
     fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
         return repository.getHoldingsAndTotalCost(accountId)
     }

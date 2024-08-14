@@ -2,6 +2,7 @@ package com.banshus.mystock.data.dao
 
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -15,6 +16,9 @@ interface StockRecordDao {
 
     @Update
     suspend fun updateStockRecord(stockRecord: StockRecord)
+
+    @Query("DELETE FROM stock_record WHERE recordId = :recordId")
+    suspend fun deleteStockRecordById(recordId: Int)
 
     @Query("SELECT * FROM stock_record WHERE accountId = :accountId AND transactionDate BETWEEN :startDate AND :endDate")
     fun getStockRecordsByDateRangeAndAccount(

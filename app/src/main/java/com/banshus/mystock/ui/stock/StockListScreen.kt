@@ -3,20 +3,30 @@ package com.banshus.mystock.ui.stock
 import android.graphics.Color
 import android.graphics.Typeface
 import android.util.Log
+import androidx.compose.animation.core.TweenSpec
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.AnchoredDraggableState
+import androidx.compose.foundation.gestures.DraggableAnchors
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.anchoredDraggable
+import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -26,10 +36,9 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -44,12 +53,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -71,16 +89,20 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.ui.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.ui.theme.StockBlue
+import com.banshus.mystock.ui.theme.StockYellow
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
+import kotlinx.coroutines.flow.collectLatest
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.time.format.TextStyle
 
 @Composable
 fun StockListScreen(
@@ -317,7 +339,7 @@ fun StockListScreen(
                                     ) {
                                         Text(text = "帳戶成本", modifier = Modifier.weight(1f))
                                         Text(text = "未實現損益", modifier = Modifier.weight(1f))
-                                        Text(text = "未實現損益率", modifier = Modifier.weight(1f))
+                                        Text(text = "未實現報酬率", modifier = Modifier.weight(1f))
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
@@ -337,83 +359,7 @@ fun StockListScreen(
                                             color = profitPercentColor
                                         )
                                     }
-//                                    Row(
-//                                        modifier = Modifier.fillMaxWidth()
-//                                    ) {
-//                                        Text(text = "已實現損益", modifier = Modifier.weight(1f))
-//                                        Text(text = "股利", modifier = Modifier.weight(1f))
-//                                    }
-//                                    Row(
-//                                        modifier = Modifier.fillMaxWidth()
-//                                    ) {
-//                                        Text(text = formatNumber(totalRealizedResult.sellIncome), modifier = Modifier.weight(1f))
-//                                        Text(text = formatNumber(totalRealizedResult.dividendIncome), modifier = Modifier.weight(1f))
-//                                    }
                                 }
-//                                Row {
-//
-//                                }
-//                                Column(modifier = Modifier.padding(16.dp)) {
-//                                    Row {
-//                                        Text(text = "总成本: ")
-//                                        Text(text = formatNumber(totalExpenditure))
-//                                    }
-//                                    Row {
-//                                        Text(text = "帐户现值: ")
-//                                        Text(text = formatNumber(totalMarketValue))
-//                                    }
-//                                    Row {
-//                                        Text(text = "支出: ")
-//                                        Text(text = formatNumber(totalExpenditure))
-//                                    }
-//                                    Row {
-//                                        Text(text = "收入: ")
-//                                        Text(text = formatNumber(totalIncome))
-//                                    }
-//                                    Row {
-//                                        Text(text = "现现金利: ")
-//                                        Text(text = formatNumber(dividendIncome))
-//                                    }
-//                                    Row {
-//                                        Text(text = "已实现损益: ")
-//                                        Text(text = formatNumber(totalRealizedProfit))
-//                                    }
-//                                    Row {
-//                                        Text(text = "库存损益: ")
-//                                        Text(text = formatNumber(totalMarketValue - totalExpenditure))
-//                                    }
-//                                    Row {
-//                                        Text(text = "总手續費成本: ")
-//                                        Text(text = formatNumber(totalCommission))
-//                                    }
-//                                    Row {
-//                                        Text(text = "总交易税成本: ")
-//                                        Text(text = formatNumber(totalTransactionTax))
-//                                    }
-//                                }
-//                                Row(
-//                                    modifier = Modifier
-//                                        .fillMaxWidth()
-//                                        .padding(8.dp),
-////                                        .height(IntrinsicSize.Min),
-//                                    verticalAlignment = Alignment.CenterVertically,
-//                                    horizontalArrangement = Arrangement.Center
-//                                ){
-//                                    Box(
-//                                        modifier = Modifier
-//                                            .weight(1f)
-////                                            .aspectRatio(1f)  // 保持圓餅圖的長寬比例為1:1
-//                                            .align(Alignment.CenterVertically)
-//                                    ) {
-//                                        //畫圓餅圖
-//                                        if (isDataReady){
-//                                            StockPieChart(holdings)
-//                                        } else {
-//                                            Text(text = "Loading")
-//                                        }
-//                                    }
-//                                    Text(text = "$totalCost")
-//                                }
 
 //                                StockLineChart(stockRecords)
                                 LazyColumn {
@@ -571,62 +517,131 @@ fun StockListScreen(
                                 val dateTime = Instant.ofEpochMilli(recordDateMillis)
                                     .atZone(ZoneId.systemDefault())
                                     .toLocalDateTime()
-                                val formatter =
-                                    DateTimeFormatter.ofPattern("MMM dd, yyyy HH:mm")
-                                val formattedDateTime = dateTime.format(formatter)
-                                ListItem(
-                                    modifier = Modifier.clickable {
-                                        stockAccount?.let { nonNullAccount ->
-                                            stockViewModel.updateSelectedAccount(nonNullAccount)
-                                        }
-                                        stockViewModel.updateSelectedStock(record)
-                                        navController.navigate("stockDetailScreen")
-                                    },
-                                    headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
-                                    supportingContent = {
-                                        Column {
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth()
+                                val formatterDate =
+                                    DateTimeFormatter.ofPattern("MMM dd, yyyy")
+                                val formattedDate = dateTime.format(formatterDate)
+                                val formatterTime =
+                                    DateTimeFormatter.ofPattern("HH:mm")
+                                val formattedTime = dateTime.format(formatterTime)
+                                var checked by remember { mutableStateOf(false) }
+                                SwipeBox(
+                                    checked = checked,
+                                    onCheckedChange = { checked = it },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .wrapContentHeight(),
+                                    bottomContent = {
+                                        Row {
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(70.dp)
+                                                    .fillMaxHeight()
+                                                    .background(MaterialTheme.colorScheme.primaryContainer)
+                                                    .clickable {
+                                                        stockAccount?.let { nonNullAccount ->
+                                                            stockViewModel.updateSelectedAccount(nonNullAccount)
+                                                        }
+                                                        stockViewModel.updateSelectedStock(record)
+                                                        navController.navigate("stockDetailScreen")
+                                                    }
                                             ) {
-                                                Text("股數", modifier = Modifier.weight(1f))
-                                                Text(priceName, modifier = Modifier.weight(1f))
-                                                Text("淨收付", modifier = Modifier.weight(1f))
+                                                Column(
+                                                    modifier = Modifier.align(Alignment.Center),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Filled.Edit,
+                                                        contentDescription = "新增"
+                                                    )
+                                                    Text(
+                                                        text = "編輯",
+                                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                    )
+                                                }
                                             }
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth()
+                                            Box(
+                                                modifier = Modifier
+                                                    .width(70.dp)
+                                                    .fillMaxHeight()
+                                                    .background(StockRed)
                                             ) {
-                                                Text(
-                                                    formatNumberNoDecimalPoint(record.quantity),
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                Text(
-                                                    "${record.pricePerUnit}",
-                                                    modifier = Modifier.weight(1f)
-                                                )
-                                                Text(
-                                                    formatNumber(totalAmount),
-                                                    modifier = Modifier.weight(1f),
-                                                    color = textColor
-                                                )
+                                                Column(
+                                                    modifier = Modifier.align(Alignment.Center),
+                                                    horizontalAlignment = Alignment.CenterHorizontally
+                                                ) {
+                                                    IconButton(onClick = {
+                                                        // 添加點擊事件處理邏輯
+                                                    }) {
+                                                        Icon(
+                                                            imageVector = Icons.Filled.Delete,
+                                                            contentDescription = "刪除"
+                                                        )
+                                                    }
+                                                    Text(
+                                                        text = "刪除",
+                                                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                                                    )
+                                                }
                                             }
-                                        }
-                                    },
-                                    trailingContent = {
-                                        Column {
-                                            Text(
-                                                text = formattedDateTime
-                                            )
-                                            Text(
-                                                text = transactionType
-                                            )
-                                            Text(
-                                                text = stockType
-                                            )
                                         }
                                     }
-                                )
-                                HorizontalDivider()
-
+                                ) {
+                                    ListItem(
+//                                        modifier = Modifier.clickable {
+//                                            stockAccount?.let { nonNullAccount ->
+//                                                stockViewModel.updateSelectedAccount(nonNullAccount)
+//                                            }
+//                                            stockViewModel.updateSelectedStock(record)
+//                                            navController.navigate("stockDetailScreen")
+//                                        },
+                                        headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
+                                        supportingContent = {
+                                            Column {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Text("股數", modifier = Modifier.weight(1f))
+                                                    Text(priceName, modifier = Modifier.weight(1f))
+                                                    Text("淨收付", modifier = Modifier.weight(1f))
+                                                }
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth()
+                                                ) {
+                                                    Text(
+                                                        formatNumberNoDecimalPoint(record.quantity),
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Text(
+                                                        "${record.pricePerUnit}",
+                                                        modifier = Modifier.weight(1f)
+                                                    )
+                                                    Text(
+                                                        formatNumber(totalAmount),
+                                                        modifier = Modifier.weight(1f),
+                                                        color = textColor
+                                                    )
+                                                }
+                                            }
+                                        },
+                                        trailingContent = {
+                                            Column {
+                                                Text(
+                                                    text = formattedDate
+                                                )
+                                                Text(
+                                                    text = formattedTime
+                                                )
+                                                Text(
+                                                    text = transactionType
+                                                )
+                                                Text(
+                                                    text = stockType
+                                                )
+                                            }
+                                        }
+                                    )
+                                    HorizontalDivider()
+                                }
                             }
                         }
                     }
@@ -664,7 +679,7 @@ fun StockListHeader(
             stockAccount?.let {
                 IconButton(onClick = {
                     stockViewModel.updateSelectedAccount(it)
-                    navController.navigate("stockAddScreen")
+                    navController.navigate("addStockScreen")
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Add,

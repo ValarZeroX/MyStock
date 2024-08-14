@@ -23,6 +23,10 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         stockRecordDao.updateStockRecord(stockRecord)
     }
 
+    suspend fun deleteStockRecordById(recordId: Int) {
+        stockRecordDao.deleteStockRecordById(recordId)
+    }
+
     fun getStockRecordsByDateRangeAndAccount(accountId: Int, startDate: Long, endDate: Long): LiveData<List<StockRecord>> {
         return stockRecordDao.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
     }

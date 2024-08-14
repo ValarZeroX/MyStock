@@ -31,14 +31,13 @@ import com.banshus.mystock.repository.StockRecordRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.NavBar
-import com.banshus.mystock.ui.stock.StockAddScreen
 import com.banshus.mystock.ui.StockSettingScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
 import com.banshus.mystock.ui.setting.StockSymbolScreen
-import com.banshus.mystock.ui.stock.AccountHeader
 import com.banshus.mystock.ui.stock.AccountListScreen
 import com.banshus.mystock.ui.stock.AddAccountScreen
+import com.banshus.mystock.ui.stock.AddStockScreen
 import com.banshus.mystock.ui.stock.StockAccountScreen
 import com.banshus.mystock.ui.stock.StockDetailScreen
 import com.banshus.mystock.ui.stock.StockListScreen
@@ -156,8 +155,8 @@ fun MyApp(
         composable("colorThemeScreen") {
             ColorThemeScreen(navController)
         }
-        composable("stockAddScreen") {
-            StockAddScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
+        composable("addStockScreen") {
+            AddStockScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
         composable("stockMarketScreen") {
             StockMarketScreen(navController,stockMarketViewModel)

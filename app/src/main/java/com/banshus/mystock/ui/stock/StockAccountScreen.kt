@@ -47,10 +47,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockOrange
+import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.banshus.mystock.viewmodels.StockRecordViewModel
@@ -109,6 +112,7 @@ fun StockMainScreen(
 //            Log.d("TotalCostAndProfit", it.toString())
 //        }
 //    }
+
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -119,6 +123,23 @@ fun StockMainScreen(
 //            val holdingsAndTotalCost = stockRecordsHoldings[stockAccount.accountId]
 //            val realizedGainsAndLosses = stockRecordsRealizedGainsAndLosses[stockAccount.accountId]
 //            val totalCostBasis = holdingsAndTotalCost?.second ?: 0.0
+            val accountProfitData = costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfit
+                ?: 0.0
+            val accountProfit = formatNumber(accountProfitData)
+            val profitColor = getProfitColor(
+                accountProfitData,
+                StockRed,
+                StockGreen,
+                MaterialTheme.colorScheme.onSurface
+            )
+            val accountPercentData = costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfitPercent ?: 0.0
+            val accountPercent = "${formatNumber(accountPercentData)} %"
+            val profitPercentColor = getProfitColor(
+                accountPercentData,
+                StockRed,
+                StockGreen,
+                MaterialTheme.colorScheme.onSurface
+            )
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -245,12 +266,12 @@ fun StockMainScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "實現損益",
+                                text = "未實現損益",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = "報酬率",
+                                text = "未實現報酬率",
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
@@ -259,14 +280,12 @@ fun StockMainScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = formatNumber(
-                                    costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfit
-                                        ?: 0.0
-                                ), color = StockOrange, modifier = Modifier.weight(1f)
+                                text = accountProfit,
+                                color = profitColor, modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = "${formatNumber(costAndProfitForAllAccounts[stockAccount.accountId]?.totalProfitPercent ?: 0.0)} %",
-                                color = StockOrange,
+                                text = accountPercent,
+                                color = profitPercentColor,
                                 modifier = Modifier.weight(1f)
                             )
                         }

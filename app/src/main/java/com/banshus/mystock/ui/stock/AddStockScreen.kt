@@ -50,25 +50,16 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
-import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
-import com.banshus.mystock.repository.StockAccountRepository
-import com.banshus.mystock.repository.StockRecordRepository
-import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 import com.banshus.mystock.viewmodels.StockRecordViewModel
-import com.banshus.mystock.viewmodels.StockRecordViewModelFactory
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
-import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
 import com.maxkeppeler.sheets.calendar.CalendarDialog
 import com.maxkeppeler.sheets.calendar.models.CalendarConfig
@@ -86,7 +77,7 @@ import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun StockAddScreen(
+fun AddStockScreen(
     navController: NavHostController,
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,

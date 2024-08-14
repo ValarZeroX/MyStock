@@ -44,6 +44,9 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
                     _error.value = null
                 }
             } catch (e: HttpException) {
+                Log.d("error002", "$e")
+                Log.d("error002", "${e.response()}")
+                Log.d("error002", e.message())
                 if (e.code() == 404) {
                     val errorMessage = "沒有找到該股票的數據: $symbol"
                     _error.value = errorMessage

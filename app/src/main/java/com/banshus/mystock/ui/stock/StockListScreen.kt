@@ -566,6 +566,9 @@ fun StockListScreen(
                                                     .width(70.dp)
                                                     .fillMaxHeight()
                                                     .background(StockRed)
+                                                    .clickable {
+
+                                                    }
                                             ) {
                                                 Column(
                                                     modifier = Modifier.align(Alignment.Center),

@@ -222,7 +222,7 @@ fun StockSymbolScreen(
                                 modifier = Modifier.clickable {
                                     stockPriceApiViewModel.fetchStockPriceResult(
                                         symbol = stockSymbol.stockSymbol,
-                                        period1 = (System.currentTimeMillis() - 1000) / 1000,
+                                        period1 = System.currentTimeMillis() / 1000 - 86400,
                                         period2 = System.currentTimeMillis() / 1000,
                                         marketCode = selectedStockMarket?.stockMarketCode ?: "",
                                         onSuccess = { response ->
@@ -289,7 +289,7 @@ fun StockSymbolScreen(
                         Log.d("StockSymbolAdd","Go")
                         stockPriceApiViewModel.fetchStockPriceResult(
                             symbol = symbol,
-                            period1 = System.currentTimeMillis() / 1000,
+                            period1 = System.currentTimeMillis() / 1000 - 86400,
                             period2 = System.currentTimeMillis() / 1000,
                             marketCode = selectedStockMarket?.stockMarketCode ?: "",
                             onSuccess = { response ->

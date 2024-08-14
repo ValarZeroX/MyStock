@@ -45,7 +45,7 @@ fun SwipeBox(
     val anchoredDraggableState = remember(maxBound) {
         AnchoredDraggableState(
             initialValue = checked,
-            animationSpec = TweenSpec(durationMillis = 1000),
+            animationSpec = TweenSpec(durationMillis = 100),
             anchors = DraggableAnchors {
                 false at minBound
                 true at maxBound

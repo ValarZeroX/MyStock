@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -74,6 +75,8 @@ import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.ui.tool.DateRangeType
+import com.banshus.mystock.ui.tool.DateSwitcher
 import com.banshus.mystock.ui.tool.MonthSwitcher
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
@@ -109,17 +112,23 @@ fun StockListScreen(
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(StockMetrics(0.0, 0.0, 0.0, 0.0))
 
-    var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
+//    var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
+//
+//    val startDate = currentMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+//    val endDate =
+//        currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault())
+//            .toInstant().toEpochMilli()
+    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
+    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
+    val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
 
-    val startDate = currentMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val endDate =
-        currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault())
-            .toInstant().toEpochMilli()
+    val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRangeAndAccount(
         accountId = selectedAccountForStockList?.accountId ?: -1,
-        startDate = startDate,
-        endDate = endDate
+        startDate = startDateMillis,
+        endDate = endDateMillis
     ).observeAsState(initial = emptyList())
     //帳戶全部交易紀錄
 //    val stockRecordsAll by stockRecordViewModel.getStockRecordsByAccountId(
@@ -201,7 +210,7 @@ fun StockListScreen(
 //    }
     Scaffold(
         topBar = {
-            StockListHeader(navController, stockAccount, stockViewModel)
+            StockListHeader(navController, stockAccount, stockViewModel, selectedTabIndex)
         },
     ) { innerPadding ->
         Box(
@@ -455,9 +464,18 @@ fun StockListScreen(
                     }
 
                     1 -> {
-                        MonthSwitcher { newMonth ->
-                            currentMonth = newMonth
-                        }
+//                        MonthSwitcher { newMonth ->
+//                            currentMonth = newMonth
+//                        }
+                        DateSwitcher(
+                            stockViewModel = stockViewModel,
+                            initialDate = startDate,
+                            initialRangeType = currentRangeType,
+                            onDateChanged = { start, end ->
+                                startDate = start
+                                endDate = end
+                            }
+                        )
                         LazyColumn {
                             items(stockRecords) { record ->
                                 val transactionType = when (record.transactionType) {
@@ -631,7 +649,8 @@ fun StockListScreen(
 fun StockListHeader(
     navController: NavHostController,
     stockAccount: StockAccount?,
-    stockViewModel: StockViewModel
+    stockViewModel: StockViewModel,
+    selectedTabIndex: Int,
 ) {
     CenterAlignedTopAppBar(
         title = {
@@ -642,11 +661,21 @@ fun StockListHeader(
             )
         },
         navigationIcon = {
-            IconButton(onClick = { navController.popBackStack() }) {
-                Icon(
-                    imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "關閉"
-                )
+            when (selectedTabIndex) {
+                 0 -> IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBackIosNew,
+                        contentDescription = " back"
+                    )
+                }
+                1 -> IconButton(onClick = {
+                    stockViewModel.showDialog()
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.DateRange,
+                        contentDescription = "range"
+                    )
+                }
             }
         },
         actions = {
@@ -658,7 +687,7 @@ fun StockListHeader(
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "新增"
+                        contentDescription = "add"
                     )
                 }
             }

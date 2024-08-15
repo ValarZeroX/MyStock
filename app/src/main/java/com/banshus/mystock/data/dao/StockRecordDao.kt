@@ -20,16 +20,16 @@ interface StockRecordDao {
     @Query("DELETE FROM stock_record WHERE recordId = :recordId")
     suspend fun deleteStockRecordById(recordId: Int)
 
-    @Query("SELECT * FROM stock_record WHERE accountId = :accountId AND transactionDate BETWEEN :startDate AND :endDate")
+    @Query("SELECT * FROM stock_record WHERE accountId = :accountId AND transactionDate BETWEEN :startDate AND :endDate ORDER BY transactionDate")
     fun getStockRecordsByDateRangeAndAccount(
         accountId: Int,
         startDate: Long,
         endDate: Long
     ): LiveData<List<StockRecord>>
 
-    @Query("SELECT * FROM stock_record WHERE accountId = :accountId")
+    @Query("SELECT * FROM stock_record WHERE accountId = :accountId ORDER BY transactionDate")
     fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>>
 
-    @Query("SELECT * FROM stock_record")
+    @Query("SELECT * FROM stock_record ORDER BY transactionDate")
     fun getAllStockRecords(): LiveData<List<StockRecord>>
 }

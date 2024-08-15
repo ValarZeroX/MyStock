@@ -34,9 +34,12 @@ class StockViewModel : ViewModel() {
         private val _selectedTabIndex = mutableIntStateOf(0)
         val selectedTabIndex: MutableState<Int> = _selectedTabIndex
 
-        fun setSelectedTabIndex(index: Int) {
-                _selectedTabIndex.intValue = index
-        }
+        private val _selectedReportTabIndex = mutableIntStateOf(0)
+        val selectedReportTabIndex: MutableState<Int> = _selectedReportTabIndex
+
+//        fun setSelectedTabIndex(index: Int) {
+//                _selectedTabIndex.intValue = index
+//        }
 
         // 這是用來控制顯示的狀態
         private val _showRangeTypeDialog = MutableLiveData(false)

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.asFlow
@@ -108,6 +109,17 @@ class StockRecordViewModel(
                 }
 
                 StockMetrics(totalCostBasis, totalPrice, totalProfit, totalProfitPercent)
+            }
+        }
+    }
+
+    private val _realizedGainsAndLossesForAllAccounts = MutableLiveData<Map<Int, RealizedResult>>()
+    val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, RealizedResult>> = _realizedGainsAndLossesForAllAccounts
+
+    fun loadRealizedGainsAndLossesForAllAccounts(startDate: Long, endDate: Long) {
+        viewModelScope.launch {
+            repository.getRealizedGainsAndLossesForAllAccounts(startDate, endDate).observeForever { result ->
+                _realizedGainsAndLossesForAllAccounts.postValue(result)
             }
         }
     }

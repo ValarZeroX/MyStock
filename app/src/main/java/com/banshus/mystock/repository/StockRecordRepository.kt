@@ -194,20 +194,26 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         }
     }
 
-    fun getRealizedGainsAndLossesForAllAccounts(): LiveData<Map<Int, Map<String, RealizedResult>>> {
+    fun getRealizedGainsAndLossesForAllAccounts(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, RealizedResult>> {
         return getAllStockRecords().map { stockRecords ->
-            val results = stockRecords.groupBy { it.accountId }
-                .mapValues { (_, accountRecords) ->
-                    accountRecords.groupBy { it.stockSymbol }.mapValues { (_, records) ->
+            stockRecords.filter { it.transactionDate in startDate..endDate }
+                .groupBy { it.accountId }
+                .mapValues { (_, records) ->
+                    val results = mutableMapOf<String, RealizedResult>()
+
+                    records.groupBy { it.stockSymbol }.forEach { (stockSymbol, stockRecords) ->
                         var realizedIncome = 0.0
                         var realizedExpenditure = 0.0
                         var dividendIncome = 0.0
                         var totalCommission = 0.0
                         var totalTransactionTax = 0.0
 
-                        val buyRecords = mutableListOf<Pair<Int, Double>>()
+                        val buyRecords = mutableListOf<Pair<Int, Double>>() // Pair of quantity and price
 
-                        for (record in records) {
+                        for (record in stockRecords) {
                             totalCommission += record.commission
                             totalTransactionTax += record.transactionTax
 
@@ -230,16 +236,16 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                                         }
                                     }
 
-                                    realizedExpenditure += totalCostForThisSell
-                                    realizedIncome += record.totalAmount
+                                    realizedExpenditure += totalCostForThisSell // Cost of sold shares
+                                    realizedIncome += record.totalAmount // Selling income
                                 }
                                 2 -> { // Dividend
-                                    dividendIncome += record.quantity * record.pricePerUnit
+                                    dividendIncome += record.quantity * record.pricePerUnit // Dividend income
                                 }
                             }
                         }
 
-                        RealizedResult(
+                        results[stockSymbol] = RealizedResult(
                             buyCost = realizedExpenditure,
                             sellIncome = realizedIncome,
                             dividendIncome = dividendIncome,
@@ -247,8 +253,75 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                             totalTransactionTax = totalTransactionTax
                         )
                     }
+
+                    results.values.reduce { acc, result ->
+                        RealizedResult(
+                            buyCost = acc.buyCost + result.buyCost,
+                            sellIncome = acc.sellIncome + result.sellIncome,
+                            dividendIncome = acc.dividendIncome + result.dividendIncome,
+                            totalCommission = acc.totalCommission + result.totalCommission,
+                            totalTransactionTax = acc.totalTransactionTax + result.totalTransactionTax
+                        )
+                    }
                 }
-            results
         }
     }
+
+//    fun getRealizedGainsAndLossesForAllAccounts(): LiveData<Map<Int, Map<String, RealizedResult>>> {
+//        return getAllStockRecords().map { stockRecords ->
+//            val results = stockRecords.groupBy { it.accountId }
+//                .mapValues { (_, accountRecords) ->
+//                    accountRecords.groupBy { it.stockSymbol }.mapValues { (_, records) ->
+//                        var realizedIncome = 0.0
+//                        var realizedExpenditure = 0.0
+//                        var dividendIncome = 0.0
+//                        var totalCommission = 0.0
+//                        var totalTransactionTax = 0.0
+//
+//                        val buyRecords = mutableListOf<Pair<Int, Double>>()
+//
+//                        for (record in records) {
+//                            totalCommission += record.commission
+//                            totalTransactionTax += record.transactionTax
+//
+//                            when (record.transactionType) {
+//                                0 -> { // Buy
+//                                    buyRecords.add(record.quantity to (record.totalAmount / record.quantity))
+//                                }
+//                                1 -> { // Sell
+//                                    var quantityToSell = record.quantity
+//                                    var totalCostForThisSell = 0.0
+//
+//                                    while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
+//                                        val (buyQuantity, buyPrice) = buyRecords.removeAt(0)
+//                                        val quantityToRemove = minOf(quantityToSell, buyQuantity)
+//                                        quantityToSell -= quantityToRemove
+//                                        totalCostForThisSell += quantityToRemove * buyPrice
+//
+//                                        if (buyQuantity > quantityToRemove) {
+//                                            buyRecords.add(0, (buyQuantity - quantityToRemove) to buyPrice)
+//                                        }
+//                                    }
+//
+//                                    realizedExpenditure += totalCostForThisSell
+//                                    realizedIncome += record.totalAmount
+//                                }
+//                                2 -> { // Dividend
+//                                    dividendIncome += record.quantity * record.pricePerUnit
+//                                }
+//                            }
+//                        }
+//
+//                        RealizedResult(
+//                            buyCost = realizedExpenditure,
+//                            sellIncome = realizedIncome,
+//                            dividendIncome = dividendIncome,
+//                            totalCommission = totalCommission,
+//                            totalTransactionTax = totalTransactionTax
+//                        )
+//                    }
+//                }
+//            results
+//        }
+//    }
 }

@@ -35,6 +35,7 @@ import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import java.time.LocalDate
+import java.time.ZoneId
 
 @Composable
 fun ReportScreen(
@@ -48,8 +49,15 @@ fun ReportScreen(
     var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
     val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
+
     var selectedReportTabIndex by stockViewModel.selectedReportTabIndex
 //    val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
+
+    val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
+    val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
+    Log.d("allAccountsRecord", "$allAccountsRecord")
 
     Log.d("startDate", "$startDate")
     Log.d("endDate", "$endDate")

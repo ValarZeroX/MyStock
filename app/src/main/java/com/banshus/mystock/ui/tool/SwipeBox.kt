@@ -1,4 +1,4 @@
-package com.banshus.mystock.ui
+package com.banshus.mystock.ui.tool
 
 import androidx.compose.animation.core.TweenSpec
 import androidx.compose.foundation.ExperimentalFoundationApi

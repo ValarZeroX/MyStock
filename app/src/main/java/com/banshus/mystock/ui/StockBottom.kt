@@ -37,7 +37,7 @@ fun NavBar(selectedItemIndex: MutableState<Int>, navController: NavHostControlle
         TabData(Icons.Filled.QueryStats, "帳戶", "stockAccountScreen"),
         TabData(Icons.Filled.CalendarMonth, "記錄", "stockAccountScreen"),
         TabData(Icons.Filled.Add, "新增", "addStockScreen"),
-        TabData(Icons.Filled.BarChart, "報表", "stockAccountScreen"),
+        TabData(Icons.Filled.BarChart, "報表", "reportScreen"),
         TabData(Icons.Filled.Menu, "設定", "stockSettingScreen")
     )
     NavigationBar{

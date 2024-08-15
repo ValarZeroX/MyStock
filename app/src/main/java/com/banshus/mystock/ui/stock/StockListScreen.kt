@@ -3,19 +3,11 @@ package com.banshus.mystock.ui.stock
 import android.graphics.Color
 import android.graphics.Typeface
 import android.util.Log
-import androidx.compose.animation.core.TweenSpec
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.AnchoredDraggableState
-import androidx.compose.foundation.gestures.DraggableAnchors
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.anchoredDraggable
-import androidx.compose.foundation.gestures.animateTo
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -53,21 +45,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -89,20 +72,17 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
-import com.banshus.mystock.ui.SwipeBox
+import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
-import com.banshus.mystock.ui.theme.StockBlue
-import com.banshus.mystock.ui.theme.StockYellow
+import com.banshus.mystock.ui.tool.MonthSwitcher
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 import com.github.mikephil.charting.formatter.ValueFormatter
-import kotlinx.coroutines.flow.collectLatest
 import java.text.DecimalFormat
 import java.text.NumberFormat
-import java.time.format.TextStyle
 
 @Composable
 fun StockListScreen(
@@ -567,7 +547,8 @@ fun StockListScreen(
                                                     .fillMaxHeight()
                                                     .background(StockRed)
                                                     .clickable {
-
+                                                        stockRecordViewModel.deleteStockRecordById(record.recordId)
+                                                        checked = false
                                                     }
                                             ) {
                                                 Column(
@@ -683,41 +664,6 @@ fun StockListHeader(
             }
         }
     )
-}
-
-@Composable
-fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
-    var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
-    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        IconButton(onClick = {
-            currentMonth = currentMonth.minusMonths(1)
-            onMonthChanged(currentMonth)
-        }) {
-            Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous Month")
-        }
-
-        Text(
-            text = "${formatter.format(currentMonth)} ~ ${
-                formatter.format(
-                    currentMonth.plusMonths(1).minusDays(1)
-                )
-            }",
-//            style = MaterialTheme.typography.body1
-        )
-
-        IconButton(onClick = {
-            currentMonth = currentMonth.plusMonths(1)
-            onMonthChanged(currentMonth)
-        }) {
-            Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next Month")
-        }
-    }
 }
 
 //@Composable

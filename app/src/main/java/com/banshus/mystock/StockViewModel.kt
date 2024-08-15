@@ -1,6 +1,7 @@
 package com.banshus.mystock
 
 import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
@@ -35,5 +36,18 @@ class StockViewModel : ViewModel() {
 
         fun setSelectedTabIndex(index: Int) {
                 _selectedTabIndex.intValue = index
+        }
+
+        // 這是用來控制顯示的狀態
+        private val _showRangeTypeDialog = MutableLiveData(false)
+        val showRangeTypeDialog: LiveData<Boolean> = _showRangeTypeDialog
+
+        // 方法用來顯示或隱藏對話框
+        fun showDialog() {
+                _showRangeTypeDialog.value = true
+        }
+
+        fun hideDialog() {
+                _showRangeTypeDialog.value = false
         }
 }

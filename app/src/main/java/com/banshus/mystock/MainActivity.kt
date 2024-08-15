@@ -32,6 +32,7 @@ import com.banshus.mystock.repository.StockSymbolRepository
 import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.NavBar
 import com.banshus.mystock.ui.StockSettingScreen
+import com.banshus.mystock.ui.report.ReportScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
 import com.banshus.mystock.ui.setting.StockSymbolScreen
@@ -169,6 +170,9 @@ fun MyApp(
         }
         composable("stockDetailScreen") {
             StockDetailScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
+        }
+        composable("reportScreen") {
+            ReportScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
     }
 }

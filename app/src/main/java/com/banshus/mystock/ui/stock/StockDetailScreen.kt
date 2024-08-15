@@ -65,6 +65,7 @@ import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.ui.tool.DatePickerModal
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -575,40 +576,40 @@ fun AdvancedTimePickerDialog(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DatePickerModal(
-    selectedDate: Long?,
-    onDateSelected: (Long?) -> Unit,
-    onDismiss: () -> Unit
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate
-    )
-
-
-    DatePickerDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = {
-                val selectedDateMillis = datePickerState.selectedDateMillis
-                onDateSelected(selectedDateMillis)
-                onDismiss()
-            }) {
-                Text("確定")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        }
-    ) {
-        DatePicker(
-            state = datePickerState
-        )
-    }
-}
+//@OptIn(ExperimentalMaterial3Api::class)
+//@Composable
+//fun DatePickerModal(
+//    selectedDate: Long?,
+//    onDateSelected: (Long?) -> Unit,
+//    onDismiss: () -> Unit
+//) {
+//    val datePickerState = rememberDatePickerState(
+//        initialSelectedDateMillis = selectedDate
+//    )
+//
+//
+//    DatePickerDialog(
+//        onDismissRequest = onDismiss,
+//        confirmButton = {
+//            TextButton(onClick = {
+//                val selectedDateMillis = datePickerState.selectedDateMillis
+//                onDateSelected(selectedDateMillis)
+//                onDismiss()
+//            }) {
+//                Text("確定")
+//            }
+//        },
+//        dismissButton = {
+//            TextButton(onClick = onDismiss) {
+//                Text("取消")
+//            }
+//        }
+//    ) {
+//        DatePicker(
+//            state = datePickerState
+//        )
+//    }
+//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun combineDateAndTime(selectedDate: Long?, selectedTime: TimePickerState, transactionDate: Long): Long {

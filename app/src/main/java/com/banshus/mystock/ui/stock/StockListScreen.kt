@@ -121,10 +121,12 @@ fun StockListScreen(
     var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
     val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
-
+    Log.d("startDate", "$startDate")
+    Log.d("endDate", "$endDate")
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
+    Log.d("startDateMillis", "$startDateMillis")
+    Log.d("endDateMillis", "$endDateMillis")
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRangeAndAccount(
         accountId = selectedAccountForStockList?.accountId ?: -1,
         startDate = startDateMillis,
@@ -191,7 +193,7 @@ fun StockListScreen(
     )
 
     var selectedTabIndex by stockViewModel.selectedTabIndex
-    Log.d("stockAccount", "$stockAccount")
+//    Log.d("stockAccount", "$stockAccount")
 
 //    val isLoading = remember { mutableStateOf(true) }
 //

@@ -113,12 +113,13 @@ class StockRecordViewModel(
         }
     }
 
-    private val _realizedGainsAndLossesForAllAccounts = MutableLiveData<Map<Int, RealizedResult>>()
-    val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, RealizedResult>> = _realizedGainsAndLossesForAllAccounts
+    private val _realizedGainsAndLossesForAllAccounts = MutableLiveData<Map<Int, Map<String, Any>>>()
+    val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, Map<String, Any>>> = _realizedGainsAndLossesForAllAccounts
 
     fun loadRealizedGainsAndLossesForAllAccounts(startDate: Long, endDate: Long) {
         viewModelScope.launch {
             repository.getRealizedGainsAndLossesForAllAccounts(startDate, endDate).observeForever { result ->
+                // 更新 LiveData
                 _realizedGainsAndLossesForAllAccounts.postValue(result)
             }
         }

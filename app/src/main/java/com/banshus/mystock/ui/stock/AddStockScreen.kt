@@ -38,6 +38,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -57,6 +58,7 @@ import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.ui.tool.DatePickerModal
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -69,11 +71,14 @@ import com.maxkeppeler.sheets.clock.ClockDialog
 import com.maxkeppeler.sheets.clock.models.ClockConfig
 import com.maxkeppeler.sheets.clock.models.ClockSelection
 import java.text.DecimalFormat
+import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Calendar
+import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -87,16 +92,58 @@ fun AddStockScreen(
     //撈第一筆帳戶
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
 
-    //日期
-    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-    val today: String = LocalDate.now().format(dateFormatter)
-    var stockDateTime by remember { mutableStateOf(today) }
-    val calendarState = rememberUseCaseState()
-    //時間
-    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:00")
-    val nowTime: String = LocalTime.now().format(timeFormatter)
-    val selectedTime = remember { mutableStateOf(nowTime) }
-    val clockState = rememberUseCaseState()
+    //日期選擇棄
+    val initialDate =  Calendar.getInstance().timeInMillis
+    var showDatePicker by remember { mutableStateOf(false) }
+    var selectedDate by remember { mutableStateOf<Long?>(initialDate) }
+
+    val formattedDate = selectedDate?.let {
+        val calendar = Calendar.getInstance().apply {
+            timeInMillis = it
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
+    } ?: "選擇日期"
+
+    //時間選擇器
+    val initialDateTime =  System.currentTimeMillis()
+    val calendar = Calendar.getInstance().apply {
+        timeInMillis = initialDateTime
+    }
+    val initialHour = calendar.get(Calendar.HOUR_OF_DAY)
+    val initialMinute = calendar.get(Calendar.MINUTE)
+
+    var selectedTime by remember {
+        mutableStateOf(
+            TimePickerState(
+                initialHour = initialHour,
+                initialMinute = initialMinute,
+                is24Hour = true
+            )
+        )
+    }
+    var showTimePicker by remember { mutableStateOf(false) }
+    val formatter = remember { SimpleDateFormat("hh:mm a", Locale.getDefault()) }
+    val buttonText = run {
+        val cal = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+            set(Calendar.MINUTE, selectedTime.minute)
+        }
+        formatter.format(cal.time)
+    }
+//    //日期
+//    val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+//    val today: String = LocalDate.now().format(dateFormatter)
+//    var stockDateTime by remember { mutableStateOf(today) }
+//    val calendarState = rememberUseCaseState()
+//    //時間
+//    val timeFormatter = DateTimeFormatter.ofPattern("HH:mm:00")
+//    val nowTime: String = LocalTime.now().format(timeFormatter)
+//    val selectedTime = remember { mutableStateOf(nowTime) }
+//    val clockState = rememberUseCaseState()
     // 手續費
     var commission by remember { mutableStateOf("0") }
     var isCommissionError by remember { mutableStateOf(false) }
@@ -115,11 +162,12 @@ fun AddStockScreen(
     //交易類別
     var selectedTransactionType by remember { mutableIntStateOf(0) }
     //交易時間
-    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:00")
-    val dateTimeString = "$stockDateTime ${selectedTime.value}"
-    val localDateTime = LocalDateTime.parse(dateTimeString, dateTimeFormatter)
-    val instant = localDateTime.toInstant(ZoneOffset.UTC)
-    val transactionDate: Long = instant.toEpochMilli()
+//    val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:00")
+//    val dateTimeString = "$stockDateTime ${selectedTime.value}"
+//    val localDateTime = LocalDateTime.parse(dateTimeString, dateTimeFormatter)
+//    val instant = localDateTime.toInstant(ZoneOffset.UTC)
+//    val transactionDate: Long = instant.toEpochMilli()
+    val transactionDate: Long = combineDateAndTimeVersion2(selectedDate, selectedTime)
     //股數
     var stockQuantity by remember { mutableStateOf("") }
     //每股價格
@@ -532,43 +580,97 @@ fun AddStockScreen(
                         Button(
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                calendarState.show()
+                                showDatePicker = true
                             }) {
-                            Text(stockDateTime)
+                            Text(formattedDate)
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Button(
                             modifier = Modifier.weight(1f),
                             onClick = {
-                                clockState.show()
+                                showTimePicker = true
                             }) {
-                            Text(selectedTime.value)
+                            Text(buttonText)
                         }
                     }
                 }
-                CalendarDialog(
-                    state = calendarState,
-                    config = CalendarConfig(
-                        yearSelection = true,
-                        monthSelection = true,
-                        style = CalendarStyle.MONTH,
-                    ),
-                    selection = CalendarSelection.Dates { newDates ->
-                        stockDateTime = newDates.firstOrNull()?.toString() ?: ""
-                    }
-                )
-
-                ClockDialog(
-                    state = clockState,
-                    selection = ClockSelection.HoursMinutes { hours, minutes ->
-                        val newTime = LocalTime.of(hours, minutes, 0).format(timeFormatter)
-                        selectedTime.value = newTime
-                    },
-                    config = ClockConfig(
-                        defaultTime = LocalTime.parse(selectedTime.value, timeFormatter),
-                        is24HourFormat = true
+                if (showDatePicker) {
+                    DatePickerModal(
+                        selectedDate = selectedDate,
+                        onDateSelected = { date ->
+                            selectedDate = date
+                            showDatePicker = false
+                        },
+                        onDismiss = { showDatePicker = false }
                     )
-                )
+                }
+                if (showTimePicker) {
+                    AdvancedTimePickerExample(
+                        selectedTime = selectedTime,
+                        onDismiss = { showTimePicker = false },
+                        onConfirm = { time ->
+                            selectedTime = time
+                            showTimePicker = false
+                        }
+                    )
+                }
+            }
+            item {
+//                Row(
+//                    modifier = Modifier
+//                        .padding(10.dp)
+//                ) {
+//                    Text(
+//                        text = "交易日期",
+//                        modifier = Modifier
+//                            .align(Alignment.CenterVertically)
+//                            .width(100.dp)
+//                            .padding(start = 10.dp, end = 20.dp),
+//                    )
+//                    Row(
+//                        modifier = Modifier.fillMaxWidth(),
+//                        horizontalArrangement = Arrangement.SpaceBetween
+//                    ) {
+//                        Button(
+//                            modifier = Modifier.weight(1f),
+//                            onClick = {
+//                                calendarState.show()
+//                            }) {
+//                            Text(stockDateTime)
+//                        }
+//                        Spacer(modifier = Modifier.width(16.dp))
+//                        Button(
+//                            modifier = Modifier.weight(1f),
+//                            onClick = {
+//                                clockState.show()
+//                            }) {
+//                            Text(selectedTime.value)
+//                        }
+//                    }
+//                }
+//                CalendarDialog(
+//                    state = calendarState,
+//                    config = CalendarConfig(
+//                        yearSelection = true,
+//                        monthSelection = true,
+//                        style = CalendarStyle.MONTH,
+//                    ),
+//                    selection = CalendarSelection.Dates { newDates ->
+//                        stockDateTime = newDates.firstOrNull()?.toString() ?: ""
+//                    }
+//                )
+//
+//                ClockDialog(
+//                    state = clockState,
+//                    selection = ClockSelection.HoursMinutes { hours, minutes ->
+//                        val newTime = LocalTime.of(hours, minutes, 0).format(timeFormatter)
+//                        selectedTime.value = newTime
+//                    },
+//                    config = ClockConfig(
+//                        defaultTime = LocalTime.parse(selectedTime.value, timeFormatter),
+//                        is24HourFormat = true
+//                    )
+//                )
             }
         }
     }
@@ -679,4 +781,23 @@ fun StockSymbolDropdown(
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+fun combineDateAndTimeVersion2(selectedDate: Long?, selectedTime: TimePickerState): Long {
+    // 如果日期或时间为空，则返回 null
+    if (selectedDate == null) return System.currentTimeMillis()
+    // 创建 Calendar 实例
+    val calendar = Calendar.getInstance().apply {
+        // 设置日期部分
+        timeInMillis = selectedDate
+        // 设置时间部分
+        set(Calendar.HOUR_OF_DAY, selectedTime.hour)
+        set(Calendar.MINUTE, selectedTime.minute)
+        set(Calendar.SECOND, 0) // 可选，设置秒钟
+        set(Calendar.MILLISECOND, 0) // 可选，设置毫秒
+    }
+
+    // 返回时间戳
+    return calendar.timeInMillis
 }

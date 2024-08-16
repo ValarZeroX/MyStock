@@ -186,7 +186,7 @@ fun RangeTypeSelectionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "選擇報表範圍")
+            Text(text = "選擇日期範圍")
         },
         text = {
             Column {

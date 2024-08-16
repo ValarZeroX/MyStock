@@ -57,7 +57,11 @@ fun ReportScreen(
     val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
     val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
-    Log.d("allAccountsRecord", "$allAccountsRecord")
+    val accountId = 3
+    val accountRecord = allAccountsRecord[accountId]
+
+// 打印 accountId 为 3 的数据
+    Log.d("AccountRecord", "$accountRecord")
 
     Log.d("startDate", "$startDate")
     Log.d("endDate", "$endDate")

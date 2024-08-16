@@ -53,4 +53,5 @@ class StockViewModel : ViewModel() {
         fun hideDialog() {
                 _showRangeTypeDialog.value = false
         }
+
 }

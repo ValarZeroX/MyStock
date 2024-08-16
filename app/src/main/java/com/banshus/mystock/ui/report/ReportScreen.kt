@@ -48,13 +48,14 @@ fun ReportScreen(
     //DateSwitcher使用
     var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
+    val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
 
     var selectedReportTabIndex by stockViewModel.selectedReportTabIndex
 //    val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
 
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
     val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
     val accountId = 3

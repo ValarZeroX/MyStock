@@ -120,11 +120,12 @@ fun StockListScreen(
 //            .toInstant().toEpochMilli()
     var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
+    val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
     Log.d("startDate", "$startDate")
     Log.d("endDate", "$endDate")
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    val endDateMillis = endDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
     Log.d("startDateMillis", "$startDateMillis")
     Log.d("endDateMillis", "$endDateMillis")
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRangeAndAccount(

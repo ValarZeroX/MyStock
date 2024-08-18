@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -31,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.repository.RealizedTrade
 import com.banshus.mystock.ui.tool.DateRangeType
@@ -62,7 +65,8 @@ fun ReportScreen(
     val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
 
-    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts().observeAsState(emptyMap())
+    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts()
+        .observeAsState(emptyMap())
 
     realizedTrades.forEach { (accountId, tradesBySymbol) ->
         Log.d("tradesBySymbol", "$tradesBySymbol")
@@ -79,7 +83,10 @@ fun ReportScreen(
 //        }
     }
 
-    val allAccountsRecord by stockRecordViewModel.getFilteredRealizedTrades(startDateMillis,endDateMillis).observeAsState(emptyMap())
+    val allAccountsRecord by stockRecordViewModel.getFilteredRealizedTrades(
+        startDateMillis,
+        endDateMillis
+    ).observeAsState(emptyMap())
     val selectedAccount = 2
 //    // 处理获取到的数据，并展示在 UI 中
 //    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
@@ -157,12 +164,15 @@ fun ReportScreen(
                         Text("總覽")
                         AccountTab(allAccountsRecord[selectedAccount])
                     }
+
                     1 -> {
                         Text("帳戶")
                     }
+
                     2 -> {
                         Text("市場")
                     }
+
                     3 -> {
                         Text("股票")
                     }
@@ -186,19 +196,100 @@ fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
             }
 
             realizedTrades.forEach { trade ->
-                // 显示每个交易记录的详细信息
+                Log.d("trade", "$trade")
                 item {
                     Column(modifier = Modifier.padding(4.dp)) {
+                        var buyTotal = 0.0
+                        var tradeTotal = 0.0
+                        var sellTotal = 0.0
                         trade.buy.forEach { record ->
+                            buyTotal += record.quantity * record.pricePerUnit
+                            tradeTotal += record.commission + record.transactionTax
                             ListItem(
                                 headlineContent = { Text("Buy ${record.quantity} shares at ${record.pricePerUnit}") },
-                                supportingContent = { Text("Commission: ${record.commission}, Transaction Tax: ${record.transactionTax}") }
+                                supportingContent = { Text("手續費: ${record.commission}, 證交稅x: ${record.transactionTax}") }
                             )
                             HorizontalDivider()
                         }
+                        sellTotal += trade.sell.quantity * trade.sell.pricePerUnit
+                        tradeTotal += trade.sell.commission + trade.sell.transactionTax
                         ListItem(
                             headlineContent = { Text("Sell ${trade.sell.quantity} shares at ${trade.sell.pricePerUnit}") },
-                            supportingContent = { Text("Commission: ${trade.sell.commission}, Transaction Tax: ${trade.sell.transactionTax}") }
+                            supportingContent = { Text("手續費: ${trade.sell.commission}, 證交稅: ${trade.sell.transactionTax}") }
+                        )
+                        HorizontalDivider()
+                        val profitValue = sellTotal - buyTotal
+                        val profitPercentValue = (profitValue / buyTotal) * 100
+                        ListItem(
+                            headlineContent = { Text(stockSymbol) },
+                            supportingContent = {
+                                Column {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            "買進",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            "賣出",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            "交易費用",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            "$buyTotal",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            text = "$sellTotal",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            formatNumber(trade.sell.commission),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            "市值",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            "損益",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            "損益率",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                    }
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Text(
+                                            formatNumber(profitValue),
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            formatNumber(profitValue),
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                        Text(
+                                            "${formatNumber(profitPercentValue)}%",
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                }
+                            }
                         )
                         HorizontalDivider()
                     }

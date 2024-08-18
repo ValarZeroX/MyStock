@@ -142,7 +142,6 @@ class StockRecordViewModel(
         endDate: Long
     ): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
         val allRealizedTrades = getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts()
-
         return allRealizedTrades.map { allTrades ->
             allTrades.mapValues { (_, stockTrades) ->
                 stockTrades.mapValues { (_, realizedTrades) ->

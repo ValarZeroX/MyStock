@@ -382,26 +382,16 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                             }
                             1 -> { // 卖出
                                 var quantityToSell = record.quantity
-                                val currentSell = record.copy(quantity = 0)
+                                val currentSell = record.copy(quantity = quantityToSell)
+                                val buysForThisSell = mutableListOf<StockRecord>()
 
                                 while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
                                     val buy = buyRecords.removeAt(0)
                                     val quantitySold = minOf(buy.quantity, quantityToSell)
                                     val allocatedCommission = formatNumberNoDecimalPointDouble(buy.commission * quantitySold / buy.quantity)
 
-                                    val sellRecord = currentSell.copy(
-                                        quantity = quantitySold,
-                                        commission = formatNumberNoDecimalPointDouble(record.commission * quantitySold / record.quantity)
-                                    )
-
-                                    realizedTradesForSymbol.add(
-                                        RealizedTrade(
-                                            buy = listOf(
-                                                buy.copy(quantity = quantitySold, commission = allocatedCommission)
-                                            ),
-                                            sell = sellRecord
-                                        )
-                                    )
+                                    val buyForSell = buy.copy(quantity = quantitySold, commission = allocatedCommission)
+                                    buysForThisSell.add(buyForSell)
 
                                     buy.quantity -= quantitySold
                                     quantityToSell -= quantitySold
@@ -410,11 +400,22 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                                         buyRecords.add(0, buy)
                                     }
                                 }
+
+                                if (buysForThisSell.isNotEmpty()) {
+                                    realizedTradesForSymbol.add(
+                                        RealizedTrade(
+                                            buy = buysForThisSell,
+                                            sell = currentSell
+                                        )
+                                    )
+                                }
                             }
                         }
                     }
 
-                    realizedTrades[stockSymbol] = realizedTradesForSymbol
+                    if (realizedTradesForSymbol.isNotEmpty()) {
+                        realizedTrades[stockSymbol] = realizedTradesForSymbol
+                    }
                 }
 
                 results[accountId] = realizedTrades

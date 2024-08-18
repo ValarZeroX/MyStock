@@ -56,16 +56,36 @@ fun ReportScreen(
 
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
-    val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
-    val accountId = 3
-    val accountRecord = allAccountsRecord[accountId]
 
-// 打印 accountId 为 3 的数据
-    Log.d("AccountRecord", "$accountRecord")
 
-    Log.d("startDate", "$startDate")
-    Log.d("endDate", "$endDate")
+    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts().observeAsState(emptyMap())
+
+    realizedTrades.forEach { (accountId, tradesBySymbol) ->
+        Log.d("tradesBySymbol", "$tradesBySymbol")
+//        tradesBySymbol.forEach { (stockSymbol, trades) ->
+//            trades.forEach { trade ->
+//                // 这里可以展示每一笔买卖交易的详细信息
+//                trade.buy.forEach { buyRecord ->
+//                    // 展示买入记录
+////                    Log.d("buyRecord", "$buyRecord")
+//                }
+//                // 展示卖出记录
+////                Log.d("trades", "$trades")
+//            }
+//        }
+    }
+
+
+//    stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
+//    val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
+//    val accountId = 3
+//    val accountRecord = allAccountsRecord[accountId]
+//
+//// 打印 accountId 为 3 的数据
+//    Log.d("AccountRecord", "$accountRecord")
+//
+//    Log.d("startDate", "$startDate")
+//    Log.d("endDate", "$endDate")
     Scaffold(
         topBar = {
             ReportHeader(stockViewModel)

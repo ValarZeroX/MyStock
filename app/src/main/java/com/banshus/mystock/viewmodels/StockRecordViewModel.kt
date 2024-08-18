@@ -14,6 +14,7 @@ import androidx.lifecycle.viewModelScope
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.RealizedResult
+import com.banshus.mystock.repository.RealizedTrade
 import com.banshus.mystock.repository.StockRecordRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
@@ -112,6 +113,12 @@ class StockRecordViewModel(
             }
         }
     }
+
+    fun getRealizedTradesForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+        return repository.getRealizedTradesForAllAccounts()
+    }
+
+    //***********************
 
     private val _realizedGainsAndLossesForAllAccounts = MutableLiveData<Map<Int, Map<String, Any>>>()
     val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, Map<String, Any>>> = _realizedGainsAndLossesForAllAccounts

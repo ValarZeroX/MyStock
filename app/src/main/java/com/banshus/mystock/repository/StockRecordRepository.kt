@@ -15,6 +15,11 @@ data class RealizedResult(
     val totalTransactionTax: Double // 交易税总和
 )
 
+data class RealizedTrade(
+    val buy: List<StockRecord>,  // 买入记录
+    val sell: StockRecord         // 卖出记录
+)
+
 class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
 
     suspend fun insertStockRecord(stockRecord: StockRecord) {
@@ -211,6 +216,65 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
             results
         }
     }
+
+    fun getRealizedTradesForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+        return getAllStockRecords().map { stockRecords ->
+            val results = mutableMapOf<Int, MutableMap<String, MutableList<RealizedTrade>>>()
+
+            stockRecords.groupBy { it.accountId }.forEach { (accountId, accountRecords) ->
+                accountRecords.groupBy { it.stockSymbol }.forEach { (stockSymbol, records) ->
+                    val realizedTrades = mutableListOf<RealizedTrade>()
+                    val buyRecords = mutableListOf<StockRecord>()
+
+                    records.sortedBy { it.transactionDate }.forEach { record ->
+                        when (record.transactionType) {
+                            0 -> { // 买入
+                                buyRecords.add(record)
+                            }
+                            1 -> { // 卖出
+                                var quantityToSell = record.quantity
+                                val matchedBuys = mutableListOf<StockRecord>()
+
+                                val iterator = buyRecords.iterator()
+                                while (iterator.hasNext() && quantityToSell > 0) {
+                                    val buyRecord = iterator.next()
+                                    val availableQuantity = buyRecord.quantity
+                                    val quantityToMatch = minOf(quantityToSell, availableQuantity)
+
+                                    matchedBuys.add(
+                                        buyRecord.copy(
+                                            quantity = quantityToMatch,
+                                            totalAmount = quantityToMatch * buyRecord.pricePerUnit
+                                        )
+                                    )
+
+                                    quantityToSell -= quantityToMatch
+                                    buyRecord.quantity -= quantityToMatch
+
+                                    if (buyRecord.quantity == 0) {
+                                        iterator.remove()
+                                    }
+                                }
+
+                                realizedTrades.add(RealizedTrade(buy = matchedBuys, sell = record))
+                            }
+                        }
+                    }
+
+                    if (realizedTrades.isNotEmpty()) {
+                        if (!results.containsKey(accountId)) {
+                            results[accountId] = mutableMapOf()
+                        }
+                        results[accountId]!!.put(stockSymbol, realizedTrades)
+                    }
+                }
+            }
+
+            results
+        }
+    }
+
+    // ***************
 
     fun getRealizedGainsAndLossesForAllAccounts(
         startDate: Long,

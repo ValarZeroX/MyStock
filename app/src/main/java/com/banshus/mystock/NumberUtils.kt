@@ -35,6 +35,10 @@ object NumberUtils {
         return decimalFormat.format(number)
     }
 
+    fun formatNumberNoDecimalPointDouble(number: Double): Double {
+        return "%.2f".format(number).toDouble()
+    }
+
     fun getProfitColor(value: Double, positiveColor: Color, negativeColor: Color, defaultColor: Color): Color {
         return when {
             value > 0 -> positiveColor

@@ -6,12 +6,16 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Tab
@@ -25,12 +29,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.repository.RealizedTrade
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
-import com.banshus.mystock.ui.tool.RangeTypeSelectionDialog
-import com.banshus.mystock.ui.tool.getStartAndEndDate
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -74,6 +78,22 @@ fun ReportScreen(
 //            }
 //        }
     }
+
+    val allAccountsRecord by stockRecordViewModel.getFilteredRealizedTrades(startDateMillis,endDateMillis).observeAsState(emptyMap())
+    val selectedAccount = 2
+//    // 处理获取到的数据，并展示在 UI 中
+//    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
+//        Text(text = "Account ID: $accountId")
+//        Log.d("Account", "$accountId")
+//        realizedTradesByStock.forEach { (stockSymbol, trades) ->
+//            Log.d("Stock", stockSymbol)
+//            Log.d("Stock", "$trades")
+////            trades.forEach { trade ->
+////                Text(text = "Buy: ${trade.buy}")
+////                Text(text = "Sell: ${trade.sell}")
+////            }
+//        }
+//    }
 
 
 //    stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
@@ -135,6 +155,7 @@ fun ReportScreen(
                 when (selectedReportTabIndex) {
                     0 -> {
                         Text("總覽")
+                        AccountTab(allAccountsRecord[selectedAccount])
                     }
                     1 -> {
                         Text("帳戶")
@@ -151,7 +172,41 @@ fun ReportScreen(
     }
 }
 
+@Composable
+fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
+    LazyColumn {
+        map?.forEach { (stockSymbol, realizedTrades) ->
+            // 显示股票代码作为标题
+            item {
+                Text(
+                    text = stockSymbol,
+//                    style = MaterialTheme.typography.h6,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
 
+            realizedTrades.forEach { trade ->
+                // 显示每个交易记录的详细信息
+                item {
+                    Column(modifier = Modifier.padding(4.dp)) {
+                        trade.buy.forEach { record ->
+                            ListItem(
+                                headlineContent = { Text("Buy ${record.quantity} shares at ${record.pricePerUnit}") },
+                                supportingContent = { Text("Commission: ${record.commission}, Transaction Tax: ${record.transactionTax}") }
+                            )
+                            HorizontalDivider()
+                        }
+                        ListItem(
+                            headlineContent = { Text("Sell ${trade.sell.quantity} shares at ${trade.sell.pricePerUnit}") },
+                            supportingContent = { Text("Commission: ${trade.sell.commission}, Transaction Tax: ${trade.sell.transactionTax}") }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

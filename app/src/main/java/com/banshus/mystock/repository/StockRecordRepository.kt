@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.banshus.mystock.data.dao.StockRecordDao
 import com.banshus.mystock.data.entities.StockRecord
 import androidx.lifecycle.map
+import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPointDouble
 
 data class RealizedResult(
     val buyCost: Double,       // 买入成本
@@ -358,5 +359,68 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
             }
         }
         return realized
+    }
+
+    //********
+    fun getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+        return getAllStockRecords().map { stockRecords ->
+            val results = mutableMapOf<Int, MutableMap<String, List<RealizedTrade>>>()
+
+            // 按 accountId 进行分类
+            stockRecords.groupBy { it.accountId }.forEach { (accountId, records) ->
+                val realizedTrades = mutableMapOf<String, List<RealizedTrade>>()
+
+                // 按 stockSymbol 分类
+                records.groupBy { it.stockSymbol }.forEach { (stockSymbol, symbolRecords) ->
+                    val buyRecords = mutableListOf<StockRecord>()
+                    val realizedTradesForSymbol = mutableListOf<RealizedTrade>()
+
+                    symbolRecords.forEach { record ->
+                        when (record.transactionType) {
+                            0 -> { // 买入
+                                buyRecords.add(record)
+                            }
+                            1 -> { // 卖出
+                                var quantityToSell = record.quantity
+                                val currentSell = record.copy(quantity = 0)
+
+                                while (quantityToSell > 0 && buyRecords.isNotEmpty()) {
+                                    val buy = buyRecords.removeAt(0)
+                                    val quantitySold = minOf(buy.quantity, quantityToSell)
+                                    val allocatedCommission = formatNumberNoDecimalPointDouble(buy.commission * quantitySold / buy.quantity)
+
+                                    val sellRecord = currentSell.copy(
+                                        quantity = quantitySold,
+                                        commission = formatNumberNoDecimalPointDouble(record.commission * quantitySold / record.quantity)
+                                    )
+
+                                    realizedTradesForSymbol.add(
+                                        RealizedTrade(
+                                            buy = listOf(
+                                                buy.copy(quantity = quantitySold, commission = allocatedCommission)
+                                            ),
+                                            sell = sellRecord
+                                        )
+                                    )
+
+                                    buy.quantity -= quantitySold
+                                    quantityToSell -= quantitySold
+
+                                    if (buy.quantity > 0) {
+                                        buyRecords.add(0, buy)
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    realizedTrades[stockSymbol] = realizedTradesForSymbol
+                }
+
+                results[accountId] = realizedTrades
+            }
+
+            results
+        }
     }
 }

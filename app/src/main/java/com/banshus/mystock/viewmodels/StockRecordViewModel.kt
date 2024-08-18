@@ -131,6 +131,28 @@ class StockRecordViewModel(
             }
         }
     }
+
+    //**************************
+    fun getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+        return repository.getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts()
+    }
+
+    fun getFilteredRealizedTrades(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+        val allRealizedTrades = getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts()
+
+        return allRealizedTrades.map { allTrades ->
+            allTrades.mapValues { (_, stockTrades) ->
+                stockTrades.mapValues { (_, realizedTrades) ->
+                    realizedTrades.filter { trade ->
+                        trade.sell.transactionDate in startDate..endDate
+                    }
+                }.filterValues { it.isNotEmpty() }
+            }
+        }
+    }
 }
 
 class StockRecordViewModelFactory(

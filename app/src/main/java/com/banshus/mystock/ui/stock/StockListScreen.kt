@@ -355,7 +355,10 @@ fun StockListScreen(
 
 //                                StockLineChart(stockRecords)
                                 LazyColumn {
-                                    items(holdings.entries.toList()) { (stockSymbol, holdingData) ->
+                                    items(holdings.entries.filter { (_, holdingData) ->
+                                        val (totalQuantity, _) = holdingData
+                                        totalQuantity != 0
+                                    }.toList()) { (stockSymbol, holdingData) ->
 //                                        Log.d(
 //                                            "ttt",
 //                                            "Stock: $stockSymbol, Total Value: $holdingData"

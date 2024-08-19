@@ -7,12 +7,16 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -29,20 +33,49 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import com.banshus.mystock.DateValueFormatter
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.SharedOptions.optionsStockType
+import com.banshus.mystock.SharedOptions.optionsTransactionType
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.repository.RealizedTrade
+import com.banshus.mystock.ui.theme.StockBlue
+import com.banshus.mystock.ui.theme.StockGreen
+import com.banshus.mystock.ui.theme.StockRed
+import com.banshus.mystock.ui.theme.StockText
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
+import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
+import com.banshus.mystock.viewmodels.StockMetrics
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Calendar
 
 @Composable
 fun ReportScreen(
@@ -65,29 +98,35 @@ fun ReportScreen(
     val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
 
-    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts()
-        .observeAsState(emptyMap())
-
-    realizedTrades.forEach { (accountId, tradesBySymbol) ->
-        Log.d("tradesBySymbol", "$tradesBySymbol")
-//        tradesBySymbol.forEach { (stockSymbol, trades) ->
-//            trades.forEach { trade ->
-//                // 这里可以展示每一笔买卖交易的详细信息
-//                trade.buy.forEach { buyRecord ->
-//                    // 展示买入记录
-////                    Log.d("buyRecord", "$buyRecord")
-//                }
-//                // 展示卖出记录
-////                Log.d("trades", "$trades")
-//            }
-//        }
-    }
+//    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts()
+//        .observeAsState(emptyMap())
+//
+//    realizedTrades.forEach { (accountId, tradesBySymbol) ->
+//        Log.d("tradesBySymbol", "$tradesBySymbol")
+////        tradesBySymbol.forEach { (stockSymbol, trades) ->
+////            trades.forEach { trade ->
+////                // 这里可以展示每一笔买卖交易的详细信息
+////                trade.buy.forEach { buyRecord ->
+////                    // 展示买入记录
+//////                    Log.d("buyRecord", "$buyRecord")
+////                }
+////                // 展示卖出记录
+//////                Log.d("trades", "$trades")
+////            }
+////        }
+//    }
 
     val allAccountsRecord by stockRecordViewModel.getFilteredRealizedTrades(
         startDateMillis,
         endDateMillis
     ).observeAsState(emptyMap())
     val selectedAccount = 2
+
+    val accountMetrics by stockRecordViewModel.calculateMetricsForSelectedAccount(
+        startDateMillis,
+        endDateMillis,
+        selectedAccount
+    ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0,0.0))
 //    // 处理获取到的数据，并展示在 UI 中
 //    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
 //        Text(text = "Account ID: $accountId")
@@ -113,68 +152,74 @@ fun ReportScreen(
 //
 //    Log.d("startDate", "$startDate")
 //    Log.d("endDate", "$endDate")
-    Scaffold(
-        topBar = {
-            ReportHeader(stockViewModel)
-        },
-    ) { innerPadding ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(innerPadding)
-        ) {
-            Column {
-                TabRow(
-                    selectedTabIndex = selectedReportTabIndex,
+    if (allAccountsRecord.isEmpty()) {
+        // 顯示加載動畫
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
+        }
+    } else {
+        Scaffold(
+            topBar = {
+                ReportHeader(stockViewModel)
+            },
+        ) { innerPadding ->
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.surface)
+                    .padding(innerPadding)
+            ) {
+                Column {
+                    TabRow(
+                        selectedTabIndex = selectedReportTabIndex,
 //                    containerColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Tab(
-                        selected = selectedReportTabIndex == 0,
-                        onClick = { selectedReportTabIndex = 0 },
-                        text = { Text("總覽") }
-                    )
-                    Tab(
-                        selected = selectedReportTabIndex == 1,
-                        onClick = { selectedReportTabIndex = 1 },
-                        text = { Text("帳戶") }
-                    )
-                    Tab(
-                        selected = selectedReportTabIndex == 2,
-                        onClick = { selectedReportTabIndex = 2 },
-                        text = { Text("市場") }
-                    )
-                    Tab(
-                        selected = selectedReportTabIndex == 3,
-                        onClick = { selectedReportTabIndex = 3 },
-                        text = { Text("股票") }
-                    )
-                }
-                DateSwitcher(
-                    stockViewModel = stockViewModel,
-                    initialDate = startDate,
-                    initialRangeType = currentRangeType,
-                    onDateChanged = { start, end ->
-                        startDate = start
-                        endDate = end
+                    ) {
+                        Tab(
+                            selected = selectedReportTabIndex == 0,
+                            onClick = { selectedReportTabIndex = 0 },
+                            text = { Text("總覽") }
+                        )
+                        Tab(
+                            selected = selectedReportTabIndex == 1,
+                            onClick = { selectedReportTabIndex = 1 },
+                            text = { Text("帳戶") }
+                        )
+                        Tab(
+                            selected = selectedReportTabIndex == 2,
+                            onClick = { selectedReportTabIndex = 2 },
+                            text = { Text("市場") }
+                        )
+                        Tab(
+                            selected = selectedReportTabIndex == 3,
+                            onClick = { selectedReportTabIndex = 3 },
+                            text = { Text("股票") }
+                        )
                     }
-                )
-                when (selectedReportTabIndex) {
-                    0 -> {
-                        Text("總覽")
-                        AccountTab(allAccountsRecord[selectedAccount])
-                    }
+                    DateSwitcher(
+                        stockViewModel = stockViewModel,
+                        initialDate = startDate,
+                        initialRangeType = currentRangeType,
+                        onDateChanged = { start, end ->
+                            startDate = start
+                            endDate = end
+                        }
+                    )
+                    when (selectedReportTabIndex) {
+                        0 -> {
+                            AccountTab(allAccountsRecord[selectedAccount], accountMetrics)
+                        }
 
-                    1 -> {
-                        Text("帳戶")
-                    }
+                        1 -> {
+                            Text("帳戶")
+                        }
 
-                    2 -> {
-                        Text("市場")
-                    }
+                        2 -> {
+                            Text("市場")
+                        }
 
-                    3 -> {
-                        Text("股票")
+                        3 -> {
+                            Text("股票")
+                        }
                     }
                 }
             }
@@ -183,21 +228,66 @@ fun ReportScreen(
 }
 
 @Composable
-fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
+fun AccountTab(
+    map: Map<String, List<RealizedTrade>>?,
+    accountMetrics: DetailedStockMetrics
+) {
+    val profitColor = getProfitColor(
+        accountMetrics.totalProfit,
+        StockRed,
+        StockGreen,
+        MaterialTheme.colorScheme.onSurface
+    )
+    Column {
+        Row {
+            Text(text = "總買進",modifier = Modifier.weight(1f))
+            Text(text = "總賣出",modifier = Modifier.weight(1f))
+            Text(text = "總手續費",modifier = Modifier.weight(1f))
+        }
+        Row {
+            Text(
+                text = formatNumber(accountMetrics.totalCostBasis),
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = formatNumber(accountMetrics.totalSellIncome),
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = formatNumber(accountMetrics.totalCommission),
+                modifier = Modifier.weight(1f)
+            )
+        }
+        Row {
+            Text(text = "總交易稅",modifier = Modifier.weight(1f))
+            Text(text = "總損益",modifier = Modifier.weight(1f))
+            Text(text = "總損益率",modifier = Modifier.weight(1f))
+        }
+        Row {
+            Text(
+                text = formatNumber(accountMetrics.totalTransactionTax),
+                modifier = Modifier.weight(1f)
+            )
+            Text(
+                text = formatNumber(accountMetrics.totalProfit),
+                modifier = Modifier.weight(1f),
+                color = profitColor
+            )
+            Text(
+                text = "${formatNumber(accountMetrics.totalProfitPercent)}%",
+                modifier = Modifier.weight(1f),
+                color = profitColor
+            )
+        }
+    }
     LazyColumn {
+               item {
+                   AccountMetricsLineChart(map)
+               }
         map?.forEach { (stockSymbol, realizedTrades) ->
-            // 显示股票代码作为标题
-            item {
-                Text(
-                    text = stockSymbol,
-//                    style = MaterialTheme.typography.h6,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-
             realizedTrades.forEach { trade ->
-                Log.d("trade", "$trade")
                 item {
+                    var isExpanded by remember { mutableStateOf(false) }
                     Column(modifier = Modifier.padding(4.dp)) {
                         var buyTotal = 0.0
                         var tradeTotal = 0.0
@@ -205,21 +295,17 @@ fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
                         trade.buy.forEach { record ->
                             buyTotal += record.quantity * record.pricePerUnit
                             tradeTotal += record.commission + record.transactionTax
-                            ListItem(
-                                headlineContent = { Text("Buy ${record.quantity} shares at ${record.pricePerUnit}") },
-                                supportingContent = { Text("手續費: ${record.commission}, 證交稅x: ${record.transactionTax}") }
-                            )
-                            HorizontalDivider()
                         }
                         sellTotal += trade.sell.quantity * trade.sell.pricePerUnit
                         tradeTotal += trade.sell.commission + trade.sell.transactionTax
-                        ListItem(
-                            headlineContent = { Text("Sell ${trade.sell.quantity} shares at ${trade.sell.pricePerUnit}") },
-                            supportingContent = { Text("手續費: ${trade.sell.commission}, 證交稅: ${trade.sell.transactionTax}") }
-                        )
-                        HorizontalDivider()
                         val profitValue = sellTotal - buyTotal
                         val profitPercentValue = (profitValue / buyTotal) * 100
+                        val profitColorStock = getProfitColor(
+                            profitValue,
+                            StockRed,
+                            StockGreen,
+                            MaterialTheme.colorScheme.onSurface
+                        )
                         ListItem(
                             headlineContent = { Text(stockSymbol) },
                             supportingContent = {
@@ -244,11 +330,11 @@ fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Text(
-                                            "$buyTotal",
+                                            formatNumber(buyTotal),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            text = "$sellTotal",
+                                            text = formatNumber(sellTotal),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
@@ -260,15 +346,15 @@ fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Text(
-                                            "市值",
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
                                             "損益",
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
                                             "損益率",
+                                            modifier = Modifier.weight(1f)
+                                        )
+                                        Text(
+                                            "",
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -277,26 +363,189 @@ fun AccountTab(map: Map<String, List<RealizedTrade>>?) {
                                     ) {
                                         Text(
                                             formatNumber(profitValue),
-                                            modifier = Modifier.weight(1f)
-                                        )
-                                        Text(
-                                            formatNumber(profitValue),
                                             modifier = Modifier.weight(1f),
+                                            color = profitColorStock
                                         )
                                         Text(
                                             "${formatNumber(profitPercentValue)}%",
                                             modifier = Modifier.weight(1f),
+                                            color = profitColorStock
+                                        )
+                                        Text(
+                                            "",
+                                            modifier = Modifier.weight(1f),
                                         )
                                     }
+                                }
+                            },
+                            trailingContent = {
+                                IconButton(onClick = { isExpanded = !isExpanded }) {
+                                    Icon(
+                                        imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                                        contentDescription = "Expand/Collapse"
+                                    )
                                 }
                             }
                         )
                         HorizontalDivider()
+                        if (isExpanded) {
+                            trade.buy.forEach { record ->
+                                ListItemDetail(record = record)
+                            }
+
+                            ListItemDetail(record = trade.sell)
+                        }
                     }
                 }
             }
         }
     }
+}
+
+@Composable
+fun ListItemDetail(record: StockRecord) {
+    val transactionType = optionsTransactionType[record.transactionType]
+    val stockType = optionsStockType[record.stockType]
+
+    // 时间格式化
+    val recordDateMillis = record.transactionDate
+    val dateTime = Instant.ofEpochMilli(recordDateMillis)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
+    val formatterDate = DateTimeFormatter.ofPattern("MMM dd, yyyy")
+    val formattedDate = dateTime.format(formatterDate)
+    val formatterTime = DateTimeFormatter.ofPattern("HH:mm")
+    val formattedTime = dateTime.format(formatterTime)
+
+    ListItem(
+        headlineContent = { Text(transactionType) },
+        supportingContent = {
+            Column {
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text("股數", modifier = Modifier.weight(1f))
+                    Text("每股價格", modifier = Modifier.weight(1f))
+                    Text("手續費", modifier = Modifier.weight(1f))
+                    Text("證交稅", modifier = Modifier.weight(1f))
+                }
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    Text("${record.quantity}", modifier = Modifier.weight(1f))
+                    Text(formatNumber(record.pricePerUnit), modifier = Modifier.weight(1f))
+                    Text(formatNumber(record.commission), modifier = Modifier.weight(1f))
+                    Text(formatNumber(record.transactionTax), modifier = Modifier.weight(1f))
+                }
+            }
+        },
+        trailingContent = {
+            Column {
+                Text(text = formattedDate)
+                Text(text = formattedTime)
+                Text(text = stockType)
+            }
+        }
+    )
+    HorizontalDivider()
+}
+
+@Composable
+fun AccountMetricsLineChart(
+    realizedTrades: Map<String, List<RealizedTrade>>?
+) {
+    val context = LocalContext.current
+    val textColor = StockText.toArgb()
+    val profitColor = StockRed.toArgb()
+    val profitPercentColor = StockBlue.toArgb()
+    // 创建数据集
+    // 创建数据集
+    val profitEntries = mutableListOf<Entry>()
+    val profitPercentEntries = mutableListOf<Entry>()
+
+    // 用日期来分组交易记录
+    val tradesByDate = mutableMapOf<Long, MutableList<RealizedTrade>>()
+
+    realizedTrades?.forEach { (_, trades) ->
+        trades.forEach { trade ->
+            // 将时间戳转换为当天的开始时间（零点）
+            val date = trade.sell.transactionDate
+            val calendar = Calendar.getInstance().apply {
+                timeInMillis = date
+                set(Calendar.HOUR_OF_DAY, 0)
+                set(Calendar.MINUTE, 0)
+                set(Calendar.SECOND, 0)
+                set(Calendar.MILLISECOND, 0)
+            }
+            val dateKey = calendar.timeInMillis
+
+            // 将交易按照日期分组
+            if (tradesByDate.containsKey(dateKey)) {
+                tradesByDate[dateKey]?.add(trade)
+            } else {
+                tradesByDate[dateKey] = mutableListOf(trade)
+            }
+        }
+    }
+    val sortedTradesByDate = tradesByDate.toSortedMap()
+    // 计算每个日期的总損益和損益率
+    sortedTradesByDate.forEach { (date, trades) ->
+        var totalBuy = 0.0
+        var totalSell = 0.0
+
+        trades.forEach { trade ->
+            trade.buy.forEach { record ->
+                totalBuy += record.quantity * record.pricePerUnit
+            }
+            totalSell += trade.sell.quantity * trade.sell.pricePerUnit
+        }
+
+        val profitValue = totalSell - totalBuy
+        val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100  else 0.0
+
+        val xValue = date.toFloat()
+        profitEntries.add(Entry(xValue, profitValue.toFloat()))
+        profitPercentEntries.add(Entry(xValue, profitPercentValue.toFloat()))
+    }
+    profitEntries.forEach { entry ->
+        Log.d("ProfitEntry", "Date: ${entry.x}, Profit: ${entry.y}")
+    }
+    // 创建数据集
+    val profitDataSet = LineDataSet(profitEntries, "損益金額").apply {
+        color = profitColor
+        lineWidth = 2f
+        valueTextColor = textColor
+        valueTextSize = 8f
+    }
+
+    val profitPercentDataSet = LineDataSet(profitPercentEntries, "損益率").apply {
+        color = profitPercentColor
+        lineWidth = 2f
+        axisDependency = YAxis.AxisDependency.RIGHT
+        valueTextColor = textColor
+        valueTextSize = 8f
+    }
+
+    val lineData = LineData(profitDataSet)
+
+    // 初始化图表
+    AndroidView(
+        factory = {
+            LineChart(context).apply {
+                data = lineData
+                description.isEnabled = false
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                axisRight.isEnabled = true
+                axisLeft.isEnabled = true
+                legend.isEnabled = true
+                xAxis.textColor = textColor
+                axisLeft.textColor = textColor
+                axisRight.textColor = textColor
+                legend.textColor = textColor
+                xAxis.valueFormatter = DateValueFormatter()
+                invalidate() // 刷新图表
+            }
+        },
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(200.dp)
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -11,6 +11,7 @@ var StockYellow = Color(0xFFFFCF44)
 var StockPurple = Color(0xFFB15DFF)
 var StockBlue = Color(0xFF72DEFF)
 var StockRed = Color(0xFFDC3545)
+var StockText = Color(0xFFE0E0E0)
 
 val primaryLight = Color(0xFF2B638B)
 val onPrimaryLight = Color(0xFFFFFFFF)

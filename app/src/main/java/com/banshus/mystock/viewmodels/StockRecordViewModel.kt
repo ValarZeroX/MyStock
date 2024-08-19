@@ -26,6 +26,15 @@ data class StockMetrics(
     val totalProfitPercent: Double
 )
 
+data class DetailedStockMetrics(
+    val totalCostBasis: Double,        // 总买入成本
+    val totalSellIncome: Double,       // 总卖出收入
+    val totalProfit: Double,           // 总利润
+    val totalProfitPercent: Double,    // 总利润百分比
+    val totalCommission: Double,       // 总手续费
+    val totalTransactionTax: Double    // 总交易税
+)
+
 class StockRecordViewModel(
     private val repository: StockRecordRepository
 ) : ViewModel() {
@@ -133,7 +142,7 @@ class StockRecordViewModel(
     }
 
     //**************************
-    fun getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
+    private fun getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts(): LiveData<Map<Int, Map<String, List<RealizedTrade>>>> {
         return repository.getRealizedGainsAndLossesWithAllocatedCommissionForAllAccounts()
     }
 
@@ -150,6 +159,64 @@ class StockRecordViewModel(
                     }
                 }.filterValues { it.isNotEmpty() }
             }
+        }
+    }
+
+    fun calculateMetricsForSelectedAccount(
+        startDate: Long,
+        endDate: Long,
+        accountId: Int
+    ): LiveData<DetailedStockMetrics> {
+        val filteredTrades = getFilteredRealizedTrades(startDate, endDate)
+
+        return filteredTrades.map { allTrades ->
+            val trades = allTrades[accountId] ?: emptyMap()
+
+            var totalBuyCost = 0.0
+            var totalSellIncome = 0.0
+            var totalProfit = 0.0
+            var totalCommission = 0.0
+            var totalTransactionTax = 0.0
+
+            // 迭代所有交易记录
+            trades.forEach { (stockSymbol, realizedTrades) ->
+                realizedTrades.forEach { trade ->
+                    // 累计买入成本
+                    trade.buy.forEach { buyRecord ->
+                        totalBuyCost += buyRecord.quantity * buyRecord.pricePerUnit
+                        totalCommission += buyRecord.commission
+                        totalTransactionTax += buyRecord.transactionTax
+                    }
+
+                    // 累计卖出收入
+                    val sellIncome = trade.sell.quantity * trade.sell.pricePerUnit
+                    totalSellIncome += sellIncome
+
+                    // 累计卖出的手续费和交易税
+                    totalCommission += trade.sell.commission
+                    totalTransactionTax += trade.sell.transactionTax
+
+                    // 计算该次交易的利润，并累加到总利润
+                    val profit = sellIncome - (trade.buy.sumOf { it.quantity * it.pricePerUnit })
+                    totalProfit += profit
+                }
+            }
+
+            // 计算利润百分比
+            val totalProfitPercent = if (totalBuyCost != 0.0) {
+                (totalProfit / totalBuyCost) * 100
+            } else {
+                0.0
+            }
+
+            DetailedStockMetrics(
+                totalCostBasis = totalBuyCost,
+                totalSellIncome = totalSellIncome,
+                totalProfit = totalProfit,
+                totalProfitPercent = totalProfitPercent,
+                totalCommission = totalCommission,
+                totalTransactionTax = totalTransactionTax
+            )
         }
     }
 }

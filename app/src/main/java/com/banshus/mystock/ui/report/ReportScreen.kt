@@ -114,10 +114,10 @@ fun ReportScreen(
     Log.d("selectedAccountId","$selectedAccountId")
     Log.d("account","$stockAccounts")
     //DateSwitcher使用
-//    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
-//    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
-    val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
-    val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
+    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
+    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
+//    val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
+//    val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
 
     val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
@@ -241,8 +241,10 @@ fun ReportScreen(
                     }
                     DateSwitcher(
                         stockViewModel = stockViewModel,
+                        initialDate = startDate,
                         onDateChanged = { start, end ->
-                            stockViewModel.setDateRange(start, end)
+                            startDate = start
+                            endDate = end
                         }
                     )
                     when (selectedReportTabIndex) {

@@ -118,8 +118,8 @@ fun StockListScreen(
 //    val endDate =
 //        currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault())
 //            .toInstant().toEpochMilli()
-    val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
-    val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
+    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
+    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
     val endDateTime = endDate.atTime(23, 59, 59)
 
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -455,8 +455,10 @@ fun StockListScreen(
 //                        }
                         DateSwitcher(
                             stockViewModel = stockViewModel,
+                            initialDate = startDate,
                             onDateChanged = { start, end ->
-                                stockViewModel.setDateRange(start, end)
+                                startDate = start
+                                endDate = end
                             }
                         )
                         LazyColumn {

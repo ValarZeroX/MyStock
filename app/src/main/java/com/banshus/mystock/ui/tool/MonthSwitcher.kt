@@ -80,9 +80,10 @@ enum class DateRangeType(val displayName: String) {
 @Composable
 fun DateSwitcher(
     stockViewModel: StockViewModel,
+    initialDate: LocalDate,
     onDateChanged: (LocalDate, LocalDate) -> Unit
 ) {
-    val currentDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
+    var currentDate by remember { mutableStateOf(initialDate) }
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
     val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
 
@@ -93,13 +94,12 @@ fun DateSwitcher(
         modifier = Modifier.fillMaxWidth()
     ) {
         IconButton(onClick = {
-            val newDate = when (currentRangeType) {
+             currentDate = when (currentRangeType) {
                 DateRangeType.YEAR -> currentDate.minusYears(1)
                 DateRangeType.MONTH -> currentDate.minusMonths(1)
                 DateRangeType.WEEK -> currentDate.minusWeeks(1)
             }
-            stockViewModel.updateDateRange(newDate)
-            val (startDate, endDate) = getStartAndEndDate(currentRangeType, newDate)
+            val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
             onDateChanged(startDate, endDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous")
@@ -116,13 +116,12 @@ fun DateSwitcher(
         )
 
         IconButton(onClick = {
-            val newDate = when (currentRangeType) {
+            currentDate = when (currentRangeType) {
                 DateRangeType.YEAR -> currentDate.plusYears(1)
                 DateRangeType.MONTH -> currentDate.plusMonths(1)
                 DateRangeType.WEEK -> currentDate.plusWeeks(1)
             }
-            stockViewModel.updateDateRange(newDate)
-            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, newDate)
+            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, currentDate)
             onDateChanged(newStartDate, newEndDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next")
@@ -134,7 +133,6 @@ fun DateSwitcher(
                     stockViewModel.setRangeType(selectedType)
                     stockViewModel.hideDialog()
                     val (newStartDate, newEndDate) = getStartAndEndDate(selectedType, currentDate)
-                    Log.d("newStartDate", "$newStartDate")
                     onDateChanged(newStartDate, newEndDate)
                 },
                 onDismiss = { stockViewModel.hideDialog() }

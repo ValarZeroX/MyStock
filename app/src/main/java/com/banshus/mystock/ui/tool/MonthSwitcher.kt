@@ -80,12 +80,10 @@ enum class DateRangeType(val displayName: String) {
 @Composable
 fun DateSwitcher(
     stockViewModel: StockViewModel,
-    initialDate: LocalDate,
-    initialRangeType: DateRangeType,
     onDateChanged: (LocalDate, LocalDate) -> Unit
 ) {
-    var currentDate by remember { mutableStateOf(initialDate) }
-    var currentRangeType by remember { mutableStateOf(initialRangeType) }
+    val currentDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
+    val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
     val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -95,12 +93,13 @@ fun DateSwitcher(
         modifier = Modifier.fillMaxWidth()
     ) {
         IconButton(onClick = {
-            currentDate = when (currentRangeType) {
+            val newDate = when (currentRangeType) {
                 DateRangeType.YEAR -> currentDate.minusYears(1)
                 DateRangeType.MONTH -> currentDate.minusMonths(1)
                 DateRangeType.WEEK -> currentDate.minusWeeks(1)
             }
-            val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
+            stockViewModel.updateDateRange(newDate)
+            val (startDate, endDate) = getStartAndEndDate(currentRangeType, newDate)
             onDateChanged(startDate, endDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous")
@@ -112,17 +111,18 @@ fun DateSwitcher(
             text = "${formatter.format(startDate)} ~ ${formatter.format(endDate)}",
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
-
+                // 可以在这里触发显示日期选择器的逻辑
             }
         )
 
         IconButton(onClick = {
-            currentDate = when (currentRangeType) {
+            val newDate = when (currentRangeType) {
                 DateRangeType.YEAR -> currentDate.plusYears(1)
                 DateRangeType.MONTH -> currentDate.plusMonths(1)
                 DateRangeType.WEEK -> currentDate.plusWeeks(1)
             }
-            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, currentDate)
+            stockViewModel.updateDateRange(newDate)
+            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, newDate)
             onDateChanged(newStartDate, newEndDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next")
@@ -131,9 +131,10 @@ fun DateSwitcher(
             RangeTypeSelectionDialog(
                 currentRangeType = currentRangeType,
                 onRangeTypeSelected = { selectedType ->
-                    currentRangeType = selectedType
+                    stockViewModel.setRangeType(selectedType)
                     stockViewModel.hideDialog()
                     val (newStartDate, newEndDate) = getStartAndEndDate(selectedType, currentDate)
+                    Log.d("newStartDate", "$newStartDate")
                     onDateChanged(newStartDate, newEndDate)
                 },
                 onDismiss = { stockViewModel.hideDialog() }
@@ -190,18 +191,23 @@ fun RangeTypeSelectionDialog(
         },
         text = {
             Column {
-                // 用 RadioButton 組合來實現選擇功能
                 DateRangeType.entries.forEach { rangeType ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onRangeTypeSelected(rangeType) }
+                            .clickable {
+                                onRangeTypeSelected(rangeType) // 更新選擇
+                                onDismiss() // 关闭对话框
+                            }
                             .padding(vertical = 8.dp)
                     ) {
                         RadioButton(
                             selected = rangeType == currentRangeType,
-                            onClick = { onRangeTypeSelected(rangeType) }
+                            onClick = {
+                                onRangeTypeSelected(rangeType) // 更新選擇
+                                onDismiss() // 关闭对话框
+                            }
                         )
                         Text(text = rangeType.displayName)
                     }

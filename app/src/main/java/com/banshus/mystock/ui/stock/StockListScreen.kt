@@ -122,12 +122,10 @@ fun StockListScreen(
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
     val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by remember { mutableStateOf(DateRangeType.MONTH) }
-    Log.d("startDate", "$startDate")
-    Log.d("endDate", "$endDate")
+
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
     val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-    Log.d("startDateMillis", "$startDateMillis")
-    Log.d("endDateMillis", "$endDateMillis")
+
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRangeAndAccount(
         accountId = selectedAccountForStockList?.accountId ?: -1,
         startDate = startDateMillis,
@@ -254,23 +252,6 @@ fun StockListScreen(
                                             modifier = Modifier.weight(1f),
                                             fontSize = 24.sp
                                         )
-//                                        Box(
-//                                            modifier = Modifier
-//                                                .border(
-//                                                    width = 1.dp,
-//                                                    color = Gray1,
-//                                                    shape = RoundedCornerShape(8.dp)
-//                                                )
-//                                                .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-//                                        ) {
-//                                            Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
-//                                                Text(
-//                                                    text = optionStockMarket[stockAccount!!.stockMarket],
-//                                                    fontSize = 14.sp,
-//                                                    fontWeight = FontWeight.Bold
-//                                                )
-//                                            }
-//                                        }
                                         Box(
                                             modifier = Modifier
                                                 .border(

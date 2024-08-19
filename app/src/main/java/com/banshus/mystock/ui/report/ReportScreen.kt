@@ -1,20 +1,27 @@
 package com.banshus.mystock.ui.report
 
-import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AccountBalance
+import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,26 +37,30 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.banshus.mystock.DateValueFormatter
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.SharedOptions.optionsStockType
 import com.banshus.mystock.SharedOptions.optionsTransactionType
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.repository.RealizedTrade
+import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockBlue
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
@@ -58,16 +69,10 @@ import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockMetrics
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
-import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
-import com.github.mikephil.charting.components.YAxis
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -85,6 +90,25 @@ fun ReportScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ) {
+    val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
+    val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
+    val selectedAccount by stockViewModel.selectedAccount.observeAsState()
+    var selectedAccountId by remember { mutableIntStateOf(0) }
+
+    val accountText: String
+    if (firstStockAccount != null) {
+        if (selectedAccount == null) {
+            accountText = firstStockAccount?.account ?: "No account selected"
+            selectedAccountId = firstStockAccount?.accountId ?: 0
+        } else {
+            accountText = selectedAccount?.account ?: "No account selected"
+            selectedAccountId = selectedAccount?.accountId ?: 0
+        }
+    } else {
+        accountText = "No account selected"
+    }
+
+
     //DateSwitcher使用
     var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
     var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
@@ -120,13 +144,20 @@ fun ReportScreen(
         startDateMillis,
         endDateMillis
     ).observeAsState(emptyMap())
-    val selectedAccount = 2
+//    val selectedAccount = 2
+
+//    var isDataReady by remember { mutableStateOf(allAccountsRecord.isNotEmpty()) }
+//
+//    LaunchedEffect(allAccountsRecord) {
+//        // 更新状态
+//        isDataReady = allAccountsRecord.isNotEmpty()
+//    }
 
     val accountMetrics by stockRecordViewModel.calculateMetricsForSelectedAccount(
         startDateMillis,
         endDateMillis,
-        selectedAccount
-    ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0,0.0))
+        selectedAccountId
+    ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
 //    // 处理获取到的数据，并展示在 UI 中
 //    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
 //        Text(text = "Account ID: $accountId")
@@ -206,7 +237,13 @@ fun ReportScreen(
                     )
                     when (selectedReportTabIndex) {
                         0 -> {
-                            AccountTab(allAccountsRecord[selectedAccount], accountMetrics)
+                            AccountTab(
+                                allAccountsRecord[selectedAccountId],
+                                accountMetrics,
+                                navController,
+                                accountText,
+                                stockAccounts[selectedAccountId]
+                            )
                         }
 
                         1 -> {
@@ -230,7 +267,10 @@ fun ReportScreen(
 @Composable
 fun AccountTab(
     map: Map<String, List<RealizedTrade>>?,
-    accountMetrics: DetailedStockMetrics
+    accountMetrics: DetailedStockMetrics,
+    navController: NavHostController,
+    accountText: String,
+    stockAccounts: StockAccount
 ) {
     val profitColor = getProfitColor(
         accountMetrics.totalProfit,
@@ -238,11 +278,71 @@ fun AccountTab(
         StockGreen,
         MaterialTheme.colorScheme.onSurface
     )
-    Column {
+    Column(modifier = Modifier.padding(4.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AssistChip(
+                onClick = { navController.navigate("accountListScreen") },
+                label = { Text(accountText) },
+                leadingIcon = {
+                    Icon(
+                        Icons.Filled.AccountBalance,
+                        contentDescription = "帳戶",
+                        Modifier.size(AssistChipDefaults.IconSize)
+                    )
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Box(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = Gray1,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
+            ) {
+                Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = optionStockMarket[stockAccounts.stockMarket],
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+            Box(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = Gray1,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
+            ) {
+                Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        Icons.Filled.AttachMoney,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stockAccounts.currency,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
         Row {
-            Text(text = "總買進",modifier = Modifier.weight(1f))
-            Text(text = "總賣出",modifier = Modifier.weight(1f))
-            Text(text = "總手續費",modifier = Modifier.weight(1f))
+            Text(text = "總買進", modifier = Modifier.weight(1f))
+            Text(text = "總賣出", modifier = Modifier.weight(1f))
+            Text(text = "總手續費", modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -259,9 +359,9 @@ fun AccountTab(
             )
         }
         Row {
-            Text(text = "總交易稅",modifier = Modifier.weight(1f))
-            Text(text = "總損益",modifier = Modifier.weight(1f))
-            Text(text = "總損益率",modifier = Modifier.weight(1f))
+            Text(text = "總交易稅", modifier = Modifier.weight(1f))
+            Text(text = "總損益", modifier = Modifier.weight(1f))
+            Text(text = "總損益率", modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -279,11 +379,14 @@ fun AccountTab(
                 color = profitColor
             )
         }
+        Row {
+            AccountMetricsLineChart(map)
+        }
     }
     LazyColumn {
-               item {
-                   AccountMetricsLineChart(map)
-               }
+//               item {
+//                   AccountMetricsLineChart(map)
+//               }
         map?.forEach { (stockSymbol, realizedTrades) ->
             realizedTrades.forEach { trade ->
                 item {
@@ -450,11 +553,9 @@ fun ListItemDetail(record: StockRecord) {
 fun AccountMetricsLineChart(
     realizedTrades: Map<String, List<RealizedTrade>>?
 ) {
-    val context = LocalContext.current
     val textColor = StockText.toArgb()
     val profitColor = StockRed.toArgb()
     val profitPercentColor = StockBlue.toArgb()
-    // 创建数据集
     // 创建数据集
     val profitEntries = mutableListOf<Entry>()
     val profitPercentEntries = mutableListOf<Entry>()
@@ -497,14 +598,11 @@ fun AccountMetricsLineChart(
         }
 
         val profitValue = totalSell - totalBuy
-        val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100  else 0.0
+        val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100 else 0.0
 
         val xValue = date.toFloat()
         profitEntries.add(Entry(xValue, profitValue.toFloat()))
         profitPercentEntries.add(Entry(xValue, profitPercentValue.toFloat()))
-    }
-    profitEntries.forEach { entry ->
-        Log.d("ProfitEntry", "Date: ${entry.x}, Profit: ${entry.y}")
     }
     // 创建数据集
     val profitDataSet = LineDataSet(profitEntries, "損益金額").apply {
@@ -512,21 +610,25 @@ fun AccountMetricsLineChart(
         lineWidth = 2f
         valueTextColor = textColor
         valueTextSize = 8f
+        mode = LineDataSet.Mode.HORIZONTAL_BEZIER
+        setDrawFilled(true) // 啟用填充
+        fillColor = profitColor // 設置填充顏色
+        fillAlpha = 85 // 設置填充透明度 (0-255)
     }
 
-    val profitPercentDataSet = LineDataSet(profitPercentEntries, "損益率").apply {
-        color = profitPercentColor
-        lineWidth = 2f
-        axisDependency = YAxis.AxisDependency.RIGHT
-        valueTextColor = textColor
-        valueTextSize = 8f
-    }
+//    val profitPercentDataSet = LineDataSet(profitPercentEntries, "損益率").apply {
+//        color = profitPercentColor
+//        lineWidth = 2f
+//        axisDependency = YAxis.AxisDependency.RIGHT
+//        valueTextColor = textColor
+//        valueTextSize = 8f
+//    }
 
     val lineData = LineData(profitDataSet)
 
     // 初始化图表
     AndroidView(
-        factory = {
+        factory = { context ->
             LineChart(context).apply {
                 data = lineData
                 description.isEnabled = false
@@ -539,8 +641,16 @@ fun AccountMetricsLineChart(
                 axisRight.textColor = textColor
                 legend.textColor = textColor
                 xAxis.valueFormatter = DateValueFormatter()
-                invalidate() // 刷新图表
             }
+        },
+        update = { chart ->
+            if (realizedTrades.isNullOrEmpty()) {
+                chart.clear() // 清空图表数据
+            } else {
+                // 更新数据
+                chart.data = lineData
+            }
+            chart.invalidate() // 刷新图表
         },
         modifier = Modifier
             .fillMaxWidth()

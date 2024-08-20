@@ -1,16 +1,16 @@
 package com.banshus.mystock.ui.tool
 
-import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ChevronLeft
 import androidx.compose.material.icons.filled.ChevronRight
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -32,10 +32,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.banshus.mystock.StockViewModel
-import java.time.DayOfWeek
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAdjusters
 
 @Composable
 fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
@@ -86,21 +86,22 @@ fun DateSwitcher(
     var currentDate by remember { mutableStateOf(initialDate) }
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
     val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
+    var showDatePicker by remember { mutableStateOf(false) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier.fillMaxWidth()
     ) {
         IconButton(onClick = {
-             currentDate = when (currentRangeType) {
+            currentDate = when (currentRangeType) {
                 DateRangeType.YEAR -> currentDate.minusYears(1)
                 DateRangeType.MONTH -> currentDate.minusMonths(1)
                 DateRangeType.WEEK -> currentDate.minusWeeks(1)
             }
             val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
-//            stockViewModel.setDateRange(startDate, endDate)
             onDateChanged(startDate, endDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous")
@@ -112,7 +113,7 @@ fun DateSwitcher(
             text = "${formatter.format(startDate)} ~ ${formatter.format(endDate)}",
             fontWeight = FontWeight.Bold,
             modifier = Modifier.clickable {
-                // 可以在这里触发显示日期选择器的逻辑
+                showDatePicker = true
             }
         )
 
@@ -127,6 +128,7 @@ fun DateSwitcher(
         }) {
             Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next")
         }
+
         if (showDialog) {
             RangeTypeSelectionDialog(
                 currentRangeType = currentRangeType,
@@ -137,6 +139,22 @@ fun DateSwitcher(
                     onDateChanged(newStartDate, newEndDate)
                 },
                 onDismiss = { stockViewModel.hideDialog() }
+            )
+        }
+
+        if (showDatePicker) {
+            DatePickerModal(
+                selectedDate = startDate.toEpochDay() * 24 * 60 * 60 * 1000, // 将 LocalDate 转换为 milliseconds
+                onDateSelected = { newDateMillis ->
+                    showDatePicker = false
+                    newDateMillis?.let {
+                        val selectedDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
+                        currentDate = selectedDate
+                        val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, selectedDate)
+                        onDateChanged(newStartDate, newEndDate)
+                    }
+                },
+                onDismiss = { showDatePicker = false }
             )
         }
     }
@@ -172,7 +190,19 @@ fun DatePickerModal(
         }
     ) {
         DatePicker(
-            state = datePickerState
+            state = datePickerState,
+            title = {
+                Box(
+                    modifier = Modifier.padding(16.dp)
+                ) {
+                    Text(
+                        text = "選擇起始日期"
+                    )
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(500.dp)
         )
     }
 }
@@ -226,33 +256,43 @@ fun RangeTypeSelectionDialog(
     )
 }
 
-//fun getEndDate(startDate: LocalDate, rangeType: DateRangeType): LocalDate {
+// 計算開始和結束日期的函數
+//fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate): Pair<LocalDate, LocalDate> {
 //    return when (rangeType) {
-//        DateRangeType.YEAR -> startDate.plusYears(1).minusDays(1)
-//        DateRangeType.MONTH -> startDate.plusMonths(1).minusDays(1)
-//        DateRangeType.WEEK -> startDate.plusWeeks(1).minusDays(1)
+//        DateRangeType.YEAR -> {
+//            val startDate = baseDate.withDayOfYear(1)
+//            val endDate = startDate.plusYears(1).minusDays(1)
+//            startDate to endDate
+//        }
+//
+//        DateRangeType.MONTH -> {
+//            val startDate = baseDate.withDayOfMonth(1)
+//            val endDate = startDate.plusMonths(1).minusDays(1)
+//            startDate to endDate
+//        }
+//
+//        DateRangeType.WEEK -> {
+//            val startDate = baseDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+//            val endDate = startDate.plusDays(6)
+//            startDate to endDate
+//        }
 //    }
 //}
-
-// 計算開始和結束日期的函數
 fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate): Pair<LocalDate, LocalDate> {
     return when (rangeType) {
         DateRangeType.YEAR -> {
-            val startDate = baseDate.withDayOfYear(1)
-            val endDate = startDate.plusYears(1).minusDays(1)
-            startDate to endDate
+            val endDate = baseDate.plusYears(1).minusDays(1)
+            baseDate to endDate
         }
 
         DateRangeType.MONTH -> {
-            val startDate = baseDate.withDayOfMonth(1)
-            val endDate = startDate.plusMonths(1).minusDays(1)
-            startDate to endDate
+            val endDate = baseDate.plusMonths(1).minusDays(1)
+            baseDate to endDate
         }
 
         DateRangeType.WEEK -> {
-            val startDate = baseDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-            val endDate = startDate.plusDays(6)
-            startDate to endDate
+            val endDate = baseDate.plusWeeks(1).minusDays(1)
+            baseDate to endDate
         }
     }
 }

@@ -35,6 +35,7 @@ import com.banshus.mystock.ui.StockSettingScreen
 import com.banshus.mystock.ui.report.ReportScreen
 import com.banshus.mystock.ui.setting.AccountScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
+import com.banshus.mystock.ui.setting.EditAccountScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
 import com.banshus.mystock.ui.setting.StockSymbolScreen
 import com.banshus.mystock.ui.stock.AccountListScreen
@@ -177,6 +178,9 @@ fun MyApp(
         }
         composable("accountScreen") {
             AccountScreen(navController, stockViewModel, stockAccountViewModel, stockRecordViewModel)
+        }
+        composable("editAccountScreen") {
+            EditAccountScreen(navController, stockViewModel, stockAccountViewModel)
         }
     }
 }

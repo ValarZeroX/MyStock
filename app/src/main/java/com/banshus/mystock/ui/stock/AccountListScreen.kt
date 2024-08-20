@@ -44,7 +44,11 @@ import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 
 @Composable
-fun AccountListScreen(navController: NavHostController, stockViewModel: StockViewModel,stockAccountViewModel: StockAccountViewModel){
+fun AccountListScreen(
+    navController: NavHostController,
+    stockViewModel: StockViewModel,
+    stockAccountViewModel: StockAccountViewModel
+) {
 //    val context = LocalContext.current
 //    val stockAccountViewModel: StockAccountViewModel = viewModel(
 //        factory = StockAccountViewModelFactory(
@@ -73,10 +77,12 @@ fun AccountListScreen(navController: NavHostController, stockViewModel: StockVie
             AccountListHeader(navController)
         },
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(innerPadding)) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(innerPadding)
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .padding(top = 10.dp)
@@ -89,30 +95,39 @@ fun AccountListScreen(navController: NavHostController, stockViewModel: StockVie
                     }
                     ListItem(
                         headlineContent = { Text(text = stockAccount.account) },
-                       supportingContent = {
-                           Column {
-                               Row(modifier = Modifier.fillMaxWidth()) {
-                                   Text(text = "市場", Modifier.weight(1f))
-                                   Text(text = "幣別", Modifier.weight(1f))
-                                   Text(text = "手續費優惠", Modifier.weight(1f))
-                               }
-                               Row(modifier = Modifier.fillMaxWidth()) {
-                                   Text(text = optionStockMarket[stockAccount.stockMarket], Modifier.weight(1f))
-                                   Text(text = stockAccount.currency, Modifier.weight(1f))
-                                   Text(text = "${stockAccount.discount}", Modifier.weight(1f))
-                               }
-                               Row(modifier = Modifier.fillMaxWidth()) {
-                                   Text(text = "手續費", Modifier.weight(1f))
-                                   Text(text = "證交稅", Modifier.weight(1f))
-                                   Text(text = "手續費優惠", Modifier.weight(1f))
-                               }
-                               Row(modifier = Modifier.fillMaxWidth()) {
-                                   Text(text = "${stockAccount.commissionDecimal}", Modifier.weight(1f))
-                                   Text(text = "${stockAccount.transactionTaxDecimal}", Modifier.weight(1f))
-                                   Text(text = "${stockAccount.discount}", Modifier.weight(1f))
-                               }
-                           }
-                       },
+                        supportingContent = {
+                            Column {
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(text = "市場", Modifier.weight(1f))
+                                    Text(text = "幣別", Modifier.weight(1f))
+                                    Text(text = "手續費優惠", Modifier.weight(1f))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = optionStockMarket[stockAccount.stockMarket],
+                                        Modifier.weight(1f)
+                                    )
+                                    Text(text = stockAccount.currency, Modifier.weight(1f))
+                                    Text(text = "${stockAccount.discount}", Modifier.weight(1f))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(text = "手續費", Modifier.weight(1f))
+                                    Text(text = "證交稅", Modifier.weight(1f))
+                                    Text(text = "手續費優惠", Modifier.weight(1f))
+                                }
+                                Row(modifier = Modifier.fillMaxWidth()) {
+                                    Text(
+                                        text = "${stockAccount.commissionDecimal}",
+                                        Modifier.weight(1f)
+                                    )
+                                    Text(
+                                        text = "${stockAccount.transactionTaxDecimal}",
+                                        Modifier.weight(1f)
+                                    )
+                                    Text(text = "${stockAccount.discount}", Modifier.weight(1f))
+                                }
+                            }
+                        },
                         leadingContent = {
                             Icon(
                                 Icons.Filled.Favorite,

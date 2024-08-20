@@ -50,6 +50,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.tool.SwipeBox
@@ -57,6 +58,7 @@ import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
+import java.math.RoundingMode
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -114,13 +116,8 @@ fun AccountScreen(
                                             .fillMaxHeight()
                                             .background(MaterialTheme.colorScheme.primaryContainer)
                                             .clickable {
-//                                                stockAccount?.let { nonNullAccount ->
-//                                                    stockViewModel.updateSelectedAccount(
-//                                                        nonNullAccount
-//                                                    )
-//                                                }
-//                                                stockViewModel.updateSelectedStock(record)
-//                                                navController.navigate("stockDetailScreen")
+                                                stockViewModel.updateSelectedAccount(item)
+                                                navController.navigate("editAccountScreen")
                                             }
                                     ) {
                                         Column(
@@ -170,6 +167,35 @@ fun AccountScreen(
                         ) {
                             ListItem(
                                 headlineContent = { Text(item.account) },
+                                supportingContent = {
+                                    Column {
+                                        Row(modifier = Modifier.fillMaxWidth()) {
+                                            Text(text = "市場", Modifier.weight(1f))
+                                            if (item.stockMarket == 0) {
+                                                Text(text = "手續費", Modifier.weight(1f))
+                                                Text(text = "證交稅", Modifier.weight(1f))
+                                                Text(text = "手續費優惠", Modifier.weight(1f))
+                                            }
+                                        }
+                                        Row(modifier = Modifier.fillMaxWidth()) {
+                                            Text(text = optionStockMarket[item.stockMarket], Modifier.weight(1f))
+                                            if (item.stockMarket == 0) {
+                                                val commission = (item.commissionDecimal * 100).toBigDecimal()
+                                                .setScale(8, RoundingMode.HALF_UP)
+                                                    .stripTrailingZeros()
+                                                val transactionTax = (item.transactionTaxDecimal * 100).toBigDecimal()
+                                                    .setScale(8, RoundingMode.HALF_UP)
+                                                    .stripTrailingZeros()
+                                                val discount = (item.discount * 100).toBigDecimal()
+                                                    .setScale(8, RoundingMode.HALF_UP)
+                                                    .stripTrailingZeros().toPlainString()
+                                                Text(text = "${commission}%", Modifier.weight(1f))
+                                                Text(text = "${transactionTax}%", Modifier.weight(1f))
+                                                Text(text = "${discount}%", Modifier.weight(1f))
+                                            }
+                                        }
+                                    }
+                                },
                                 trailingContent = {
                                     Icon(
                                         Icons.Filled.DragHandle,

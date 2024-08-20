@@ -35,4 +35,8 @@ class StockAccountRepository(private val stockAccountDao: StockAccountDao) {
     suspend fun updateAll(stockAccounts: List<StockAccount>) {
         stockAccountDao.updateAll(stockAccounts)
     }
+
+    suspend fun updateStockAccount(stockAccount: StockAccount) {
+        stockAccountDao.updateStockAccount(stockAccount)
+    }
 }

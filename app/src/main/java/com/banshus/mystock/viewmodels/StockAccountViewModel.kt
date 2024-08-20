@@ -60,6 +60,12 @@ class StockAccountViewModel(private val repository: StockAccountRepository) : Vi
             repository.deleteStockAccountById(accountId)
         }
     }
+
+    fun updateStockAccount(stockAccount: StockAccount) {
+        viewModelScope.launch {
+            repository.updateStockAccount(stockAccount)
+        }
+    }
 }
 
 class StockAccountViewModelFactory(

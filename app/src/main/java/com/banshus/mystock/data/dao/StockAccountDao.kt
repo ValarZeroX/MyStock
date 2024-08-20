@@ -28,4 +28,7 @@ interface StockAccountDao {
 
     @Query("DELETE FROM stock_account WHERE accountId = :accountId")
     suspend fun deleteStockAccountById(accountId: Int)
+
+    @Update
+    suspend fun updateStockAccount(stockAccount: StockAccount)
 }

@@ -3,7 +3,10 @@ package com.banshus.mystock.ui.stock
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -33,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.StockAccountRepository
@@ -86,7 +90,28 @@ fun AccountListScreen(navController: NavHostController, stockViewModel: StockVie
                     ListItem(
                         headlineContent = { Text(text = stockAccount.account) },
                        supportingContent = {
-                           Text("Secondary text that is long and perhaps goes onto another line")
+                           Column {
+                               Row(modifier = Modifier.fillMaxWidth()) {
+                                   Text(text = "市場", Modifier.weight(1f))
+                                   Text(text = "幣別", Modifier.weight(1f))
+                                   Text(text = "手續費優惠", Modifier.weight(1f))
+                               }
+                               Row(modifier = Modifier.fillMaxWidth()) {
+                                   Text(text = optionStockMarket[stockAccount.stockMarket], Modifier.weight(1f))
+                                   Text(text = stockAccount.currency, Modifier.weight(1f))
+                                   Text(text = "${stockAccount.discount}", Modifier.weight(1f))
+                               }
+                               Row(modifier = Modifier.fillMaxWidth()) {
+                                   Text(text = "手續費", Modifier.weight(1f))
+                                   Text(text = "證交稅", Modifier.weight(1f))
+                                   Text(text = "手續費優惠", Modifier.weight(1f))
+                               }
+                               Row(modifier = Modifier.fillMaxWidth()) {
+                                   Text(text = "${stockAccount.commissionDecimal}", Modifier.weight(1f))
+                                   Text(text = "${stockAccount.transactionTaxDecimal}", Modifier.weight(1f))
+                                   Text(text = "${stockAccount.discount}", Modifier.weight(1f))
+                               }
+                           }
                        },
                         leadingContent = {
                             Icon(

@@ -35,6 +35,14 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         stockRecordDao.deleteStockRecordById(recordId)
     }
 
+    suspend fun getRecordCountByAccountId(accountId: Int): Int {
+        return stockRecordDao.getRecordCountByAccountId(accountId)
+    }
+
+    suspend fun deleteAllRecordsByAccountId(accountId: Int) {
+        stockRecordDao.deleteAllRecordsByAccountId(accountId)
+    }
+
     fun getStockRecordsByDateRangeAndAccount(
         accountId: Int,
         startDate: Long,

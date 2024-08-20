@@ -5,12 +5,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.banshus.mystock.data.entities.StockAccount
+import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.repository.StockAccountRepository
 import kotlinx.coroutines.launch
 import java.math.BigDecimal
 
 class StockAccountViewModel(private val repository: StockAccountRepository) : ViewModel() {
     val stockAccounts: LiveData<List<StockAccount>> = repository.getAllStockAccounts()
+    val stockAccountsMap: LiveData<Map<Int, StockAccount>> = repository.getAllStockAccountsMap()
 
     val firstStockAccount: LiveData<StockAccount?> = repository.getFirstStockAccount()
 
@@ -31,7 +33,12 @@ class StockAccountViewModel(private val repository: StockAccountRepository) : Vi
                 autoCalculate = autoCalculate,
                 commissionDecimal = commissionDecimal,
                 transactionTaxDecimal = transactionTaxDecimal,
-                discount = discount
+                discount = discount,
+                accountSort = 0,
+                transactionTaxDecimalETF = 0.001,
+                transactionTaxDecimalDayTrading = 0.0015,
+                commissionWholeLot = 0.0,
+                commissionOddLot = 0.0,
             )
             repository.insertStockAccount(stockAccount)
         }
@@ -39,6 +46,19 @@ class StockAccountViewModel(private val repository: StockAccountRepository) : Vi
 
     fun getStockAccountByID(accountId: Int): LiveData<StockAccount?> {
         return repository.getStockAccountByID(accountId)
+    }
+
+    fun updateStockAccountOrder(newOrder: List<StockAccount>) = viewModelScope.launch {
+        newOrder.forEachIndexed { index, stockAccount ->
+            stockAccount.accountSort = index
+        }
+        repository.updateAll(newOrder)
+    }
+
+    fun deleteStockAccountById(accountId: Int) {
+        viewModelScope.launch {
+            repository.deleteStockAccountById(accountId)
+        }
     }
 }
 

@@ -64,6 +64,18 @@ class StockRecordViewModel(
         }
     }
 
+    fun getRecordCountByAccountId(accountId: Int): LiveData<Int> {
+        return liveData {
+            emit(repository.getRecordCountByAccountId(accountId))
+        }
+    }
+
+    fun deleteAllRecordsByAccountId(accountId: Int) {
+        viewModelScope.launch {
+            repository.deleteAllRecordsByAccountId(accountId)
+        }
+    }
+
     fun getHoldingsAndTotalCost(accountId: Int): LiveData<Pair<Map<String, Pair<Int, Double>>, Double>> {
         return repository.getHoldingsAndTotalCost(accountId)
     }

@@ -25,7 +25,6 @@ class StockMarketViewModel(private val repository: StockMarketRepository) : View
 
     fun updateStockMarketsOrder(newOrder: List<StockMarket>) = viewModelScope.launch {
         newOrder.forEachIndexed { index, stockMarket ->
-            println(stockMarket)
             stockMarket.stockMarketSort = index
         }
         repository.updateAll(newOrder)

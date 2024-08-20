@@ -94,7 +94,7 @@ fun ReportScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ) {
-    val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
+    val stockAccounts by stockAccountViewModel.stockAccountsMap.observeAsState(emptyMap())
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
     var selectedAccountId by remember { mutableIntStateOf(0) }
@@ -198,7 +198,11 @@ fun ReportScreen(
 //
 //    Log.d("startDate", "$startDate")
 //    Log.d("endDate", "$endDate")
-    if (allAccountsRecord.isEmpty()) {
+    if (stockAccounts.isEmpty()) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = "請建立帳戶")
+        }
+    } else if (allAccountsRecord.isEmpty()) {
         // 顯示加載動畫
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             CircularProgressIndicator()
@@ -255,7 +259,7 @@ fun ReportScreen(
                                 accountMetrics,
                                 navController,
                                 accountText,
-                                stockAccounts[selectedAccountId-1],
+                                stockAccounts[selectedAccountId]!!,
                                 currentRangeType
                             )
                         }

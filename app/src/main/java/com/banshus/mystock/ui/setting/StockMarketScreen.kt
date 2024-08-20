@@ -173,7 +173,7 @@ fun StockMarketScreenHeader(navController: NavHostController, onAddClick: () -> 
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "股市市場",
+                "股票市場",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

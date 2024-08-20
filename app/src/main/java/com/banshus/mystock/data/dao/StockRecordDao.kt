@@ -32,4 +32,10 @@ interface StockRecordDao {
 
     @Query("SELECT * FROM stock_record ORDER BY transactionDate")
     fun getAllStockRecords(): LiveData<List<StockRecord>>
+
+    @Query("SELECT COUNT(*) FROM stock_record WHERE accountId = :accountId")
+    suspend fun getRecordCountByAccountId(accountId: Int): Int
+
+    @Query("DELETE FROM stock_record WHERE accountId = :accountId")
+    suspend fun deleteAllRecordsByAccountId(accountId: Int)
 }

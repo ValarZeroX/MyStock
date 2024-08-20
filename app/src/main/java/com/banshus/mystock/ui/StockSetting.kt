@@ -67,6 +67,19 @@ fun StockSettingScreen(navController: NavHostController){
                         )
                     }
                     ListItem(
+                        headlineContent = { Text("股票帳戶") },
+                        trailingContent = {
+                            Icon(
+                                imageVector = Icons.Filled.ChevronRight,
+                                contentDescription = "股票帳戶",
+                            )
+                        },
+                        modifier = Modifier.clickable {
+                            navController.navigate("accountScreen")
+                        }
+                    )
+                    HorizontalDivider()
+                    ListItem(
                         headlineContent = { Text("股票市場") },
                         trailingContent = {
                             Icon(

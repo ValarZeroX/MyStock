@@ -113,10 +113,14 @@ fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: Sto
                         else -> "TWD"
                     }
 
-                    val commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)
-                    val transactionTax = roundToDecimal(transactionTaxPercent.toDouble() / 100, 6)
-                    val newDiscount = roundToDecimal(discount.toDouble() / 100, 4)
-
+                    var commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)
+                    var transactionTax = roundToDecimal(transactionTaxPercent.toDouble() / 100, 6)
+                    var newDiscount = roundToDecimal(discount.toDouble() / 100, 4)
+                    if (selectedStockMarketIndex != 0) {
+                        commission = 0.0
+                        transactionTax = 0.0
+                        newDiscount = 0.0
+                    }
                     stockAccountViewModel.insertStockAccount(
                         accountName,
                         currencyCode,

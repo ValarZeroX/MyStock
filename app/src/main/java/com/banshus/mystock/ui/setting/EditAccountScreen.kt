@@ -171,7 +171,7 @@ fun EditAccountScreen(
                     }
                 }
             }
-            if (selectedStockMarketIndex == 0) {
+
                 Row(
                     modifier = Modifier.padding(15.dp)
                 ) {
@@ -190,8 +190,8 @@ fun EditAccountScreen(
                         }
                     )
                 }
-            }
-            if (checked && selectedStockMarketIndex == 0) {
+
+            if (checked) {
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
                         text = "手續費",

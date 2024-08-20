@@ -98,19 +98,6 @@ fun AccountListScreen(
                         supportingContent = {
                             Column {
                                 Row(modifier = Modifier.fillMaxWidth()) {
-                                    Text(text = "市場", Modifier.weight(1f))
-                                    Text(text = "幣別", Modifier.weight(1f))
-                                    Text(text = "手續費優惠", Modifier.weight(1f))
-                                }
-                                Row(modifier = Modifier.fillMaxWidth()) {
-                                    Text(
-                                        text = optionStockMarket[stockAccount.stockMarket],
-                                        Modifier.weight(1f)
-                                    )
-                                    Text(text = stockAccount.currency, Modifier.weight(1f))
-                                    Text(text = "${stockAccount.discount}", Modifier.weight(1f))
-                                }
-                                Row(modifier = Modifier.fillMaxWidth()) {
                                     Text(text = "手續費", Modifier.weight(1f))
                                     Text(text = "證交稅", Modifier.weight(1f))
                                     Text(text = "手續費優惠", Modifier.weight(1f))
@@ -126,14 +113,15 @@ fun AccountListScreen(
                                     )
                                     Text(text = "${stockAccount.discount}", Modifier.weight(1f))
                                 }
+
                             }
                         },
-                        leadingContent = {
-                            Icon(
-                                Icons.Filled.Favorite,
-                                contentDescription = "Localized description",
-                            )
-                        },
+//                        leadingContent = {
+//                            Icon(
+//                                Icons.Filled.Favorite,
+//                                contentDescription = "Localized description",
+//                            )
+//                        },
                         trailingContent = { Text(text = stockMarketName) },
                         modifier = Modifier.clickable {
                             stockViewModel.updateSelectedAccount(stockAccount)
@@ -154,7 +142,7 @@ fun AccountListHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "帳戶列表",
+                "選擇帳戶",
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

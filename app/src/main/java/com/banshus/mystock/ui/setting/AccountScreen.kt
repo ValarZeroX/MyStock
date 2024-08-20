@@ -67,7 +67,7 @@ fun AccountScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
-){
+) {
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -79,7 +79,8 @@ fun AccountScreen(
 
     var showDialog by remember { mutableStateOf(false) }
     var selectedAccountId by remember { mutableIntStateOf(0) }
-    val recordCount by stockRecordViewModel.getRecordCountByAccountId(selectedAccountId).observeAsState(0)
+    val recordCount by stockRecordViewModel.getRecordCountByAccountId(selectedAccountId)
+        .observeAsState(0)
     var selectedAccountName by remember {
         mutableStateOf("")
     }
@@ -171,28 +172,30 @@ fun AccountScreen(
                                     Column {
                                         Row(modifier = Modifier.fillMaxWidth()) {
                                             Text(text = "市場", Modifier.weight(1f))
-                                            if (item.stockMarket == 0) {
-                                                Text(text = "手續費", Modifier.weight(1f))
-                                                Text(text = "證交稅", Modifier.weight(1f))
-                                                Text(text = "手續費優惠", Modifier.weight(1f))
-                                            }
+                                            Text(text = "手續費", Modifier.weight(1f))
+                                            Text(text = "證交稅", Modifier.weight(1f))
+                                            Text(text = "手續費優惠", Modifier.weight(1f))
+
                                         }
                                         Row(modifier = Modifier.fillMaxWidth()) {
-                                            Text(text = optionStockMarket[item.stockMarket], Modifier.weight(1f))
-                                            if (item.stockMarket == 0) {
-                                                val commission = (item.commissionDecimal * 100).toBigDecimal()
+                                            Text(
+                                                text = optionStockMarket[item.stockMarket],
+                                                Modifier.weight(1f)
+                                            )
+                                            val commission =
+                                                (item.commissionDecimal * 100).toBigDecimal()
+                                                    .setScale(8, RoundingMode.HALF_UP)
+                                                    .stripTrailingZeros()
+                                            val transactionTax =
+                                                (item.transactionTaxDecimal * 100).toBigDecimal()
+                                                    .setScale(8, RoundingMode.HALF_UP)
+                                                    .stripTrailingZeros()
+                                            val discount = (item.discount * 100).toBigDecimal()
                                                 .setScale(8, RoundingMode.HALF_UP)
-                                                    .stripTrailingZeros()
-                                                val transactionTax = (item.transactionTaxDecimal * 100).toBigDecimal()
-                                                    .setScale(8, RoundingMode.HALF_UP)
-                                                    .stripTrailingZeros()
-                                                val discount = (item.discount * 100).toBigDecimal()
-                                                    .setScale(8, RoundingMode.HALF_UP)
-                                                    .stripTrailingZeros().toPlainString()
-                                                Text(text = "${commission}%", Modifier.weight(1f))
-                                                Text(text = "${transactionTax}%", Modifier.weight(1f))
-                                                Text(text = "${discount}%", Modifier.weight(1f))
-                                            }
+                                                .stripTrailingZeros().toPlainString()
+                                            Text(text = "${commission}%", Modifier.weight(1f))
+                                            Text(text = "${transactionTax}%", Modifier.weight(1f))
+                                            Text(text = "${discount}%", Modifier.weight(1f))
                                         }
                                     }
                                 },
@@ -236,8 +239,7 @@ fun DeleteAccountDialog(
     onConfirmation: () -> Unit,
     recordCount: Int,
     selectedAccountName: String
-)
-{
+) {
     Dialog(onDismissRequest = { onDismissRequest() }) {
         // Draw a rectangle shape with rounded corners inside the dialog
         Card(

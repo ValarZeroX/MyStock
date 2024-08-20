@@ -63,4 +63,19 @@ class StockViewModel : ViewModel() {
         fun setRangeType(rangeType: DateRangeType) {
                 _currentRangeType.value = rangeType
         }
+
+        private val _startDate = MutableLiveData<LocalDate>().apply {
+                value = LocalDate.now().withDayOfMonth(1)
+        }
+        val startDate: LiveData<LocalDate> = _startDate
+
+        private val _endDate = MutableLiveData<LocalDate>().apply {
+                value = _startDate.value?.plusMonths(1)?.minusDays(1)
+        }
+        val endDate: LiveData<LocalDate> = _endDate
+
+        fun setDateRange(start: LocalDate, end: LocalDate) {
+                _startDate.value = start
+                _endDate.value = end
+        }
 }

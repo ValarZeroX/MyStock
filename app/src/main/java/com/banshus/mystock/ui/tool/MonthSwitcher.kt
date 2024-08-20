@@ -100,6 +100,7 @@ fun DateSwitcher(
                 DateRangeType.WEEK -> currentDate.minusWeeks(1)
             }
             val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
+//            stockViewModel.setDateRange(startDate, endDate)
             onDateChanged(startDate, endDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous")

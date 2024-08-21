@@ -7,41 +7,23 @@ import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class DateValueFormatter(
-    private val currentRangeType: DateRangeType
+    private val currentRangeType: DateRangeType,
+    private val dateLabels: Map<Float, String>
 ) : ValueFormatter() {
-    private val formatterYear = DateTimeFormatter.ofPattern("yyyy")
-    private val formatterMonth = DateTimeFormatter.ofPattern("yyyy-MM")
-    private val formatterMonthDay = DateTimeFormatter.ofPattern("MM/dd")
 
     override fun getFormattedValue(value: Float): String {
-        val dateTime = Instant.ofEpochMilli(value.toLong())
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
-        Log.d("dateTime", "$dateTime") // Debugging output to check formatted date
-
-        return when (currentRangeType) {
-            DateRangeType.ALL -> {
-                // 按年分组时，显示年份
-                dateTime.format(formatterYear)
-            }
-            DateRangeType.YEAR -> {
-                // 按月分组时，显示年月
-                dateTime.format(formatterMonth)
-            }
-            DateRangeType.MONTH -> {
-                // 按日分组时，显示月日
-                dateTime.format(formatterMonthDay)
-            }
-            else -> {
-                // 默认显示月日
-                dateTime.format(formatterMonthDay)
-            }
-        }
+        Log.d("dateLabels", "$dateLabels")
+        return dateLabels[value] ?: ""
     }
 }
 
 class PercentValueFormatter : ValueFormatter() {
     override fun getFormattedValue(value: Float): String {
-        return "${value.toInt()}%"  // 将值格式化为整数百分比
+//        return "${value.toInt()}%"  // 将值格式化为整数百分比
+        return if (value % 2 == 0f) {
+            value.toInt().toString() + "%"  // 只在偶数位置显示值
+        } else {
+            ""  // 其他位置不显示值
+        }
     }
 }

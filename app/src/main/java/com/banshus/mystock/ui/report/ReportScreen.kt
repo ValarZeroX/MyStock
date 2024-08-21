@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -40,15 +41,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -57,6 +62,7 @@ import com.banshus.mystock.DateValueFormatter
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.PercentValueFormatter
+//import com.banshus.mystock.PercentValueFormatter
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.SharedOptions.optionsStockType
 import com.banshus.mystock.SharedOptions.optionsTransactionType
@@ -89,6 +95,8 @@ import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.highlight.Highlight
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneId
@@ -122,10 +130,15 @@ fun ReportScreen(
         accountText = "No account selected"
     }
 
-    val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRangeByAccountId(selectedAccountId).observeAsState()
-    stockViewModel.setTransactionDateRange(getAccountStockMaxMinDate?.first, getAccountStockMaxMinDate?.second)
-    Log.d("selectedAccountId","$selectedAccountId")
-    Log.d("getAccountStock","$getAccountStockMaxMinDate")
+    val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRangeByAccountId(
+        selectedAccountId
+    ).observeAsState()
+    stockViewModel.setTransactionDateRange(
+        getAccountStockMaxMinDate?.first,
+        getAccountStockMaxMinDate?.second
+    )
+    Log.d("selectedAccountId", "$selectedAccountId")
+    Log.d("getAccountStock", "$getAccountStockMaxMinDate")
     //DateSwitcher使用
 //    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 //    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
@@ -136,7 +149,7 @@ fun ReportScreen(
 
     val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
-Log.d("OutCurrentRangeType", "$currentRangeType")
+    Log.d("OutCurrentRangeType", "$currentRangeType")
 
     var selectedReportTabIndex by stockViewModel.selectedReportTabIndex
 //    val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
@@ -423,7 +436,7 @@ fun AccountTab(
             }
         }
         item {
-            AccountMetricsLineChart(map,currentRangeType)
+            AccountMetricsLineChart(map, currentRangeType)
         }
         map?.forEach { (stockSymbol, realizedTrades) ->
             realizedTrades.forEach { trade ->
@@ -596,6 +609,7 @@ fun AccountMetricsLineChart(
     val profitColor = StockRed.toArgb()
     val profitPercentColor = StockBlue.toArgb()
     var primary = MaterialTheme.colorScheme.primary.toArgb()
+    var onPrimary = MaterialTheme.colorScheme.onPrimary.toArgb()
     // 创建数据集
     val profitEntries = mutableListOf<Entry>()
     val profitPercentEntries = mutableListOf<BarEntry>()
@@ -618,6 +632,7 @@ fun AccountMetricsLineChart(
                     }
                     calendar.timeInMillis
                 }
+
                 DateRangeType.MONTH -> {
                     // 按天分组
                     val calendar = Calendar.getInstance().apply {
@@ -629,6 +644,7 @@ fun AccountMetricsLineChart(
                     }
                     calendar.timeInMillis
                 }
+
                 DateRangeType.ALL -> {
                     // 按年分组
                     val calendar = Calendar.getInstance().apply {
@@ -641,6 +657,7 @@ fun AccountMetricsLineChart(
                     }
                     calendar.timeInMillis
                 }
+
                 else -> {
                     val calendar = Calendar.getInstance().apply {
                         timeInMillis = trade.sell.transactionDate
@@ -661,6 +678,14 @@ fun AccountMetricsLineChart(
         }
     }
     val sortedTradesByDate = tradesByDate.toSortedMap()
+    var xValue = 0.0f
+//    var cValue = 0.0f
+    val formatterMonthDay = DateTimeFormatter.ofPattern("MM/dd")
+    val formatterMonth = DateTimeFormatter.ofPattern("yyyy-MM")
+    val formatterYear = DateTimeFormatter.ofPattern("yyyy")
+    val dateLabels = remember(currentRangeType, realizedTrades) {
+        mutableMapOf<Float, String>()
+    }
     // 计算每个日期的总損益和損益率
     sortedTradesByDate.forEach { (date, trades) ->
         var totalBuy = 0.0
@@ -676,29 +701,27 @@ fun AccountMetricsLineChart(
         val profitValue = totalSell - totalBuy
         val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100 else 0.0
 
-        val xValue = date.toFloat()
-        val dateTime = Instant.ofEpochMilli(xValue.toLong())
+        // 将日期格式化
+        val dateTime = Instant.ofEpochMilli(date)
             .atZone(ZoneId.systemDefault())
             .toLocalDateTime()
-//        Log.d("xValue", "$dateTime")
+
+        val formattedDate = when (currentRangeType) {
+            DateRangeType.WEEK -> dateTime.format(formatterMonthDay)
+            DateRangeType.MONTH -> dateTime.format(formatterMonthDay)
+            DateRangeType.YEAR -> dateTime.format(formatterMonth)
+            DateRangeType.ALL -> dateTime.format(formatterYear)
+            else -> dateTime.format(formatterMonthDay)
+        }
+
+        // 存储 xValue 和格式化后的日期
+        dateLabels[xValue] = formattedDate
+
         profitEntries.add(Entry(xValue, profitValue.toFloat()))
         profitPercentEntries.add(BarEntry(xValue, profitPercentValue.toFloat()))
+        xValue += 1.0f
     }
 
-//    val months = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "June")
-//    profitEntries.add(Entry(0f, 10000f))
-//    profitEntries.add(Entry(1f, 15000f))
-//    profitEntries.add(Entry(2f, 12000f))
-//    profitEntries.add(Entry(3f, 12000f))
-//    profitEntries.add(Entry(4f, 12000f))
-//    profitEntries.add(Entry(5f, 12000f))
-//
-    profitEntries.forEach { entry ->
-        Log.d("ProfitEntry", "X: ${entry.x}, Y: ${entry.y}")
-    }
-    profitPercentEntries.forEach { entry ->
-        Log.d("profitPercentEntries", "X: ${entry.x}, Y: ${entry.y}")
-    }
     // 创建数据集
     val profitDataSet = LineDataSet(profitEntries, "損益金額").apply {
         color = profitColor
@@ -710,133 +733,148 @@ fun AccountMetricsLineChart(
         fillColor = profitColor // 設置填充顏色
         fillAlpha = 85 // 設置填充透明度 (0-255)
         axisDependency = (YAxis.AxisDependency.LEFT)
+        setDrawValues(false) // 隐藏线上文字
     }
 
+    val barWidth = 0.5f
     val profitPercentDataSet = BarDataSet(profitPercentEntries, "損益率").apply {
-        color = primary
+        color = profitPercentColor
         valueTextColor = textColor
         valueTextSize = 8f
         axisDependency = (YAxis.AxisDependency.RIGHT)
+        setDrawValues(false) // 隐藏线上文字
     }
 
     val lineData = LineData(profitDataSet)
     val barData = BarData(profitPercentDataSet)
+    barData.barWidth = barWidth
 
+//    barData.groupBars(0F, groupSpace, barSpace)
     val combinedData = CombinedData().apply {
         setData(lineData)
         setData(barData)
     }
 
-    AndroidView(
-        factory = { context ->
-            CombinedChart(context).apply {
-                data = combinedData
-                description.isEnabled = false
-                axisRight.isEnabled = true
-                axisLeft.textColor = textColor
-                axisRight.textColor = textColor
-                legend.textColor = textColor
-                xAxis.position = XAxis.XAxisPosition.BOTTOM
-                xAxis.textColor = textColor
-                xAxis.setDrawGridLines(false)
+    var showPopup by remember { mutableStateOf(false) }
+    var popupText by remember { mutableStateOf("") }
+    var popupPosition by remember { mutableStateOf(Offset.Zero) }
+    Box {
+        AndroidView(
+            factory = { context ->
+                CombinedChart(context).apply {
+                    data = combinedData
+                    description.isEnabled = false
+                    axisRight.isEnabled = true
+                    axisLeft.textColor = textColor
+                    axisRight.textColor = textColor
+                    legend.textColor = textColor
+                    xAxis.position = XAxis.XAxisPosition.BOTTOM
+                    xAxis.textColor = textColor
+                    xAxis.setDrawGridLines(false)
 //                xAxis.setDrawLabels(true)
-                xAxis.granularity = 1f
-                xAxis.valueFormatter = DateValueFormatter(currentRangeType)
+                    xAxis.granularity = 1f
+                    xAxis.valueFormatter = DateValueFormatter(currentRangeType, dateLabels)
 
-                // 设置 X 轴的最大值
-//                xAxis.setAxisMaximum(data.xMax + 0.25f)
-                axisRight.apply {
-                    valueFormatter = PercentValueFormatter()
-                    setDrawGridLines(false)
-                    axisMinimum = 0f
-                }
+//                    xAxis.setAxisMinimum(0.0f - 0.5f)
+//                    xAxis.setAxisMaximum(data.xMax +0.5f)
+                    // 设置 X 轴的最大值
+                    axisRight.apply {
+                        valueFormatter = PercentValueFormatter()
+                        setDrawGridLines(false)
+                        axisMaximum = (data.yMax * 1.2f / 1000)
+//                    axisMinimum = 0f
+                    }
 
-                axisLeft.apply {
-                    setDrawGridLines(false)
-                    axisMinimum = 0f // 设置左侧轴的最小值
-                }
+                    axisLeft.apply {
+                        setDrawGridLines(false)
+//                    axisMinimum = 0f // 设置左侧轴的最小值
+                    }
 
-                legend.apply {
-                    isEnabled = true
+                    legend.apply {
+                        isEnabled = true
 //                    setWordWrapEnabled(true)
-                    verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
-                    horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
-                    orientation = Legend.LegendOrientation.HORIZONTAL
-                    setDrawInside(false)
+                        verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+                        horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                        orientation = Legend.LegendOrientation.HORIZONTAL
+                        setDrawInside(false)
+                    }
+                    setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                        override fun onValueSelected(e: Entry?, h: Highlight?) {
+                            e?.let {
+                                val dataSetLabel = data.getDataSetForEntry(e).label
+                                var text = ""
+                                text = when (dataSetLabel) {
+                                    "損益金額" -> {
+                                        // 点击的是 Line
+                                        "${it.y}"
+                                    }
+
+                                    "損益率" -> {
+                                        // 点击的是 Bar
+                                        "${it.y}%"
+                                    }
+
+                                    else -> {
+                                        // 其他情况
+                                        ""
+                                    }
+                                }
+                                showPopup = true
+                                popupText = text
+                                popupPosition = Offset((h?.xPx ?: 0f) - 60f, h?.yPx ?: 0f)
+                            }
+                        }
+
+                        override fun onNothingSelected() {
+                            showPopup = false
+                        }
+                    })
+                    // 启用点击功能，确保线条图也可以点击
+                    setTouchEnabled(true)
+                    isHighlightPerDragEnabled = true
+                    isHighlightPerTapEnabled = true
                 }
+            },
+            update = { chart ->
+                if (realizedTrades.isNullOrEmpty()) {
+                    chart.clear()
+                } else {
+                    chart.data = combinedData
+                }
+                chart.xAxis.setAxisMinimum(0.0f - 0.5f)
+                chart.xAxis.setAxisMaximum(xValue-0.5f)
+                chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType, dateLabels)
+                chart.invalidate()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(300.dp) // 可以调整图表的高度
+        )
+        if (showPopup) {
+            CustomMarkerView(
+                content = popupText,
+                modifier = Modifier
+                    .offset { IntOffset(popupPosition.x.toInt(), popupPosition.y.toInt()) }
+            )
+        }
+    }
+}
 
-//                axisLeft.apply {
-//                    setDrawGridLines(true)
-//                }
-//                axisRight.apply {
-//                    // 确保右侧轴显示百分比数据
-//                    valueFormatter = PercentValueFormatter()
-//                    setDrawGridLines(false) // 根据需要选择是否显示网格线
-//                    setDrawLabels(true)
-//                }
-//
-//                legend.apply {
-//                    isEnabled = true
-//                }
-
-//                setDrawGridBackground(false)
-//                setDrawBorders(false)
-            }
-        },
-        update = { chart ->
-            if (realizedTrades.isNullOrEmpty()) {
-                chart.clear()
-            } else {
-                chart.data = combinedData
-            }
-            chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType)
-            chart.invalidate()
-        },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(300.dp) // 可以调整图表的高度
-    )
-    // 初始化图表
-//    AndroidView(
-//        factory = { context ->
-//            LineChart(context).apply {
-//                data = lineData
-//                description.isEnabled = false
-//                xAxis.position = XAxis.XAxisPosition.BOTTOM
-//                axisRight.isEnabled = false
-//                axisLeft.isEnabled = true
-//                legend.isEnabled = true
-//                xAxis.textColor = textColor
-//                axisLeft.textColor = textColor
-//                axisRight.textColor = textColor
-//                legend.textColor = textColor
-////                xAxis.setLabelCount(sortedTradesByDate.size, true)
-//                xAxis.setCenterAxisLabels(true)
-//                xAxis.setLabelCount(profitEntries.size, true)
-////                xAxis.axisMaximum = 0f
-//                xAxis.granularity = 1f
-//                xAxis.valueFormatter = DateValueFormatter(currentRangeType)
-//
-////                xAxis.valueFormatter = MonthValueFormatter(months)
-//
-//
-//            }
-//        },
-//        update = { chart ->
-//            if (realizedTrades.isNullOrEmpty()) {
-//                chart.clear() // 清空图表数据
-//            } else {
-//                // 更新数据
-//                chart.data = lineData
-//            }
-//            chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType)
-////            chart.xAxis.valueFormatter = MonthValueFormatter(months)
-//            chart.invalidate() // 刷新图表
-//        },
-//        modifier = Modifier
-//            .fillMaxWidth()
-//            .height(200.dp)
-//    )
+@Composable
+fun CustomMarkerView(
+    content: String,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .background(MaterialTheme.colorScheme.primary, shape = RoundedCornerShape(8.dp))
+            .padding(8.dp)
+    ) {
+        Text(
+            text = content,
+            color = Color.White,
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

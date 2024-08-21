@@ -43,6 +43,14 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         stockRecordDao.deleteAllRecordsByAccountId(accountId)
     }
 
+    suspend fun getMinTransactionDateByAccountId(accountId: Int): Long? {
+        return stockRecordDao.getMinTransactionDateByAccountId(accountId)
+    }
+
+    suspend fun getMaxTransactionDateByAccountId(accountId: Int): Long? {
+        return stockRecordDao.getMaxTransactionDateByAccountId(accountId)
+    }
+
     fun getStockRecordsByDateRangeAndAccount(
         accountId: Int,
         startDate: Long,

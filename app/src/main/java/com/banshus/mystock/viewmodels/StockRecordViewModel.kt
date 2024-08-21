@@ -70,6 +70,12 @@ class StockRecordViewModel(
         }
     }
 
+    fun getTransactionDateRangeByAccountId(accountId: Int): LiveData<Pair<Long?, Long?>> = liveData {
+        val minDate = repository.getMinTransactionDateByAccountId(accountId)
+        val maxDate = repository.getMaxTransactionDateByAccountId(accountId)
+        emit(Pair(minDate, maxDate))
+    }
+
     fun deleteAllRecordsByAccountId(accountId: Int) {
         viewModelScope.launch {
             repository.deleteAllRecordsByAccountId(accountId)

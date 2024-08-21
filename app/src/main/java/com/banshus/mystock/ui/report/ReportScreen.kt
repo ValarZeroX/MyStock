@@ -99,6 +99,7 @@ fun ReportScreen(
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
     var selectedAccountId by remember { mutableIntStateOf(0) }
 
+
     val accountText: String
     if (firstStockAccount != null) {
         if (selectedAccount == null) {
@@ -111,8 +112,11 @@ fun ReportScreen(
     } else {
         accountText = "No account selected"
     }
+
+    val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRangeByAccountId(selectedAccountId).observeAsState()
+    stockViewModel.setTransactionDateRange(getAccountStockMaxMinDate?.first, getAccountStockMaxMinDate?.second)
     Log.d("selectedAccountId","$selectedAccountId")
-    Log.d("account","$stockAccounts")
+    Log.d("getAccountStock","$getAccountStockMaxMinDate")
     //DateSwitcher使用
 //    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 //    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
@@ -135,8 +139,8 @@ fun ReportScreen(
 //        Log.d("startDate", "$startDate")
 //        Log.d("endDate", "$endDate")
 //    }
-    Log.d("startDateMillis", "$startDateMillis")
-    Log.d("endDateMillis", "$endDateMillis")
+//    Log.d("startDateMillis", "$startDateMillis")
+//    Log.d("endDateMillis", "$endDateMillis")
 //    val realizedTrades by stockRecordViewModel.getRealizedTradesForAllAccounts()
 //        .observeAsState(emptyMap())
 //

@@ -38,4 +38,10 @@ interface StockRecordDao {
 
     @Query("DELETE FROM stock_record WHERE accountId = :accountId")
     suspend fun deleteAllRecordsByAccountId(accountId: Int)
+
+    @Query("SELECT MIN(transactionDate) FROM stock_record WHERE accountId = :accountId")
+    suspend fun getMinTransactionDateByAccountId(accountId: Int): Long?
+
+    @Query("SELECT MAX(transactionDate) FROM stock_record WHERE accountId = :accountId")
+    suspend fun getMaxTransactionDateByAccountId(accountId: Int): Long?
 }

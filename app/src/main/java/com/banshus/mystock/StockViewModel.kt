@@ -78,4 +78,15 @@ class StockViewModel : ViewModel() {
                 _startDate.value = start
                 _endDate.value = end
         }
+
+        private val _minTransactionDate = MutableLiveData<Long?>()
+        val minTransactionDate: LiveData<Long?> = _minTransactionDate
+
+        private val _maxTransactionDate = MutableLiveData<Long?>()
+        val maxTransactionDate: LiveData<Long?> = _maxTransactionDate
+
+        fun setTransactionDateRange(minDate: Long?, maxDate: Long?) {
+                _minTransactionDate.value = minDate
+                _maxTransactionDate.value = maxDate
+        }
 }

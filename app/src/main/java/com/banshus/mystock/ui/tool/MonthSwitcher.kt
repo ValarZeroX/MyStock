@@ -31,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.LiveData
 import com.banshus.mystock.StockViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -72,6 +73,7 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
 }
 
 enum class DateRangeType(val displayName: String) {
+    ALL("全部"),
     YEAR("年"),
     MONTH("月"),
     WEEK("週")
@@ -89,6 +91,11 @@ fun DateSwitcher(
     var showDatePicker by remember { mutableStateOf(false) }
 
     val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    val minDate by stockViewModel.minTransactionDate.observeAsState(null)
+    val maxDate by stockViewModel.maxTransactionDate.observeAsState(null)
+    val minDateMillis = minDate ?: LocalDate.now().minusYears(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val maxDateMillis = maxDate ?: LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -100,14 +107,15 @@ fun DateSwitcher(
                 DateRangeType.YEAR -> currentDate.minusYears(1)
                 DateRangeType.MONTH -> currentDate.minusMonths(1)
                 DateRangeType.WEEK -> currentDate.minusWeeks(1)
+                DateRangeType.ALL -> currentDate.minusYears(1)
             }
-            val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
+            val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate, minDateMillis, maxDateMillis)
             onDateChanged(startDate, endDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronLeft, contentDescription = "Previous")
         }
 
-        val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate)
+        val (startDate, endDate) = getStartAndEndDate(currentRangeType, currentDate, minDateMillis, maxDateMillis)
 
         Text(
             text = "${formatter.format(startDate)} ~ ${formatter.format(endDate)}",
@@ -122,8 +130,9 @@ fun DateSwitcher(
                 DateRangeType.YEAR -> currentDate.plusYears(1)
                 DateRangeType.MONTH -> currentDate.plusMonths(1)
                 DateRangeType.WEEK -> currentDate.plusWeeks(1)
+                DateRangeType.ALL -> currentDate.minusYears(1)
             }
-            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, currentDate)
+            val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, currentDate, minDateMillis, maxDateMillis)
             onDateChanged(newStartDate, newEndDate)
         }) {
             Icon(imageVector = Icons.Default.ChevronRight, contentDescription = "Next")
@@ -135,7 +144,7 @@ fun DateSwitcher(
                 onRangeTypeSelected = { selectedType ->
                     stockViewModel.setRangeType(selectedType)
                     stockViewModel.hideDialog()
-                    val (newStartDate, newEndDate) = getStartAndEndDate(selectedType, currentDate)
+                    val (newStartDate, newEndDate) = getStartAndEndDate(selectedType, currentDate, minDateMillis, maxDateMillis)
                     onDateChanged(newStartDate, newEndDate)
                 },
                 onDismiss = { stockViewModel.hideDialog() }
@@ -150,7 +159,7 @@ fun DateSwitcher(
                     newDateMillis?.let {
                         val selectedDate = Instant.ofEpochMilli(it).atZone(ZoneId.systemDefault()).toLocalDate()
                         currentDate = selectedDate
-                        val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, selectedDate)
+                        val (newStartDate, newEndDate) = getStartAndEndDate(currentRangeType, selectedDate, minDateMillis, maxDateMillis)
                         onDateChanged(newStartDate, newEndDate)
                     }
                 },
@@ -278,7 +287,7 @@ fun RangeTypeSelectionDialog(
 //        }
 //    }
 //}
-fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate): Pair<LocalDate, LocalDate> {
+fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate, minDate: Long, maxDate: Long): Pair<LocalDate, LocalDate> {
     return when (rangeType) {
         DateRangeType.YEAR -> {
             val endDate = baseDate.plusYears(1).minusDays(1)
@@ -293,6 +302,14 @@ fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate): Pair<Loca
         DateRangeType.WEEK -> {
             val endDate = baseDate.plusWeeks(1).minusDays(1)
             baseDate to endDate
+        }
+        DateRangeType.ALL -> {
+            val minLocalDate = Instant.ofEpochMilli(minDate).atZone(ZoneId.systemDefault()).toLocalDate()
+            val maxLocalDate = Instant.ofEpochMilli(maxDate).atZone(ZoneId.systemDefault()).toLocalDate()
+            // For "ALL" range, let's assume a broad date range
+            val startDate = minLocalDate // Example start date
+            val endDate = maxLocalDate // Current date as end date
+            startDate to endDate
         }
     }
 }

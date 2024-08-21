@@ -25,6 +25,7 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -55,6 +56,7 @@ import androidx.navigation.NavHostController
 import com.banshus.mystock.DateValueFormatter
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.PercentValueFormatter
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.SharedOptions.optionsStockType
 import com.banshus.mystock.SharedOptions.optionsTransactionType
@@ -75,8 +77,15 @@ import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.github.mikephil.charting.charts.CombinedChart
 import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.CombinedData
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -127,7 +136,7 @@ fun ReportScreen(
 
     val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
-
+Log.d("OutCurrentRangeType", "$currentRangeType")
 
     var selectedReportTabIndex by stockViewModel.selectedReportTabIndex
 //    val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
@@ -583,12 +592,13 @@ fun AccountMetricsLineChart(
     realizedTrades: Map<String, List<RealizedTrade>>?,
     currentRangeType: DateRangeType
 ) {
-    val textColor = StockText.toArgb()
+    var textColor = StockText.toArgb()
     val profitColor = StockRed.toArgb()
     val profitPercentColor = StockBlue.toArgb()
+    var primary = MaterialTheme.colorScheme.primary.toArgb()
     // 创建数据集
     val profitEntries = mutableListOf<Entry>()
-    val profitPercentEntries = mutableListOf<Entry>()
+    val profitPercentEntries = mutableListOf<BarEntry>()
 
     // 用日期来分组交易记录
     val tradesByDate = mutableMapOf<Long, MutableList<RealizedTrade>>()
@@ -619,6 +629,18 @@ fun AccountMetricsLineChart(
                     }
                     calendar.timeInMillis
                 }
+                DateRangeType.ALL -> {
+                    // 按年分组
+                    val calendar = Calendar.getInstance().apply {
+                        timeInMillis = trade.sell.transactionDate
+                        set(Calendar.DAY_OF_YEAR, 1)  // 设置为该年的第一天
+                        set(Calendar.HOUR_OF_DAY, 0)
+                        set(Calendar.MINUTE, 0)
+                        set(Calendar.SECOND, 0)
+                        set(Calendar.MILLISECOND, 0)
+                    }
+                    calendar.timeInMillis
+                }
                 else -> {
                     val calendar = Calendar.getInstance().apply {
                         timeInMillis = trade.sell.transactionDate
@@ -630,20 +652,15 @@ fun AccountMetricsLineChart(
                     calendar.timeInMillis
                 }
             }
-//            Log.d("dateKey","$dateKey")
+            val dateTime = Instant.ofEpochMilli(dateKey)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime()
+//            Log.d("trade", "$trade")
+//            Log.d("dateKey", "$dateTime")
             tradesByDate.getOrPut(dateKey) { mutableListOf() }.add(trade)
-            // 将交易按照日期分组
-//            if (tradesByDate.containsKey(dateKey)) {
-//                tradesByDate[dateKey]?.add(trade)
-//            } else {
-//                tradesByDate[dateKey] = mutableListOf(trade)
-//            }
         }
     }
     val sortedTradesByDate = tradesByDate.toSortedMap()
-    sortedTradesByDate.forEach { (date, trades) ->
-        Log.d("DateKey", "Date: $date, Trades: ${trades.size}")
-    }
     // 计算每个日期的总損益和損益率
     sortedTradesByDate.forEach { (date, trades) ->
         var totalBuy = 0.0
@@ -660,62 +677,166 @@ fun AccountMetricsLineChart(
         val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100 else 0.0
 
         val xValue = date.toFloat()
+        val dateTime = Instant.ofEpochMilli(xValue.toLong())
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime()
+//        Log.d("xValue", "$dateTime")
         profitEntries.add(Entry(xValue, profitValue.toFloat()))
-        profitPercentEntries.add(Entry(xValue, profitPercentValue.toFloat()))
+        profitPercentEntries.add(BarEntry(xValue, profitPercentValue.toFloat()))
+    }
+
+//    val months = arrayOf("Jan", "Feb", "Mar", "Apr", "May", "June")
+//    profitEntries.add(Entry(0f, 10000f))
+//    profitEntries.add(Entry(1f, 15000f))
+//    profitEntries.add(Entry(2f, 12000f))
+//    profitEntries.add(Entry(3f, 12000f))
+//    profitEntries.add(Entry(4f, 12000f))
+//    profitEntries.add(Entry(5f, 12000f))
+//
+    profitEntries.forEach { entry ->
+        Log.d("ProfitEntry", "X: ${entry.x}, Y: ${entry.y}")
+    }
+    profitPercentEntries.forEach { entry ->
+        Log.d("profitPercentEntries", "X: ${entry.x}, Y: ${entry.y}")
     }
     // 创建数据集
     val profitDataSet = LineDataSet(profitEntries, "損益金額").apply {
         color = profitColor
-        lineWidth = 2f
+        lineWidth = 2.5f
         valueTextColor = textColor
         valueTextSize = 8f
         mode = LineDataSet.Mode.HORIZONTAL_BEZIER
-        setDrawFilled(true) // 啟用填充
+//        setDrawFilled(true) // 啟用填充
         fillColor = profitColor // 設置填充顏色
         fillAlpha = 85 // 設置填充透明度 (0-255)
+        axisDependency = (YAxis.AxisDependency.LEFT)
     }
 
-//    val profitPercentDataSet = LineDataSet(profitPercentEntries, "損益率").apply {
-//        color = profitPercentColor
-//        lineWidth = 2f
-//        axisDependency = YAxis.AxisDependency.RIGHT
-//        valueTextColor = textColor
-//        valueTextSize = 8f
-//    }
+    val profitPercentDataSet = BarDataSet(profitPercentEntries, "損益率").apply {
+        color = primary
+        valueTextColor = textColor
+        valueTextSize = 8f
+        axisDependency = (YAxis.AxisDependency.RIGHT)
+    }
 
     val lineData = LineData(profitDataSet)
+    val barData = BarData(profitPercentDataSet)
 
-    // 初始化图表
+    val combinedData = CombinedData().apply {
+        setData(lineData)
+        setData(barData)
+    }
+
     AndroidView(
         factory = { context ->
-            LineChart(context).apply {
-                data = lineData
+            CombinedChart(context).apply {
+                data = combinedData
                 description.isEnabled = false
-                xAxis.position = XAxis.XAxisPosition.BOTTOM
-                axisRight.isEnabled = false
-                axisLeft.isEnabled = true
-                legend.isEnabled = true
-                xAxis.textColor = textColor
+                axisRight.isEnabled = true
                 axisLeft.textColor = textColor
                 axisRight.textColor = textColor
                 legend.textColor = textColor
-                xAxis.valueFormatter = DateValueFormatter()
+                xAxis.position = XAxis.XAxisPosition.BOTTOM
+                xAxis.textColor = textColor
+                xAxis.setDrawGridLines(false)
+//                xAxis.setDrawLabels(true)
+                xAxis.granularity = 1f
+                xAxis.valueFormatter = DateValueFormatter(currentRangeType)
 
+                // 设置 X 轴的最大值
+//                xAxis.setAxisMaximum(data.xMax + 0.25f)
+                axisRight.apply {
+                    valueFormatter = PercentValueFormatter()
+                    setDrawGridLines(false)
+                    axisMinimum = 0f
+                }
+
+                axisLeft.apply {
+                    setDrawGridLines(false)
+                    axisMinimum = 0f // 设置左侧轴的最小值
+                }
+
+                legend.apply {
+                    isEnabled = true
+//                    setWordWrapEnabled(true)
+                    verticalAlignment = Legend.LegendVerticalAlignment.BOTTOM
+                    horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+                    orientation = Legend.LegendOrientation.HORIZONTAL
+                    setDrawInside(false)
+                }
+
+//                axisLeft.apply {
+//                    setDrawGridLines(true)
+//                }
+//                axisRight.apply {
+//                    // 确保右侧轴显示百分比数据
+//                    valueFormatter = PercentValueFormatter()
+//                    setDrawGridLines(false) // 根据需要选择是否显示网格线
+//                    setDrawLabels(true)
+//                }
+//
+//                legend.apply {
+//                    isEnabled = true
+//                }
+
+//                setDrawGridBackground(false)
+//                setDrawBorders(false)
             }
         },
         update = { chart ->
             if (realizedTrades.isNullOrEmpty()) {
-                chart.clear() // 清空图表数据
+                chart.clear()
             } else {
-                // 更新数据
-                chart.data = lineData
+                chart.data = combinedData
             }
-            chart.invalidate() // 刷新图表
+            chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType)
+            chart.invalidate()
         },
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(300.dp) // 可以调整图表的高度
     )
+    // 初始化图表
+//    AndroidView(
+//        factory = { context ->
+//            LineChart(context).apply {
+//                data = lineData
+//                description.isEnabled = false
+//                xAxis.position = XAxis.XAxisPosition.BOTTOM
+//                axisRight.isEnabled = false
+//                axisLeft.isEnabled = true
+//                legend.isEnabled = true
+//                xAxis.textColor = textColor
+//                axisLeft.textColor = textColor
+//                axisRight.textColor = textColor
+//                legend.textColor = textColor
+////                xAxis.setLabelCount(sortedTradesByDate.size, true)
+//                xAxis.setCenterAxisLabels(true)
+//                xAxis.setLabelCount(profitEntries.size, true)
+////                xAxis.axisMaximum = 0f
+//                xAxis.granularity = 1f
+//                xAxis.valueFormatter = DateValueFormatter(currentRangeType)
+//
+////                xAxis.valueFormatter = MonthValueFormatter(months)
+//
+//
+//            }
+//        },
+//        update = { chart ->
+//            if (realizedTrades.isNullOrEmpty()) {
+//                chart.clear() // 清空图表数据
+//            } else {
+//                // 更新数据
+//                chart.data = lineData
+//            }
+//            chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType)
+////            chart.xAxis.valueFormatter = MonthValueFormatter(months)
+//            chart.invalidate() // 刷新图表
+//        },
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height(200.dp)
+//    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,5 +1,6 @@
 package com.banshus.mystock.api
 
+import com.banshus.mystock.api.response.StockSearchResponse
 import com.banshus.mystock.api.service.TwseApiService
 import com.banshus.mystock.api.service.YahooFinanceApiService
 import retrofit2.Retrofit
@@ -26,5 +27,9 @@ object RetrofitInstance {
 
     val twseApi: TwseApiService by lazy {
         twseRetrofit.create(TwseApiService::class.java)
+    }
+
+    suspend fun searchStock(query: String): StockSearchResponse {
+        return yahooApi.searchStock(query)
     }
 }

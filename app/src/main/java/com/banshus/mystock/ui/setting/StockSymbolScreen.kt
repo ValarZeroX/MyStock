@@ -169,8 +169,6 @@ fun StockSymbolScreen(
                 onStockMarketSelected = { market ->
                     selectedStockMarket = market
                 },
-                onAddClick = { showAddDialog = true }
-
             )
             OutlinedTextField(
                 value = searchQuery,
@@ -178,7 +176,17 @@ fun StockSymbolScreen(
                 label = { Text("搜索股票") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(10.dp)
+                    .padding(10.dp),
+
+                trailingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = "Add",
+                        modifier = Modifier.clickable {
+                            showAddDialog = true
+                        }
+                    )
+                },
             )
             LazyColumn(
                 modifier = Modifier
@@ -190,13 +198,15 @@ fun StockSymbolScreen(
                         headlineContent = { Text("${stockSymbol.stockName} (${stockSymbol.stockSymbol})") },
                         supportingContent = {
                             Column {
-                                Row{
-                                val combinedSymbol =
-                                    "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode}"
-                                val response = stockChartResponses[combinedSymbol]
-                                val price = response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
+                                Row {
+                                    val combinedSymbol =
+                                        "${stockSymbol.stockSymbol}.${selectedStockMarket?.stockMarketCode}"
+                                    val response = stockChartResponses[combinedSymbol]
+                                    val price =
+                                        response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
                                     Text(
-                                        text = price?.let { "股價: ${"%.2f".format(it)}" } ?: "股價: ${stockSymbol.stockPrice}",
+                                        text = price?.let { "股價: ${"%.2f".format(it)}" }
+                                            ?: "股價: ${stockSymbol.stockPrice}",
                                     )
                                 }
                                 Row(
@@ -205,9 +215,10 @@ fun StockSymbolScreen(
                                         .padding(top = 4.dp), // Optional padding between rows
                                     horizontalArrangement = Arrangement.End
                                 ) {
-                                    val lastUpdatedTimeFormatted = stockSymbol.lastUpdatedTime?.let {
-                                        dateFormat.format(Date(it))
-                                    } ?: "未知时间"
+                                    val lastUpdatedTimeFormatted =
+                                        stockSymbol.lastUpdatedTime?.let {
+                                            dateFormat.format(Date(it))
+                                        } ?: "未知时间"
                                     Text(
                                         text = "最後更新時間: $lastUpdatedTimeFormatted", // Align text to the right
                                         textAlign = TextAlign.End
@@ -233,22 +244,57 @@ fun StockSymbolScreen(
                                             val regularMarketDayHigh = meta?.regularMarketDayHigh
                                             val regularMarketDayLow = meta?.regularMarketDayLow
                                             val chartPreviousClose = meta?.chartPreviousClose
-                                            val roundedPrice = regularMarketPrice?.let { decimalFormat.format(it).toDouble() }
+                                            val roundedPrice = regularMarketPrice?.let {
+                                                decimalFormat.format(it).toDouble()
+                                            }
 //                                            val price = response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
 //                                            val roundedPrice = price?.let { decimalFormat.format(it).toDouble() }
                                             val currentTime = System.currentTimeMillis()
-                                            stockSymbolViewModel.insertStockSymbol(
-                                                StockSymbol(
-                                                    stockSymbol = stockSymbol.stockSymbol,
-                                                    stockName = stockSymbol.stockName,
-                                                    stockMarket = stockSymbol.stockMarket,
-                                                    stockPrice = roundedPrice,
-                                                    regularMarketDayLow = regularMarketDayLow,
-                                                    regularMarketDayHigh = regularMarketDayHigh,
-                                                    chartPreviousClose =chartPreviousClose,
-                                                    lastUpdatedTime = currentTime
+                                            var updatedName = stockSymbol.stockName
+                                            if (stockSymbol.stockName == "") {
+                                                stockPriceApiViewModel.searchStock(
+                                                    stockSymbol.stockSymbol,
+                                                    selectedStockMarket?.stockMarketCode ?: "",
+                                                    onSuccess = { _ ->
+                                                        val quotes = result?.meta
+                                                        val shortName = quotes?.shortName
+                                                        Log.d("shortName", "$shortName")
+                                                        Log.d("stockName", stockSymbol.stockName)
+//                                                    updatedName = stockSymbol.stockName.ifEmpty {
+//                                                        shortName ?: stockSymbol.stockName
+//                                                    }
+                                                        updatedName =
+                                                            stockSymbol.stockName.takeIf { it.isNotEmpty() }
+                                                                ?: shortName
+                                                                        ?: stockSymbol.stockName
+                                                        stockSymbolViewModel.insertStockSymbol(
+                                                            StockSymbol(
+                                                                stockSymbol = stockSymbol.stockSymbol,
+                                                                stockName = updatedName,
+                                                                stockMarket = stockSymbol.stockMarket,
+                                                                stockPrice = roundedPrice,
+                                                                regularMarketDayLow = regularMarketDayLow,
+                                                                regularMarketDayHigh = regularMarketDayHigh,
+                                                                chartPreviousClose = chartPreviousClose,
+                                                                lastUpdatedTime = currentTime
+                                                            )
+                                                        )
+                                                    })
+                                            } else {
+                                                stockSymbolViewModel.insertStockSymbol(
+                                                    StockSymbol(
+                                                        stockSymbol = stockSymbol.stockSymbol,
+                                                        stockName = updatedName,
+                                                        stockMarket = stockSymbol.stockMarket,
+                                                        stockPrice = roundedPrice,
+                                                        regularMarketDayLow = regularMarketDayLow,
+                                                        regularMarketDayHigh = regularMarketDayHigh,
+                                                        chartPreviousClose = chartPreviousClose,
+                                                        lastUpdatedTime = currentTime
+                                                    )
                                                 )
-                                            )
+                                            }
+
                                             scope.launch {
                                                 snackbarHostState.showSnackbar("更新成功")
                                             }
@@ -284,16 +330,19 @@ fun StockSymbolScreen(
                 selectedStockMarket = selectedStockMarket,
                 onDismiss = { showAddDialog = false },
                 onAdd = { symbol, name, selectedMarketId ->
-                    Log.d("StockSymbolAdd","No")
+                    Log.d("StockSymbolAdd", "No")
                     if (symbol.isNotEmpty()) {
-                        Log.d("StockSymbolAdd","Go")
+                        Log.d("StockSymbolAdd", "Go")
                         stockPriceApiViewModel.fetchStockPriceResult(
                             symbol = symbol,
                             period1 = System.currentTimeMillis() / 1000 - 86400,
                             period2 = System.currentTimeMillis() / 1000,
                             marketCode = selectedStockMarket?.stockMarketCode ?: "",
                             onSuccess = { response ->
-                                Log.d("StockChartResponse", "Meta Short Name: ${response?.chart?.result?.firstOrNull()?.meta?.shortName}")
+                                Log.d(
+                                    "StockChartResponse",
+                                    "Meta Short Name: ${response?.chart?.result?.firstOrNull()?.meta?.shortName}"
+                                )
                                 val result = response?.chart?.result?.firstOrNull()
                                 val meta = result?.meta
 
@@ -301,20 +350,51 @@ fun StockSymbolScreen(
                                 val regularMarketDayHigh = meta?.regularMarketDayHigh
                                 val regularMarketDayLow = meta?.regularMarketDayLow
                                 val chartPreviousClose = meta?.chartPreviousClose
-                                val roundedPrice = regularMarketPrice?.let { decimalFormat.format(it).toDouble() }
+                                val roundedPrice =
+                                    regularMarketPrice?.let { decimalFormat.format(it).toDouble() }
                                 val currentTime = System.currentTimeMillis()
-                                stockSymbolViewModel.insertStockSymbol(
-                                    StockSymbol(
-                                        stockSymbol = symbol,
-                                        stockName = name,
-                                        stockMarket = selectedMarketId,
-                                        stockPrice = roundedPrice,
-                                        regularMarketDayLow = regularMarketDayLow,
-                                        regularMarketDayHigh = regularMarketDayHigh,
-                                        chartPreviousClose =chartPreviousClose,
-                                        lastUpdatedTime = currentTime
+                                var updatedName = name
+                                if (name == "") {
+                                    stockPriceApiViewModel.searchStock(
+                                        symbol,
+                                        selectedStockMarket?.stockMarketCode ?: "",
+                                        onSuccess = { searchStockResponse ->
+                                            val quotes = result?.meta
+                                            val shortName = quotes?.shortName
+                                            Log.d("response", "$searchStockResponse")
+                                            updatedName = name.ifEmpty {
+                                                shortName ?: name
+                                            }
+                                            stockSymbolViewModel.insertStockSymbol(
+                                                StockSymbol(
+                                                    stockSymbol = symbol,
+                                                    stockName = updatedName,
+                                                    stockMarket = selectedMarketId,
+                                                    stockPrice = roundedPrice,
+                                                    regularMarketDayLow = regularMarketDayLow,
+                                                    regularMarketDayHigh = regularMarketDayHigh,
+                                                    chartPreviousClose = chartPreviousClose,
+                                                    lastUpdatedTime = currentTime
+                                                )
+                                            )
+                                        })
+                                } else {
+                                    stockSymbolViewModel.insertStockSymbol(
+                                        StockSymbol(
+                                            stockSymbol = symbol,
+                                            stockName = updatedName,
+                                            stockMarket = selectedMarketId,
+                                            stockPrice = roundedPrice,
+                                            regularMarketDayLow = regularMarketDayLow,
+                                            regularMarketDayHigh = regularMarketDayHigh,
+                                            chartPreviousClose = chartPreviousClose,
+                                            lastUpdatedTime = currentTime
+                                        )
                                     )
-                                )
+                                }
+
+
+
                                 scope.launch {
                                     snackbarHostState.showSnackbar("新增成功")
                                 }
@@ -349,15 +429,14 @@ fun StockSymbolScreen(
                 stockMarket = selectedStockSymbol!!.stockMarket,
                 onDismiss = { showUpdateDialog = false },
                 onUpdate = { symbol, nameUpdate, marketId ->
-                    if (nameUpdate.isNotEmpty()) {
                         stockSymbolViewModel.updateStockName(symbol, marketId, nameUpdate)
                         showUpdateDialog = false
-                    }
                 }
             )
         }
     }
 }
+
 @Composable
 fun StockSymbolUpdate(
     stockSymbol: String,
@@ -434,7 +513,7 @@ fun StockSymbolAdd(
     onAdd: (String, String, Int) -> Unit
 ) {
     var symbol by remember { mutableStateOf("") }
-    var name by remember { mutableStateOf("") }
+    val name by remember { mutableStateOf("") }
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = MaterialTheme.shapes.medium,
@@ -462,17 +541,16 @@ fun StockSymbolAdd(
                     label = { Text("股票代碼") },
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { newName ->
-                        if (newName.length <= 40) {
-                            name = newName
-                        }
-                    },
-                    label = { Text("股票名稱") },
-                    modifier = Modifier.fillMaxWidth()
-                )
+//                OutlinedTextField(
+//                    value = name,
+//                    onValueChange = { newName ->
+//                        if (newName.length <= 40) {
+//                            name = newName
+//                        }
+//                    },
+//                    label = { Text("股票名稱") },
+//                    modifier = Modifier.fillMaxWidth()
+//                )
                 Row(
                     horizontalArrangement = Arrangement.End,
                     modifier = Modifier
@@ -532,7 +610,6 @@ fun StockMarketDropdown(
     stockMarkets: List<StockMarket>, // 替換為你的股票市場數據類型
     selectedStockMarket: StockMarket?,
     onStockMarketSelected: (StockMarket) -> Unit,
-    onAddClick: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
@@ -543,15 +620,6 @@ fun StockMarketDropdown(
             onValueChange = {},
             label = { Text("選擇股票市場") },
             readOnly = true,
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = "Add",
-                    modifier = Modifier.clickable {
-                        onAddClick()
-                    }
-                )
-            },
             interactionSource = remember { MutableInteractionSource() }
                 .also { interactionSource ->
                     LaunchedEffect(interactionSource) {

@@ -3,12 +3,34 @@ package com.banshus.mystock.repository
 import android.util.Log
 import com.banshus.mystock.api.service.YahooFinanceApiService
 import com.banshus.mystock.api.response.StockChartResponse
+import com.banshus.mystock.api.response.StockSearchResponse
 import retrofit2.HttpException
 
 class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
     suspend fun getStockPrice(symbol: String, period1: Long, period2: Long): StockChartResponse? {
         return try {
             apiService.getStockPrice(symbol, period1, period2)
+        } catch (e: HttpException) {
+            Log.d("error000", "$e")
+            Log.d("error000", "${e.response()}")
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.d("error000", "Error body: $errorBody")
+            Log.d("error000", e.message())
+            if (e.code() == 404) {
+                throw e
+            } else {
+                // 处理其他HTTP错误
+                throw e
+            }
+        } catch (e: Exception) {
+            Log.d("error001", "$e")
+            throw e
+        }
+    }
+
+    suspend fun searchStock(symbol: String): StockSearchResponse? {
+        return try {
+            apiService.searchStock(symbol)
         } catch (e: HttpException) {
             Log.d("error000", "$e")
             Log.d("error000", "${e.response()}")

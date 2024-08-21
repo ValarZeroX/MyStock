@@ -365,7 +365,7 @@ fun StockListScreen(
                                             MaterialTheme.colorScheme.onSurface
                                         )
                                         ListItem(
-                                            headlineContent = { Text(text = "$stockSymbol ($stockName)") },
+                                            headlineContent = { Text(text = "$stockName($stockSymbol)") },
                                             supportingContent = {
                                                 Column {
                                                     Row(
@@ -574,7 +574,7 @@ fun StockListScreen(
                                     }
                                 ) {
                                     ListItem(
-                                        headlineContent = { Text(text = "${record.stockSymbol}($stockName)") },
+                                        headlineContent = { Text(text = "$stockName(${record.stockSymbol})") },
                                         supportingContent = {
                                             Column {
                                                 Row(

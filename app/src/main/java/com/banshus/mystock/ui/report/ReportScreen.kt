@@ -688,7 +688,7 @@ fun AccountMetricsLineChart(
                 data = lineData
                 description.isEnabled = false
                 xAxis.position = XAxis.XAxisPosition.BOTTOM
-                axisRight.isEnabled = true
+                axisRight.isEnabled = false
                 axisLeft.isEnabled = true
                 legend.isEnabled = true
                 xAxis.textColor = textColor
@@ -696,6 +696,7 @@ fun AccountMetricsLineChart(
                 axisRight.textColor = textColor
                 legend.textColor = textColor
                 xAxis.valueFormatter = DateValueFormatter()
+
             }
         },
         update = { chart ->

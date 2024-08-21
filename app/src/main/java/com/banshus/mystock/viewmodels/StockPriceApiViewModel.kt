@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.banshus.mystock.api.response.StockChartResponse
+import com.banshus.mystock.api.response.StockSearchResponse
 import com.banshus.mystock.repository.StockPriceApiRepository
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
@@ -62,6 +63,27 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
                 _error.value = errorMessage
                 onError(errorMessage)
                 Log.e("StockPriceApiViewModel", "General error fetching stock price", e)
+            }
+        }
+    }
+
+    private val _stockSearchResults = MutableLiveData<StockSearchResponse?>()
+    val stockSearchResults: MutableLiveData<StockSearchResponse?> get() = _stockSearchResults
+
+    fun searchStock(symbol: String,marketCode: String,onSuccess: (StockSearchResponse?) -> Unit,) {
+        viewModelScope.launch {
+            try {
+                val combinedSymbol: String = if (marketCode != "US") {
+                    "${symbol}.${marketCode}"
+                } else {
+                    symbol
+                }
+                val response = repository.searchStock(symbol)
+                    _stockSearchResults.value = response
+                onSuccess(response)
+
+            } catch (e: Exception) {
+                Log.e("StockSearch", "Failed to search stock", e)
             }
         }
     }

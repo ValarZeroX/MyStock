@@ -1,18 +1,12 @@
 package com.banshus.mystock
-import android.util.Log
-import com.banshus.mystock.ui.tool.DateRangeType
+
 import com.github.mikephil.charting.formatter.ValueFormatter
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 class DateValueFormatter(
-    private val currentRangeType: DateRangeType,
     private val dateLabels: Map<Float, String>
 ) : ValueFormatter() {
 
     override fun getFormattedValue(value: Float): String {
-        Log.d("dateLabels", "$dateLabels")
         return dateLabels[value] ?: ""
     }
 }

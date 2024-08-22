@@ -60,6 +60,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
 import com.banshus.mystock.DateValueFormatter
 import com.banshus.mystock.NumberUtils.formatNumber
+import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPointDouble
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.PercentValueFormatter
 //import com.banshus.mystock.PercentValueFormatter
@@ -679,7 +680,6 @@ fun AccountMetricsLineChart(
     }
     val sortedTradesByDate = tradesByDate.toSortedMap()
     var xValue = 0.0f
-//    var cValue = 0.0f
     val formatterMonthDay = DateTimeFormatter.ofPattern("MM/dd")
     val formatterMonth = DateTimeFormatter.ofPattern("yyyy-MM")
     val formatterYear = DateTimeFormatter.ofPattern("yyyy")
@@ -698,8 +698,8 @@ fun AccountMetricsLineChart(
             totalSell += trade.sell.quantity * trade.sell.pricePerUnit
         }
 
-        val profitValue = totalSell - totalBuy
-        val profitPercentValue = if (totalBuy != 0.0) (profitValue / totalBuy) * 100 else 0.0
+        val profitValue = formatNumberNoDecimalPointDouble(totalSell - totalBuy)
+        val profitPercentValue = if (totalBuy != 0.0) formatNumberNoDecimalPointDouble((profitValue / totalBuy) * 100) else 0.0
 
         // 将日期格式化
         val dateTime = Instant.ofEpochMilli(date)
@@ -773,7 +773,7 @@ fun AccountMetricsLineChart(
                     xAxis.setDrawGridLines(false)
 //                xAxis.setDrawLabels(true)
                     xAxis.granularity = 1f
-                    xAxis.valueFormatter = DateValueFormatter(currentRangeType, dateLabels)
+                    xAxis.valueFormatter = DateValueFormatter( dateLabels)
 
 //                    xAxis.setAxisMinimum(0.0f - 0.5f)
 //                    xAxis.setAxisMaximum(data.xMax +0.5f)
@@ -781,7 +781,7 @@ fun AccountMetricsLineChart(
                     axisRight.apply {
                         valueFormatter = PercentValueFormatter()
                         setDrawGridLines(false)
-                        axisMaximum = (data.yMax * 1.2f / 1000)
+//                        axisMaximum = (data.yMax * 1.2f / 1000)
 //                    axisMinimum = 0f
                     }
 
@@ -843,7 +843,7 @@ fun AccountMetricsLineChart(
                 }
                 chart.xAxis.setAxisMinimum(0.0f - 0.5f)
                 chart.xAxis.setAxisMaximum(xValue-0.5f)
-                chart.xAxis.valueFormatter = DateValueFormatter(currentRangeType, dateLabels)
+                chart.xAxis.valueFormatter = DateValueFormatter(dateLabels)
                 chart.invalidate()
             },
             modifier = Modifier

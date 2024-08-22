@@ -59,6 +59,13 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         return stockRecordDao.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
     }
 
+    fun getStockRecordsByDateRange(
+    startDate: Long,
+    endDate: Long
+    ): LiveData<List<StockRecord>> {
+        return stockRecordDao.getStockRecordsByDateRange(startDate, endDate)
+    }
+
     private fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>> {
         return stockRecordDao.getStockRecordsByAccountId(accountId)
     }

@@ -27,6 +27,12 @@ interface StockRecordDao {
         endDate: Long
     ): LiveData<List<StockRecord>>
 
+    @Query("SELECT * FROM stock_record WHERE transactionDate BETWEEN :startDate AND :endDate ORDER BY transactionDate")
+    fun getStockRecordsByDateRange(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<List<StockRecord>>
+
     @Query("SELECT * FROM stock_record WHERE accountId = :accountId ORDER BY transactionDate")
     fun getStockRecordsByAccountId(accountId: Int): LiveData<List<StockRecord>>
 

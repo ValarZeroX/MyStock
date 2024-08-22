@@ -46,6 +46,13 @@ class StockRecordViewModel(
         return repository.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
     }
 
+    fun getStockRecordsByDateRange(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<List<StockRecord>> {
+        return repository.getStockRecordsByDateRange(startDate, endDate)
+    }
+
     fun insertStockRecord(stockRecord: StockRecord) {
         viewModelScope.launch {
             repository.insertStockRecord(stockRecord)

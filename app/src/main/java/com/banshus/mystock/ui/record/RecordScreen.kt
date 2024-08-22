@@ -110,13 +110,13 @@ fun RecordScreen(
         startDate = startDate,
         endDate = endDateTime
     ).observeAsState(initial = emptyList())
-    val stockSymbols by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
+    val stockSymbols by stockSymbolViewModel.allStockSymbols.observeAsState(emptyList())
     LaunchedEffect(stockSymbols) {
         stockRecordViewModel.setStockSymbols(stockSymbols)
     }
     Log.d("stockRecords", "$stockRecords")
 
-    Log.d("selectedDate", "$selectedDate")
+    Log.d("stockSymbols", "$stockSymbols")
     Scaffold(
         topBar = {
             RecordScreenHeader(navController)

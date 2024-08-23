@@ -1,5 +1,6 @@
 package com.banshus.mystock.ui.tool
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -100,6 +101,8 @@ private fun CalendarCell(
 ) {
     val text = date.formatToCalendarDay()
     val isToday = isToday(date)  // 检查是否为今天
+    Log.d("selectedDate", "$selectedDate")
+    Log.d("date", "$date")
     val isSelected = selectedDate == date
     val textColor = if (signal) {
         MaterialTheme.colorScheme.onPrimaryContainer

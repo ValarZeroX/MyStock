@@ -3,6 +3,8 @@ package com.banshus.mystock
 import androidx.compose.ui.graphics.Color
 import java.text.DecimalFormat
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object NumberUtils {
@@ -45,5 +47,10 @@ object NumberUtils {
             value < 0 -> negativeColor
             else -> defaultColor
         }
+    }
+
+    fun Date.formatToDisplayString(): String {
+        val formatter = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return formatter.format(this)
     }
 }

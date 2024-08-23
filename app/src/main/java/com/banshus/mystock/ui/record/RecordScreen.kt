@@ -42,6 +42,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
+import com.banshus.mystock.NumberUtils.formatToDisplayString
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ui.theme.StockGreen
@@ -65,11 +66,17 @@ fun RecordScreen(
     stockSymbolViewModel: StockSymbolViewModel,
     stockRecordViewModel: StockRecordViewModel,
 ) {
-    val currentDate = Date()
-    val calendar = remember { Calendar.getInstance() }
+    val selectedRecordDate by stockViewModel.selectedRecordDate.observeAsState(Date()) // 观察 ViewModel 中的 selectedRecordDate
+
+    val calendar = remember(selectedRecordDate) {
+        Calendar.getInstance().apply {
+            time = selectedRecordDate // 使用 selectedRecordDate 初始化 Calendar
+        }
+    }
+
     var currentMonth by remember { mutableStateOf(calendar.time) }
-    var selectedDate by remember { mutableStateOf(currentDate) }
-    val selectedDateMillis = selectedDate.time
+
+    val selectedDateMillis = selectedRecordDate.time
     val startDate = Instant.ofEpochMilli(selectedDateMillis)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
@@ -140,11 +147,11 @@ fun RecordScreen(
 //        dates = generateMonthDates(currentMonth, highlightDays)
 //    }
 
-    Log.d("stockRecords", "$stockRecords")
-    Log.d("dates", "$dates")
+    Log.d("selectedRecordDate", "$selectedRecordDate")
+//    Log.d("dates", "$dates")
     Scaffold(
         topBar = {
-            RecordScreenHeader(navController)
+            RecordScreenHeader(navController,selectedRecordDate)
         },
     ) { innerPadding ->
         Box(
@@ -171,19 +178,14 @@ fun RecordScreen(
                         dates = generateMonthDates(currentMonth, highlightDays) // 重新生成日期列表
                     },
                     onClick = { date ->
-                        selectedDate = date // 更新选中的日期
+                        stockViewModel.updateSelectedRecordDate(date) // 更新选中的日期
+
 //                        dates = dates.map { if (it.first == date) it.copy(second = true) else it.copy(second = false) }
                     },
                     startFromSunday = true,
 //                    modifier = Modifier.fillMaxSize(),
-                    selectedDate = selectedDate
+                    selectedDate = selectedRecordDate
                 )
-//                DatePicker(
-//                    state = datePickerState,
-//                    title = null,
-//                    headline = null,
-//                    showModeToggle = false,
-//                )
                 LazyColumn {
                     items(stockRecords) { record ->
                         val transactionType = when (record.transactionType) {
@@ -233,11 +235,6 @@ fun RecordScreen(
                                             .fillMaxHeight()
                                             .background(MaterialTheme.colorScheme.primaryContainer)
                                             .clickable {
-//                                                stockAccount?.let { nonNullAccount ->
-//                                                    stockViewModel.updateSelectedAccount(
-//                                                        nonNullAccount
-//                                                    )
-//                                                }
                                                 stockSymbolViewModel.fetchStockSymbolsListByMarket(record.stockMarket)
                                                 stockViewModel.updateSelectedStock(record)
                                                 navController.navigate("stockDetailScreen")
@@ -381,11 +378,11 @@ fun generateMonthDates(month: Date, highlightDays: List<Int>): List<Pair<Date, B
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecordScreenHeader(navController: NavHostController) {
+fun RecordScreenHeader(navController: NavHostController, selectedRecordDate:Date) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "",
+                selectedRecordDate.formatToDisplayString(),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

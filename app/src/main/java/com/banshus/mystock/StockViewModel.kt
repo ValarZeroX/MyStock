@@ -12,6 +12,7 @@ import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.getStartAndEndDate
 import java.time.LocalDate
+import java.util.Date
 
 class StockViewModel : ViewModel() {
         private val _selectedAccount = MutableLiveData<StockAccount?>()
@@ -88,6 +89,13 @@ class StockViewModel : ViewModel() {
         fun setTransactionDateRange(minDate: Long?, maxDate: Long?) {
                 _minTransactionDate.value = minDate
                 _maxTransactionDate.value = maxDate
+        }
+
+        private val _selectedRecordDate = MutableLiveData<Date>(Date()) // 初始化为当前日期
+        val selectedRecordDate: LiveData<Date> = _selectedRecordDate
+
+        fun updateSelectedRecordDate(date: Date) {
+                _selectedRecordDate.value = date
         }
 
 }

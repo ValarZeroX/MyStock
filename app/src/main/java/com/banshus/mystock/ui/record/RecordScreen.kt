@@ -2,17 +2,27 @@ package com.banshus.mystock.ui.record
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -24,11 +34,15 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
@@ -41,6 +55,7 @@ import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import com.banshus.mystock.ui.tool.CalendarView
+import com.banshus.mystock.ui.tool.SwipeBox
 
 @Composable
 fun RecordScreen(
@@ -50,48 +65,11 @@ fun RecordScreen(
     stockSymbolViewModel: StockSymbolViewModel,
     stockRecordViewModel: StockRecordViewModel,
 ) {
-//    val datePickerState = rememberDatePickerState()
-//
-//    val selectedDateMillis = datePickerState.selectedDateMillis ?: System.currentTimeMillis()
-
-//    val startDate = Instant.ofEpochMilli(selectedDateMillis)
-//        .atZone(ZoneId.systemDefault())
-//        .toLocalDate()
-//        .atStartOfDay(ZoneId.systemDefault())
-//        .toInstant()
-//        .toEpochMilli()
-//
-//    val endDateTime = Instant.ofEpochMilli(selectedDateMillis)
-//        .atZone(ZoneId.systemDefault())
-//        .toLocalDate()
-//        .atTime(23, 59, 59)
-//        .atZone(ZoneId.systemDefault())
-//        .toInstant()
-//        .toEpochMilli()
-
-//    val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-//    val endDateMillis = endDateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-
-
-
-
-//    LaunchedEffect(stockSymbols) {
-//        stockRecordViewModel.setStockSymbols(stockSymbols)
-//    }
-
     val currentDate = Date()
     val calendar = remember { Calendar.getInstance() }
     var currentMonth by remember { mutableStateOf(calendar.time) }
     var selectedDate by remember { mutableStateOf(currentDate) }
     val selectedDateMillis = selectedDate.time
-    val highlightDays = listOf(2, 14)  // 你想高亮的日期
-    var dates by remember { mutableStateOf(generateMonthDates(currentMonth, highlightDays)) }
-
-//    var dates = listOf(
-//        Pair(currentDate, true),  // 将当前日期标记为 `true`（例如高亮）
-//        // 添加其他日期
-//    )
     val startDate = Instant.ofEpochMilli(selectedDateMillis)
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
@@ -106,17 +84,64 @@ fun RecordScreen(
         .atZone(ZoneId.systemDefault())
         .toInstant()
         .toEpochMilli()
+
+    val calendarMonth = Calendar.getInstance().apply {
+        time = currentMonth
+        set(Calendar.DAY_OF_MONTH, 1) // 设置为该月的第一天
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    val monthStartDate = calendarMonth.timeInMillis // 获取该月的开始时间戳
+
+    calendarMonth.add(Calendar.MONTH, 1) // 移动到下个月
+    calendarMonth.add(Calendar.MILLISECOND, -1) // 回退一毫秒，获得本月的最后时刻
+    val monthEndDate = calendarMonth.timeInMillis // 获取该月的结束时间戳
+    val dateSerialNumberMap by stockRecordViewModel.getDateSerialNumberMapByDateRange(
+        startDate = monthStartDate,
+        endDate = monthEndDate
+    ).observeAsState(initial = emptyMap())
+//    val highlightDays = remember(dateSerialNumberMap) {
+//        dateSerialNumberMap.values.toList()
+//    }
+//    var dates by remember { mutableStateOf(generateMonthDates(currentMonth, highlightDays)) }
+    val highlightDays = remember(dateSerialNumberMap) {
+        dateSerialNumberMap.values.toList()
+    }
+
+    // 初始化 dates 的状态，只在 highlightDays 准备好后生成
+    var dates by remember(currentMonth, highlightDays) {
+        mutableStateOf(generateMonthDates(currentMonth, highlightDays))
+    }
+
+    // 当 highlightDays 准备好时更新 dates
+    LaunchedEffect(highlightDays) {
+        dates = generateMonthDates(currentMonth, highlightDays)
+    }
+
     val stockRecords by stockRecordViewModel.getStockRecordsByDateRange(
         startDate = startDate,
         endDate = endDateTime
     ).observeAsState(initial = emptyList())
+
     val stockSymbols by stockSymbolViewModel.allStockSymbols.observeAsState(emptyList())
+
     LaunchedEffect(stockSymbols) {
         stockRecordViewModel.setStockSymbols(stockSymbols)
     }
-    Log.d("stockRecords", "$stockRecords")
 
-    Log.d("stockSymbols", "$stockSymbols")
+    val stockAccounts by stockAccountViewModel.stockAccountsMap.observeAsState(emptyMap())
+//    LaunchedEffect(currentMonth, highlightDays) {
+//        Log.d("LaunchedEffect", "$highlightDays")
+//        dates = generateMonthDates(currentMonth, highlightDays)
+//    }
+//    LaunchedEffect(currentMonth, highlightDays) {
+//        dates = generateMonthDates(currentMonth, highlightDays)
+//    }
+
+    Log.d("stockRecords", "$stockRecords")
+    Log.d("dates", "$dates")
     Scaffold(
         topBar = {
             RecordScreenHeader(navController)
@@ -193,17 +218,72 @@ fun RecordScreen(
                             2 -> "每股股利"
                             else -> "每股價格"
                         }
-                        val recordDateMillis = record.transactionDate
-                        val dateTime = Instant.ofEpochMilli(recordDateMillis)
-                            .atZone(ZoneId.systemDefault())
-                            .toLocalDateTime()
-                        val formatterDate =
-                            DateTimeFormatter.ofPattern("MMM dd, yyyy")
-                        val formattedDate = dateTime.format(formatterDate)
-                        val formatterTime =
-                            DateTimeFormatter.ofPattern("HH:mm")
-                        val formattedTime = dateTime.format(formatterTime)
-
+                        var checked by remember { mutableStateOf(false) }
+                        SwipeBox(
+                            checked = checked,
+                            onCheckedChange = { checked = it },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
+                            bottomContent = {
+                                Row {
+                                    Box(
+                                        modifier = Modifier
+                                            .width(70.dp)
+                                            .fillMaxHeight()
+                                            .background(MaterialTheme.colorScheme.primaryContainer)
+                                            .clickable {
+//                                                stockAccount?.let { nonNullAccount ->
+//                                                    stockViewModel.updateSelectedAccount(
+//                                                        nonNullAccount
+//                                                    )
+//                                                }
+                                                stockSymbolViewModel.fetchStockSymbolsListByMarket(record.stockMarket)
+                                                stockViewModel.updateSelectedStock(record)
+                                                navController.navigate("stockDetailScreen")
+                                            }
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.align(Alignment.Center),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Edit,
+                                                contentDescription = "Edit"
+                                            )
+                                            Text(
+                                                text = "編輯",
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                    }
+                                    Box(
+                                        modifier = Modifier
+                                            .width(70.dp)
+                                            .fillMaxHeight()
+                                            .background(StockRed)
+                                            .clickable {
+                                                stockRecordViewModel.deleteStockRecordById(record.recordId)
+                                                checked = false
+                                            }
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.align(Alignment.Center),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            Icon(
+                                                imageVector = Icons.Filled.Delete,
+                                                contentDescription = "Delete"
+                                            )
+                                            Text(
+                                                text = "刪除",
+                                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        ){
                         ListItem(
                             headlineContent = { Text(text = "$stockName(${record.stockSymbol})") },
                             supportingContent = {
@@ -234,19 +314,40 @@ fun RecordScreen(
                                     }
                                 }
                             },
+
                             trailingContent = {
                                 Column {
                                     Text(
-                                        text = formattedDate
+                                        text = stockAccounts[record.accountId]!!.account,
+                                        modifier = Modifier
+                                            .padding(4.dp)  // 添加一些内边距
+                                            .border(
+                                                width = 2.dp,  // 边框宽度
+                                                color = MaterialTheme.colorScheme.primary,  // 边框颜色
+                                                shape = RoundedCornerShape(50)  // 椭圆形边框
+                                            )
+                                            .clip(RoundedCornerShape(50))  // 将内容裁剪为椭圆形
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)  // 内部文本的填充
                                     )
                                     Text(
-                                        text = formattedTime
+                                        text = optionStockMarket[record.stockMarket],
+                                        modifier = Modifier
+                                            .padding(4.dp)  // 添加一些内边距
+                                            .border(
+                                                width = 2.dp,  // 边框宽度
+                                                color = MaterialTheme.colorScheme.primary,
+                                                shape = RoundedCornerShape(50)
+                                            )
+                                            .clip(RoundedCornerShape(50))
+                                            .padding(horizontal = 12.dp, vertical = 6.dp)
+                                                 )
+                                    Text(
+                                        text = transactionType,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 1.dp)
                                     )
                                     Text(
-                                        text = transactionType
-                                    )
-                                    Text(
-                                        text = stockType
+                                        text = stockType,
+                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 1.dp)
                                     )
                                 }
                             }
@@ -254,6 +355,7 @@ fun RecordScreen(
                         HorizontalDivider()
                     }
                 }
+            }
             }
         }
     }

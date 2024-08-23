@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -100,6 +101,12 @@ private fun CalendarCell(
     val text = date.formatToCalendarDay()
     val isToday = isToday(date)  // 检查是否为今天
     val isSelected = selectedDate == date
+    val textColor = if (signal) {
+        MaterialTheme.colorScheme.onPrimaryContainer
+    } else {
+        MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.6f)
+    }
+    val fontWeight = if (signal) FontWeight.Bold else FontWeight.Normal
     Box(
         modifier = modifier
             .aspectRatio(1f)
@@ -109,32 +116,64 @@ private fun CalendarCell(
                 color = if (isToday || isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
                 shape = CircleShape // 边框形状为圆形
             )
-            .background(
-                shape = RoundedCornerShape(8.dp),
-                color = if (signal) Color(0xFFBB86FC) else MaterialTheme.colorScheme.surface,
-            )
-            .clip(if (isToday) CircleShape else RoundedCornerShape(8.dp))
             .clickable(onClick = onClick)
     ) {
-        if (signal) {
-            Box(
-                modifier = Modifier
-                    .aspectRatio(1f)
-                    .padding(8.dp)
-                    .background(
-                        shape = CircleShape,
-                        color = Color(0xFF6200EA).copy(alpha = 0.7f)
-                    )
-            )
-        }
         Text(
             text = text,
-            color = MaterialTheme.colorScheme.onSurface,
+            color = textColor,
             modifier = Modifier.align(Alignment.Center),
-            fontSize = 16.sp
+            fontSize = 16.sp,
+            fontWeight = fontWeight,
         )
     }
 }
+
+//@Composable
+//private fun CalendarCell(
+//    date: Date,
+//    signal: Boolean,
+//    onClick: () -> Unit,
+//    modifier: Modifier = Modifier,
+//    selectedDate: Date,
+//) {
+//    val text = date.formatToCalendarDay()
+//    val isToday = isToday(date)  // 检查是否为今天
+//    val isSelected = selectedDate == date
+//    Box(
+//        modifier = modifier
+//            .aspectRatio(1f)
+//            .padding(2.dp)
+//            .border(
+//                width = 2.dp, // 边框宽度
+//                color = if (isToday || isSelected) MaterialTheme.colorScheme.primary else Color.Transparent, // 今天的日期使用特定颜色，其他日期边框透明
+//                shape = CircleShape // 边框形状为圆形
+//            )
+//            .background(
+//                shape = RoundedCornerShape(8.dp),
+//                color = if (signal) Color(0xFFBB86FC) else MaterialTheme.colorScheme.surface,
+//            )
+//            .clip(if (isToday) CircleShape else RoundedCornerShape(8.dp))
+//            .clickable(onClick = onClick)
+//    ) {
+//        if (signal) {
+//            Box(
+//                modifier = Modifier
+//                    .aspectRatio(1f)
+//                    .padding(8.dp)
+//                    .background(
+//                        shape = CircleShape,
+//                        color = Color(0xFF6200EA).copy(alpha = 0.7f)
+//                    )
+//            )
+//        }
+//        Text(
+//            text = text,
+//            color = MaterialTheme.colorScheme.onSurface,
+//            modifier = Modifier.align(Alignment.Center),
+//            fontSize = 16.sp
+//        )
+//    }
+//}
 
 private fun isToday(date: Date): Boolean {
     val calendar = Calendar.getInstance()

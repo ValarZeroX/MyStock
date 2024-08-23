@@ -89,4 +89,5 @@ class StockViewModel : ViewModel() {
                 _minTransactionDate.value = minDate
                 _maxTransactionDate.value = maxDate
         }
+
 }

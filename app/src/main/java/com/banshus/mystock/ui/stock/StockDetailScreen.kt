@@ -108,6 +108,7 @@ fun StockDetailScreen(
     var selectedTransactionType by remember { mutableIntStateOf(0) }
     //股票類型
     var selectedStockTypeIndex by remember { mutableIntStateOf(0) }
+    var selectedStockMarket by remember { mutableIntStateOf(0) }
     LaunchedEffect(selectedStock, stockSymbolList) {
         selectedStock?.let { stock ->
             stockQuantity = selectedStock!!.quantity.toString()
@@ -117,7 +118,12 @@ fun StockDetailScreen(
             selectedStockTypeIndex = selectedStock!!.stockType
             commission = selectedStock!!.commission.toString()
             transactionTax = selectedStock!!.transactionTax.toString()
+            selectedStockMarket = selectedStock!!.stockMarket
         }
+    }
+
+    LaunchedEffect(selectedStockMarket) {
+        stockSymbolViewModel.fetchStockSymbolsListByMarket(selectedStockMarket)
     }
     val priceName = when(selectedTransactionType) {
         0 -> "每股價格"

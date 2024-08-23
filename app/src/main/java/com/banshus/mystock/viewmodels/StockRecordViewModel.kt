@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MediatorLiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,8 @@ import com.banshus.mystock.repository.RealizedTrade
 import com.banshus.mystock.repository.StockRecordRepository
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
 
 data class StockMetrics(
     val totalCostBasis: Double,
@@ -44,6 +47,36 @@ class StockRecordViewModel(
         endDate: Long
     ): LiveData<List<StockRecord>> {
         return repository.getStockRecordsByDateRangeAndAccount(accountId, startDate, endDate)
+    }
+
+    fun getDateSerialNumberMapByDateRange(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, Int>> {
+        val result = MediatorLiveData<Map<Int, Int>>()
+
+        val recordsLiveData = repository.getStockRecordsByDateRange(startDate, endDate)
+
+        result.addSource(recordsLiveData) { records ->
+            val distinctDates = records.map { record ->
+                // 提取日期中的日（例如23日）
+                record.transactionDate.let {
+                    Instant.ofEpochMilli(it)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                        .dayOfMonth
+                }
+            }.distinct() // 去除重复的日期
+
+            val dateSerialNumberMap = distinctDates.mapIndexed { index, day ->
+                // 生成键值对：键为流水号，值为日期中的日
+                index + 1 to day
+            }.toMap()
+
+            result.value = dateSerialNumberMap
+        }
+
+        return result
     }
 
     fun getStockRecordsByDateRange(

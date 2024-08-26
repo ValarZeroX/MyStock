@@ -200,6 +200,20 @@ fun ReportScreen(
         endDateMillis,
         selectedAccountId
     ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+
+    val totalDividends by stockRecordViewModel.getTotalDividendsByDateRangeAndAccount(
+        accountId = selectedAccountId,
+        startDate = startDateMillis,
+        endDate = endDateMillis
+    ).observeAsState(0.0)
+
+    val annualizedReturn = stockRecordViewModel.calculateAnnualizedReturnWithoutDividends(
+//        totalDividends = totalDividends,
+        accountMetrics = accountMetrics,
+        startDateMillis = startDateMillis,
+        endDateMillis = endDateMillis
+    )
+    Log.d("annualizedReturn", "$annualizedReturn")
 //    // 处理获取到的数据，并展示在 UI 中
 //    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
 //        Text(text = "Account ID: $accountId")
@@ -287,7 +301,9 @@ fun ReportScreen(
                                 navController,
                                 accountText,
                                 stockAccounts[selectedAccountId]!!,
-                                currentRangeType
+                                currentRangeType,
+                                totalDividends,
+                                annualizedReturn
                             )
                         }
 
@@ -317,9 +333,18 @@ fun AccountTab(
     accountText: String,
     stockAccounts: StockAccount,
     currentRangeType: DateRangeType,
+    totalDividends: Double,
+    annualizedReturn: Double
 ) {
     val profitColor = getProfitColor(
         accountMetrics.totalProfit,
+        StockRed,
+        StockGreen,
+        MaterialTheme.colorScheme.onSurface
+    )
+
+    val annualizedColor = getProfitColor(
+        annualizedReturn,
         StockRed,
         StockGreen,
         MaterialTheme.colorScheme.onSurface
@@ -347,11 +372,11 @@ fun AccountTab(
                     Spacer(modifier = Modifier.width(12.dp))
                     Box(
                         modifier = Modifier
-                            .border(
-                                width = 1.dp,
-                                color = Gray1,
-                                shape = RoundedCornerShape(8.dp)
-                            )
+//                            .border(
+//                                width = 1.dp,
+//                                color = Gray1,
+//                                shape = RoundedCornerShape(8.dp)
+//                            )
                             .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
                     ) {
                         Row(
@@ -368,11 +393,11 @@ fun AccountTab(
                     Spacer(modifier = Modifier.width(12.dp))
                     Box(
                         modifier = Modifier
-                            .border(
-                                width = 1.dp,
-                                color = Gray1,
-                                shape = RoundedCornerShape(8.dp)
-                            )
+//                            .border(
+//                                width = 1.dp,
+//                                color = Gray1,
+//                                shape = RoundedCornerShape(8.dp)
+//                            )
                             .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
                     ) {
                         Row(
@@ -398,6 +423,7 @@ fun AccountTab(
                     Text(text = "總買進", modifier = Modifier.weight(1f))
                     Text(text = "總賣出", modifier = Modifier.weight(1f))
                     Text(text = "總手續費", modifier = Modifier.weight(1f))
+                    Text(text = "總交易稅", modifier = Modifier.weight(1f))
                 }
                 Row {
                     Text(
@@ -412,15 +438,20 @@ fun AccountTab(
                         text = formatNumber(accountMetrics.totalCommission),
                         modifier = Modifier.weight(1f)
                     )
+                    Text(
+                        text = formatNumber(accountMetrics.totalTransactionTax),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
-                    Text(text = "總交易稅", modifier = Modifier.weight(1f))
+                    Text(text = "總股利", modifier = Modifier.weight(1f))
                     Text(text = "總損益", modifier = Modifier.weight(1f))
                     Text(text = "總損益率", modifier = Modifier.weight(1f))
+                    Text(text = "年化報酬率", modifier = Modifier.weight(1f))
                 }
                 Row {
                     Text(
-                        text = formatNumber(accountMetrics.totalTransactionTax),
+                        text = formatNumber(totalDividends),
                         modifier = Modifier.weight(1f)
                     )
                     Text(
@@ -432,6 +463,11 @@ fun AccountTab(
                         text = "${formatNumber(accountMetrics.totalProfitPercent)}%",
                         modifier = Modifier.weight(1f),
                         color = profitColor
+                    )
+                    Text(
+                        text = "${formatNumber(annualizedReturn)}%",
+                        modifier = Modifier.weight(1f),
+                        color = annualizedColor
                     )
                 }
             }
@@ -699,7 +735,8 @@ fun AccountMetricsLineChart(
         }
 
         val profitValue = formatNumberNoDecimalPointDouble(totalSell - totalBuy)
-        val profitPercentValue = if (totalBuy != 0.0) formatNumberNoDecimalPointDouble((profitValue / totalBuy) * 100) else 0.0
+        val profitPercentValue =
+            if (totalBuy != 0.0) formatNumberNoDecimalPointDouble((profitValue / totalBuy) * 100) else 0.0
 
         // 将日期格式化
         val dateTime = Instant.ofEpochMilli(date)
@@ -773,7 +810,7 @@ fun AccountMetricsLineChart(
                     xAxis.setDrawGridLines(false)
 //                xAxis.setDrawLabels(true)
                     xAxis.granularity = 1f
-                    xAxis.valueFormatter = DateValueFormatter( dateLabels)
+                    xAxis.valueFormatter = DateValueFormatter(dateLabels)
 
 //                    xAxis.setAxisMinimum(0.0f - 0.5f)
 //                    xAxis.setAxisMaximum(data.xMax +0.5f)
@@ -842,7 +879,7 @@ fun AccountMetricsLineChart(
                     chart.data = combinedData
                 }
                 chart.xAxis.setAxisMinimum(0.0f - 0.5f)
-                chart.xAxis.setAxisMaximum(xValue-0.5f)
+                chart.xAxis.setAxisMaximum(xValue - 0.5f)
                 chart.xAxis.valueFormatter = DateValueFormatter(dateLabels)
                 chart.invalidate()
             },

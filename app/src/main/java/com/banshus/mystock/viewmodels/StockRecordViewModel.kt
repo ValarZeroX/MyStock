@@ -21,6 +21,7 @@ import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import kotlin.math.pow
 
 data class StockMetrics(
     val totalCostBasis: Double,
@@ -276,6 +277,44 @@ class StockRecordViewModel(
                 totalTransactionTax = totalTransactionTax
             )
         }
+    }
+
+    fun getTotalDividendsByDateRangeAndAccount(
+        accountId: Int,
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Double> {
+        return repository.getDividendRecordsByDateRangeAndAccount(accountId, startDate, endDate).map { records ->
+            records.sumOf { it.totalAmount } // 加总所有股利记录的 totalAmount
+        }
+    }
+
+    fun calculateAnnualizedReturnWithoutDividends(
+        accountMetrics: DetailedStockMetrics,
+        startDateMillis: Long,
+        endDateMillis: Long
+    ): Double {
+        Log.d("accountMetrics", "$accountMetrics")
+        Log.d("startDateMillis", "$startDateMillis")
+        Log.d("endDateMillis", "$endDateMillis")
+
+        val totalProfit = accountMetrics.totalProfit
+        val totalCostBasis = accountMetrics.totalCostBasis
+
+        // 如果总成本为0，则年化回报率无法计算，返回0.0
+        if (totalCostBasis == 0.0) return 0.0
+
+        // 计算投资期天数
+        val periodInDays = ((endDateMillis - startDateMillis) / (1000 * 60 * 60 * 24)).toInt()
+
+        // 计算投资年数
+        val investmentYears = periodInDays / 365.0
+
+        // 计算投资报酬率
+        val investmentReturn = totalProfit / totalCostBasis
+
+        // 计算年化报酬率
+        return ((1 + investmentReturn).pow(1 / investmentYears) - 1) * 100
     }
 }
 

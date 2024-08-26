@@ -53,11 +53,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.tool.DatePickerModal
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
@@ -347,70 +350,6 @@ fun AddStockScreen(
                 }
             }
             item {
-                Row(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = "股數",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
-                    )
-                    OutlinedTextField(
-                        value = stockQuantity,
-                        onValueChange = { newText ->
-                            val parsedValue = newText.toIntOrNull()
-                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
-                                stockQuantity = newText
-                                isStockQuantityError = false
-                            } else {
-                                isStockQuantityError = true
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
-                        ),
-                        isError = isStockQuantityError,
-                        modifier = Modifier
-                            .padding(5.dp)
-                    )
-                }
-            }
-            item {
-                Row(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = priceName,
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
-                    )
-                    OutlinedTextField(
-                        value = stockPrice,
-                        onValueChange = { newText ->
-                            // 驗證是否正浮點數
-                            val parsedValue = newText.toFloatOrNull()
-                            if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
-                                stockPrice = newText
-                                stockPrice = newText
-                                isStockPriceError = false
-                            } else {
-                                isStockPriceError = true
-                            }
-                        },
-                        keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
-                        ),
-                        isError = isStockPriceError,
-                        modifier = Modifier
-                            .padding(5.dp)
-                    )
-                }
-            }
-            item {
                 //台股支援自動計算
                 if (selectedStockMarket == 0 ) {
                     Row(
@@ -430,19 +369,66 @@ fun AddStockScreen(
                             }
                         )
                     }
+                    Row(modifier = Modifier.padding(10.dp)){
+                        Text(
+                            text = "只支援台股手續費、證交稅自動計算。",
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, end = 20.dp),
+                            fontSize = 14.sp,
+                            color = Gray1
+                        )
+                    }
                 }
             }
             item {
                 Row(
                     modifier = Modifier.padding(10.dp)
                 ) {
-                    Text(
-                        text = "手續費",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
+                    OutlinedTextField(
+                        value = stockQuantity,
+                        onValueChange = { newText ->
+                            val parsedValue = newText.toIntOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue > 0)) {
+                                stockQuantity = newText
+                                isStockQuantityError = false
+                            } else {
+                                isStockQuantityError = true
+                            }
+                        },
+                        label = { Text(text = "股數")},
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        isError = isStockQuantityError,
+                        modifier = Modifier.weight(1f).padding(end = 5.dp)
                     )
+                    OutlinedTextField(
+                        value = stockPrice,
+                        onValueChange = { newText ->
+                            // 驗證是否正浮點數
+                            val parsedValue = newText.toFloatOrNull()
+                            if (newText.isEmpty() || (parsedValue != null && parsedValue in 0f..1000000f)) {
+                                stockPrice = newText
+                                stockPrice = newText
+                                isStockPriceError = false
+                            } else {
+                                isStockPriceError = true
+                            }
+                        },
+                        label = { Text(text = priceName)},
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            keyboardType = KeyboardType.Number
+                        ),
+                        isError = isStockPriceError,
+                        modifier = Modifier.weight(1f).padding(start = 5.dp)
+                    )
+                }
+            }
+            item {
+                Row(
+                    modifier = Modifier.padding(10.dp)
+                ) {
                     OutlinedTextField(
                         value = commission,
                         onValueChange = { newText ->
@@ -454,25 +440,13 @@ fun AddStockScreen(
                                 isCommissionError = true
                             }
                         },
+                        label = { Text(text = "手續費")},
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isCommissionError,
                         enabled = !autoCalculateChecked,
-                        modifier = Modifier.padding(5.dp)
-                    )
-                }
-            }
-            item {
-                Row(
-                    modifier = Modifier.padding(10.dp)
-                ) {
-                    Text(
-                        text = "證交稅",
-                        modifier = Modifier
-                            .align(Alignment.CenterVertically)
-                            .width(100.dp)
-                            .padding(start = 10.dp, end = 20.dp),
+                        modifier = Modifier.weight(1f).padding(end = 5.dp)
                     )
                     OutlinedTextField(
                         value = transactionTax,
@@ -485,13 +459,13 @@ fun AddStockScreen(
                                 isTransactionTaxError = true
                             }
                         },
+                        label = { Text(text = "證交稅")},
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isTransactionTaxError,
                         enabled = !autoCalculateChecked,
-                        modifier = Modifier
-                            .padding(5.dp)
+                        modifier = Modifier.weight(1f).padding(start = 5.dp)
                     )
                 }
             }

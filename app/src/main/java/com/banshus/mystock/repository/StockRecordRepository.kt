@@ -289,7 +289,7 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                         if (!results.containsKey(accountId)) {
                             results[accountId] = mutableMapOf()
                         }
-                        results[accountId]!!.put(stockSymbol, realizedTrades)
+                        results[accountId]!![stockSymbol] = realizedTrades
                     }
                 }
             }
@@ -446,5 +446,13 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
 
             results
         }
+    }
+
+    fun getDividendRecordsByDateRangeAndAccount(
+        accountId: Int,
+        startDate: Long,
+        endDate: Long
+    ): LiveData<List<StockRecord>> {
+        return stockRecordDao.getDividendRecordsByDateRangeAndAccount(accountId, startDate, endDate)
     }
 }

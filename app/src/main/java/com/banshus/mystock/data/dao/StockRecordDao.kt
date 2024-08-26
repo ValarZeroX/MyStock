@@ -50,4 +50,11 @@ interface StockRecordDao {
 
     @Query("SELECT MAX(transactionDate) FROM stock_record WHERE accountId = :accountId")
     suspend fun getMaxTransactionDateByAccountId(accountId: Int): Long?
+
+    @Query("SELECT * FROM stock_record WHERE accountId = :accountId AND transactionDate BETWEEN :startDate AND :endDate AND transactionType = 2 ORDER BY transactionDate")
+    fun getDividendRecordsByDateRangeAndAccount(
+        accountId: Int,
+        startDate: Long,
+        endDate: Long
+    ): LiveData<List<StockRecord>>
 }

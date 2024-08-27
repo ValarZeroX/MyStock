@@ -125,7 +125,7 @@ class MainActivity : ComponentActivity() {
                                 stockSymbolViewModel = stockSymbolViewModel,
                                 stockMarketViewModel = stockMarketViewModel,
                                 stockPriceApiViewModel = stockPriceApiViewModel,
-                                        userSettingsViewModel = userSettingsViewModel
+                                userSettingsViewModel = userSettingsViewModel
                             )
                         }
                     }
@@ -179,7 +179,7 @@ fun MyApp(
             StockDetailScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
         }
         composable("reportScreen") {
-            ReportScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
+            ReportScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel, userSettingsViewModel)
         }
         composable("accountScreen") {
             AccountScreen(navController, stockViewModel, stockAccountViewModel, stockRecordViewModel)

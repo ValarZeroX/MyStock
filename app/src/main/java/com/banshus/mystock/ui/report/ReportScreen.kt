@@ -84,6 +84,7 @@ import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.github.mikephil.charting.charts.CombinedChart
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
@@ -110,8 +111,21 @@ fun ReportScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
-    stockSymbolViewModel: StockSymbolViewModel
+    stockSymbolViewModel: StockSymbolViewModel,
+    userSettingsViewModel: UserSettingsViewModel
 ) {
+    var calculateCommission by remember { mutableStateOf(false) }
+    var calculateTransactionTax by remember { mutableStateOf(false) }
+    var calculateDividend by remember { mutableStateOf(false) }
+
+    val userSettings by userSettingsViewModel.userSettings.observeAsState()
+    LaunchedEffect(userSettings){
+        calculateCommission = userSettings!!.isCommissionCalculationEnabled
+        calculateTransactionTax = userSettings!!.isTransactionTaxCalculationEnabled
+        calculateDividend = userSettings!!.isDividendCalculationEnabled
+    }
+
+
     val stockAccounts by stockAccountViewModel.stockAccountsMap.observeAsState(emptyMap())
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
@@ -138,8 +152,8 @@ fun ReportScreen(
         getAccountStockMaxMinDate?.first,
         getAccountStockMaxMinDate?.second
     )
-    Log.d("selectedAccountId", "$selectedAccountId")
-    Log.d("getAccountStock", "$getAccountStockMaxMinDate")
+//    Log.d("selectedAccountId", "$selectedAccountId")
+//    Log.d("getAccountStock", "$getAccountStockMaxMinDate")
     //DateSwitcher使用
 //    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
 //    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
@@ -150,7 +164,7 @@ fun ReportScreen(
 
     val endDateTime = endDate.atTime(23, 59, 59)
     val currentRangeType by stockViewModel.currentRangeType.observeAsState(DateRangeType.MONTH)
-    Log.d("OutCurrentRangeType", "$currentRangeType")
+//    Log.d("OutCurrentRangeType", "$currentRangeType")
 
     var selectedReportTabIndex by stockViewModel.selectedReportTabIndex
 //    val showDialog by stockViewModel.showRangeTypeDialog.observeAsState(false)
@@ -194,24 +208,32 @@ fun ReportScreen(
 //        // 更新状态
 //        isDataReady = allAccountsRecord.isNotEmpty()
 //    }
-
-    val accountMetrics by stockRecordViewModel.calculateMetricsForSelectedAccount(
-        startDateMillis,
-        endDateMillis,
-        selectedAccountId
-    ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
-
     val totalDividends by stockRecordViewModel.getTotalDividendsByDateRangeAndAccount(
         accountId = selectedAccountId,
         startDate = startDateMillis,
         endDate = endDateMillis
     ).observeAsState(0.0)
 
+    val accountMetrics by stockRecordViewModel.calculateMetricsForSelectedAccount(
+        startDateMillis,
+        endDateMillis,
+        selectedAccountId,
+        includeCommission = calculateCommission,
+        includeTransactionTax = calculateTransactionTax,
+        includeDividends = calculateDividend,
+        totalDividends = totalDividends
+    ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
+
+
+
     val annualizedReturn = stockRecordViewModel.calculateAnnualizedReturnWithoutDividends(
-//        totalDividends = totalDividends,
         accountMetrics = accountMetrics,
         startDateMillis = startDateMillis,
-        endDateMillis = endDateMillis
+        endDateMillis = endDateMillis,
+        includeCommission = calculateCommission,
+        includeTransactionTax = calculateTransactionTax,
+        includeDividends = calculateDividend,
+        totalDividends = totalDividends
     )
     Log.d("annualizedReturn", "$annualizedReturn")
 //    // 处理获取到的数据，并展示在 UI 中
@@ -246,7 +268,8 @@ fun ReportScreen(
     } else if (allAccountsRecord.isEmpty()) {
         // 顯示加載動畫
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+//            CircularProgressIndicator()
+            Text(text = "請新增交易紀錄")
         }
     } else {
         Scaffold(

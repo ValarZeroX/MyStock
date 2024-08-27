@@ -132,12 +132,16 @@ fun StockSymbolScreen(
             stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
         }
     }
-    // Filtered stock symbols based on search query
-    val filteredStockSymbolList = stockSymbolList.filter {
-        it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
-                it.stockName.contains(searchQuery, ignoreCase = true)
-    }
 
+    var filteredStockSymbolList by remember { mutableStateOf(stockSymbolList) }
+
+    // Filtered stock symbols based on search query
+    LaunchedEffect(stockSymbolList) {
+         filteredStockSymbolList = stockSymbolList.filter {
+            it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
+                    it.stockName.contains(searchQuery, ignoreCase = true)
+        }
+    }
     stockPriceApiViewModel.stockPrice.observeAsState().value?.let { response ->
         val result = response.chart.result ?: return@let
         val symbol = result.firstOrNull()?.meta?.symbol ?: return@let

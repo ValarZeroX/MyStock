@@ -24,6 +24,22 @@ class UserSettingsViewModel(private val repository: UserSettingsRepository) : Vi
             }
         }
     }
+
+    fun updateReportSettings(isCommissionCalculationEnabled: Boolean,isTransactionTaxCalculationEnabled: Boolean, isDividendCalculationEnabled: Boolean) {
+        viewModelScope.launch {
+            // 获取当前的设置
+            val currentSettings = userSettings.value
+            // 更新数据库
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(
+                    isCommissionCalculationEnabled = isCommissionCalculationEnabled,
+                    isTransactionTaxCalculationEnabled = isTransactionTaxCalculationEnabled,
+                    isDividendCalculationEnabled = isDividendCalculationEnabled
+                    )
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
 }
 
 class UserSettingsViewModelFactory(

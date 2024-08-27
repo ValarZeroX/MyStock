@@ -111,11 +111,12 @@ class StockRecordViewModel(
         }
     }
 
-    fun getTransactionDateRangeByAccountId(accountId: Int): LiveData<Pair<Long?, Long?>> = liveData {
-        val minDate = repository.getMinTransactionDateByAccountId(accountId)
-        val maxDate = repository.getMaxTransactionDateByAccountId(accountId)
-        emit(Pair(minDate, maxDate))
-    }
+    fun getTransactionDateRangeByAccountId(accountId: Int): LiveData<Pair<Long?, Long?>> =
+        liveData {
+            val minDate = repository.getMinTransactionDateByAccountId(accountId)
+            val maxDate = repository.getMaxTransactionDateByAccountId(accountId)
+            emit(Pair(minDate, maxDate))
+        }
 
     fun deleteAllRecordsByAccountId(accountId: Int) {
         viewModelScope.launch {
@@ -144,7 +145,8 @@ class StockRecordViewModel(
 
             val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
                 val (totalQuantity, _) = holdingData
-                val currentPrice = stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
+                val currentPrice =
+                    stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
                 totalQuantity * currentPrice
             }
 
@@ -167,7 +169,8 @@ class StockRecordViewModel(
                 val totalCostBasis = holdings.values.sumOf { (_, costBasis) -> costBasis }
                 val totalPrice = holdings.entries.sumOf { (stockSymbol, holdingData) ->
                     val (totalQuantity, _) = holdingData
-                    val currentPrice = stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
+                    val currentPrice =
+                        stockSymbols.value.find { it.stockSymbol == stockSymbol }?.stockPrice ?: 0.0
                     totalQuantity * currentPrice
                 }
                 val totalProfit = totalPrice - totalCostBasis
@@ -188,15 +191,18 @@ class StockRecordViewModel(
 
     //***********************
 
-    private val _realizedGainsAndLossesForAllAccounts = MutableLiveData<Map<Int, Map<String, Any>>>()
-    val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, Map<String, Any>>> = _realizedGainsAndLossesForAllAccounts
+    private val _realizedGainsAndLossesForAllAccounts =
+        MutableLiveData<Map<Int, Map<String, Any>>>()
+    val realizedGainsAndLossesForAllAccounts: LiveData<Map<Int, Map<String, Any>>> =
+        _realizedGainsAndLossesForAllAccounts
 
     fun loadRealizedGainsAndLossesForAllAccounts(startDate: Long, endDate: Long) {
         viewModelScope.launch {
-            repository.getRealizedGainsAndLossesForAllAccounts(startDate, endDate).observeForever { result ->
-                // 更新 LiveData
-                _realizedGainsAndLossesForAllAccounts.postValue(result)
-            }
+            repository.getRealizedGainsAndLossesForAllAccounts(startDate, endDate)
+                .observeForever { result ->
+                    // 更新 LiveData
+                    _realizedGainsAndLossesForAllAccounts.postValue(result)
+                }
         }
     }
 
@@ -224,7 +230,11 @@ class StockRecordViewModel(
     fun calculateMetricsForSelectedAccount(
         startDate: Long,
         endDate: Long,
-        accountId: Int
+        accountId: Int,
+        includeCommission: Boolean,
+        includeTransactionTax: Boolean,
+        includeDividends: Boolean,
+        totalDividends: Double
     ): LiveData<DetailedStockMetrics> {
         val filteredTrades = getFilteredRealizedTrades(startDate, endDate)
 
@@ -238,7 +248,7 @@ class StockRecordViewModel(
             var totalTransactionTax = 0.0
 
             // 迭代所有交易记录
-            trades.forEach { (stockSymbol, realizedTrades) ->
+            trades.forEach { (_, realizedTrades) ->
                 realizedTrades.forEach { trade ->
                     // 累计买入成本
                     trade.buy.forEach { buyRecord ->
@@ -259,6 +269,17 @@ class StockRecordViewModel(
                     val profit = sellIncome - (trade.buy.sumOf { it.quantity * it.pricePerUnit })
                     totalProfit += profit
                 }
+            }
+
+            if (includeCommission) {
+                totalProfit -= totalCommission
+            }
+            if (includeTransactionTax) {
+                totalProfit -= totalTransactionTax
+            }
+            // 添加股利到总利润
+            if (includeDividends) {
+                totalProfit += totalDividends
             }
 
             // 计算利润百分比
@@ -284,22 +305,37 @@ class StockRecordViewModel(
         startDate: Long,
         endDate: Long
     ): LiveData<Double> {
-        return repository.getDividendRecordsByDateRangeAndAccount(accountId, startDate, endDate).map { records ->
-            records.sumOf { it.totalAmount } // 加总所有股利记录的 totalAmount
-        }
+        return repository.getDividendRecordsByDateRangeAndAccount(accountId, startDate, endDate)
+            .map { records ->
+                records.sumOf { it.totalAmount } // 加总所有股利记录的 totalAmount
+            }
     }
 
     fun calculateAnnualizedReturnWithoutDividends(
         accountMetrics: DetailedStockMetrics,
         startDateMillis: Long,
-        endDateMillis: Long
+        endDateMillis: Long,
+        includeCommission: Boolean,
+        includeTransactionTax: Boolean,
+        includeDividends: Boolean,
+        totalDividends: Double
     ): Double {
         Log.d("accountMetrics", "$accountMetrics")
         Log.d("startDateMillis", "$startDateMillis")
         Log.d("endDateMillis", "$endDateMillis")
 
-        val totalProfit = accountMetrics.totalProfit
-        val totalCostBasis = accountMetrics.totalCostBasis
+        var totalProfit = accountMetrics.totalProfit
+        var totalCostBasis = accountMetrics.totalCostBasis
+
+        if (includeCommission) {
+            totalCostBasis += accountMetrics.totalCommission
+        }
+        if (includeTransactionTax) {
+            totalCostBasis += accountMetrics.totalTransactionTax
+        }
+        if (includeDividends) {
+            totalProfit += totalDividends
+        }
 
         // 如果总成本为0，则年化回报率无法计算，返回0.0
         if (totalCostBasis == 0.0) return 0.0

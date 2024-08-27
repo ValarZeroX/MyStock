@@ -11,7 +11,7 @@ data class UserSettings(
     val isCommissionCalculationEnabled: Boolean = false, //損益是否包含手續費
     val isTransactionTaxCalculationEnabled: Boolean = false, //損益是否包含證交稅
     val isDividendCalculationEnabled: Boolean = false, //損益是否包含股利
-    val currency: String = "TWD", //主幣別
+    val currency: String = "USD", //主幣別
     val textColor: Int = 0, //漲跌文字顏色
     val autoUpdateStock: Int = 180, //自動更新股價(秒)
 )

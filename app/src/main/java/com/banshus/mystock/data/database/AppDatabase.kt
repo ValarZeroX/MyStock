@@ -6,11 +6,13 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
+import com.banshus.mystock.data.dao.CurrencyDao
 import com.banshus.mystock.data.dao.StockAccountDao
 import com.banshus.mystock.data.dao.StockMarketDao
 import com.banshus.mystock.data.dao.UserSettingsDao
 import com.banshus.mystock.data.dao.StockRecordDao
 import com.banshus.mystock.data.dao.StockSymbolDao
+import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockRecord
@@ -20,13 +22,14 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserSettings::class, StockAccount::class, StockRecord::class, StockSymbol::class, StockMarket::class], version = 1)
+@Database(entities = [UserSettings::class, StockAccount::class, StockRecord::class, StockSymbol::class, StockMarket::class, Currency::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
     abstract fun stockAccountDao(): StockAccountDao
     abstract fun stockRecordDao(): StockRecordDao
     abstract fun stockSymbolDao(): StockSymbolDao
     abstract fun stockMarketDao(): StockMarketDao
+    abstract fun currencyDao(): CurrencyDao
 
     companion object {
         @Volatile

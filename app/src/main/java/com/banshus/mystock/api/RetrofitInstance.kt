@@ -1,6 +1,8 @@
 package com.banshus.mystock.api
 
+import com.banshus.mystock.api.response.CurrencyRatesResponse
 import com.banshus.mystock.api.response.StockSearchResponse
+import com.banshus.mystock.api.service.CurrencyApiService
 import com.banshus.mystock.api.service.TwseApiService
 import com.banshus.mystock.api.service.YahooFinanceApiService
 import retrofit2.Retrofit
@@ -31,5 +33,20 @@ object RetrofitInstance {
 
     suspend fun searchStock(query: String): StockSearchResponse {
         return yahooApi.searchStock(query)
+    }
+
+    private val currencyRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://tw.rter.info/") // Currency API base URL
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    val currencyApi: CurrencyApiService by lazy {
+        currencyRetrofit.create(CurrencyApiService::class.java)
+    }
+
+    suspend fun getCurrencyRates(): CurrencyRatesResponse {
+        return currencyApi.getCurrencyRates()
     }
 }

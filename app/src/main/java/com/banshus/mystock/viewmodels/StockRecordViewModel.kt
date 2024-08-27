@@ -320,10 +320,6 @@ class StockRecordViewModel(
         includeDividends: Boolean,
         totalDividends: Double
     ): Double {
-        Log.d("accountMetrics", "$accountMetrics")
-        Log.d("startDateMillis", "$startDateMillis")
-        Log.d("endDateMillis", "$endDateMillis")
-
         var totalProfit = accountMetrics.totalProfit
         var totalCostBasis = accountMetrics.totalCostBasis
 

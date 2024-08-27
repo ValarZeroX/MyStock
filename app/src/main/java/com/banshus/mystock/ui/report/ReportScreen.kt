@@ -350,6 +350,7 @@ fun AccountTab(
         MaterialTheme.colorScheme.onSurface
     )
 
+
     LazyColumn {
         item {
             Column(modifier = Modifier.padding(4.dp)) {
@@ -447,7 +448,7 @@ fun AccountTab(
                     Text(text = "總股利", modifier = Modifier.weight(1f))
                     Text(text = "總損益", modifier = Modifier.weight(1f))
                     Text(text = "總損益率", modifier = Modifier.weight(1f))
-                    Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+                        Text(text = "年化報酬率", modifier = Modifier.weight(1f))
                 }
                 Row {
                     Text(
@@ -464,11 +465,18 @@ fun AccountTab(
                         modifier = Modifier.weight(1f),
                         color = profitColor
                     )
-                    Text(
-                        text = "${formatNumber(annualizedReturn)}%",
-                        modifier = Modifier.weight(1f),
-                        color = annualizedColor
-                    )
+                    if (currentRangeType == DateRangeType.YEAR || currentRangeType == DateRangeType.ALL) {
+                        Text(
+                            text = "${formatNumber(annualizedReturn)}%",
+                            modifier = Modifier.weight(1f),
+                            color = annualizedColor
+                        )
+                    } else {
+                        Text(
+                            text = "-",
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
                 }
             }
         }

@@ -108,7 +108,6 @@ fun StockSettingScreen(navController: NavHostController){
                 }
             }
             item{
-                Column{
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -124,33 +123,33 @@ fun StockSettingScreen(navController: NavHostController){
                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                             )
                         }
-                        HorizontalDivider(
-                            color = MaterialTheme.colorScheme.primary,
-                            thickness = 1.dp,  // 设置分割线的厚度
-                            modifier = Modifier.padding(horizontal = 10.dp)
-                        )
-                        Row (
-                            verticalAlignment = Alignment.CenterVertically,
+                        ListItem(
+                            headlineContent = { Text("主題顏色") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "主題顏色",
+                                )
+                            },
                             modifier = Modifier.clickable {
                                 navController.navigate("colorThemeScreen")
                             }
-                        ){
-                            Text(
-                                text = "主題顏色",
-                                style = MaterialTheme.typography.bodyMedium,
-                                modifier = Modifier
-                                    .padding(10.dp),
-                            )
-                            Spacer(modifier = Modifier.weight(1f))
-                            Icon(
-                                imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "主題顏色",
-                                modifier = Modifier.padding(end = 12.dp),
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                            )
-                        }
+                        )
+                        HorizontalDivider()
+                        ListItem(
+                            headlineContent = { Text("報表") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "報表",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("reportSettingScreen")
+                            }
+                        )
+                        HorizontalDivider()
                     }
-                }
             }
             item{
 

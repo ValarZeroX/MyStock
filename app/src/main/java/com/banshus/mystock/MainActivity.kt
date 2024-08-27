@@ -37,6 +37,7 @@ import com.banshus.mystock.ui.report.ReportScreen
 import com.banshus.mystock.ui.setting.AccountScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.EditAccountScreen
+import com.banshus.mystock.ui.setting.ReportSettingScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
 import com.banshus.mystock.ui.setting.StockSymbolScreen
 import com.banshus.mystock.ui.stock.AccountListScreen
@@ -76,10 +77,10 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-        val dao = AppDatabase.getDatabase(this).userSettingsDao()
-        val repository = UserSettingsRepository(dao)
-        val factory = UserSettingsViewModelFactory(repository)
-        userSettingsViewModel = ViewModelProvider(this, factory)[UserSettingsViewModel::class.java]
+//        val dao = AppDatabase.getDatabase(this).userSettingsDao()
+//        val repository = UserSettingsRepository(dao)
+//        val factory = UserSettingsViewModelFactory(repository)
+//        userSettingsViewModel = ViewModelProvider(this, factory)[UserSettingsViewModel::class.java]
 
         // 数据库和 Repository 的初始化
         val database = AppDatabase.getDatabase(this)
@@ -88,6 +89,7 @@ class MainActivity : ComponentActivity() {
         val stockSymbolRepository = StockSymbolRepository(database.stockSymbolDao())
         val stockMarketRepository = StockMarketRepository(database.stockMarketDao())
         val stockPriceApiRepository = StockPriceApiRepository(RetrofitInstance.yahooApi)
+        val userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
 
         // ViewModel 的初始化
         stockAccountViewModel = ViewModelProvider(this, StockAccountViewModelFactory(stockAccountRepository))[StockAccountViewModel::class.java]
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
         stockSymbolViewModel = ViewModelProvider(this, StockSymbolViewModelFactory(stockSymbolRepository))[StockSymbolViewModel::class.java]
         stockMarketViewModel = ViewModelProvider(this, StockMarketViewModelFactory(stockMarketRepository))[StockMarketViewModel::class.java]
         stockPriceApiViewModel = ViewModelProvider(this, StockPriceApiViewModelFactory(stockPriceApiRepository))[StockPriceApiViewModel::class.java]
-
+        userSettingsViewModel = ViewModelProvider(this, UserSettingsViewModelFactory(userSettingsRepository))[UserSettingsViewModel::class.java]
 
         setContent {
             MyStockTheme(
@@ -122,7 +124,8 @@ class MainActivity : ComponentActivity() {
                                 stockRecordViewModel = stockRecordViewModel,
                                 stockSymbolViewModel = stockSymbolViewModel,
                                 stockMarketViewModel = stockMarketViewModel,
-                                stockPriceApiViewModel = stockPriceApiViewModel
+                                stockPriceApiViewModel = stockPriceApiViewModel,
+                                        userSettingsViewModel = userSettingsViewModel
                             )
                         }
                     }
@@ -139,7 +142,8 @@ fun MyApp(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
     stockMarketViewModel: StockMarketViewModel,
-    stockPriceApiViewModel: StockPriceApiViewModel
+    stockPriceApiViewModel: StockPriceApiViewModel,
+    userSettingsViewModel: UserSettingsViewModel
 ) {
 //    val viewModel: StockViewModel = viewModel()
     val stockViewModel: StockViewModel = viewModel()
@@ -157,7 +161,7 @@ fun MyApp(
             StockSettingScreen(navController)
         }
         composable("colorThemeScreen") {
-            ColorThemeScreen(navController)
+            ColorThemeScreen(navController, userSettingsViewModel)
         }
         composable("addStockScreen") {
             AddStockScreen(navController, stockViewModel,stockAccountViewModel, stockRecordViewModel, stockSymbolViewModel)
@@ -185,6 +189,9 @@ fun MyApp(
         }
         composable("recordScreen") {
             RecordScreen(navController, stockViewModel, stockAccountViewModel,stockSymbolViewModel,  stockRecordViewModel )
+        }
+        composable("reportSettingScreen") {
+            ReportSettingScreen(navController, userSettingsViewModel)
         }
     }
 }

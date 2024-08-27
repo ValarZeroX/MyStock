@@ -50,17 +50,17 @@ import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorThemeScreen(navController: NavHostController) {
+fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: UserSettingsViewModel) {
     // 获取 Context
-    val context = LocalContext.current
-    // 创建 Repository 和 Factory
-    val repository = UserSettingsRepository(AppDatabase.getDatabase(context).userSettingsDao())
-    val factory = UserSettingsViewModelFactory(repository)
-
-    // 获取 ViewModel 实例
-    val userSettingsViewModel: UserSettingsViewModel = viewModel(
-        factory = factory
-    )
+//    val context = LocalContext.current
+//    // 创建 Repository 和 Factory
+//    val repository = UserSettingsRepository(AppDatabase.getDatabase(context).userSettingsDao())
+//    val factory = UserSettingsViewModelFactory(repository)
+//
+//    // 获取 ViewModel 实例
+//    val userSettingsViewModel: UserSettingsViewModel = viewModel(
+//        factory = factory
+//    )
     // 观察 LiveData<UserSettings>
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     val themeIndex = userSettings?.themeIndex
@@ -84,14 +84,14 @@ fun ColorThemeScreen(navController: NavHostController) {
                         )
                     }
                 },
-                actions = {
-                    IconButton(onClick = { /* do something */ }) {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = "確定"
-                        )
-                    }
-                }
+//                actions = {
+//                    IconButton(onClick = { /* do something */ }) {
+//                        Icon(
+//                            imageVector = Icons.Filled.Check,
+//                            contentDescription = "確定"
+//                        )
+//                    }
+//                }
             )
         },
     ) { innerPadding ->

@@ -37,6 +37,7 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
@@ -48,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +60,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
@@ -65,10 +68,12 @@ import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.tool.DatePickerModal
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDate
@@ -88,6 +93,8 @@ fun StockDetailScreen(
     stockSymbolViewModel: StockSymbolViewModel
 ){
     val selectedStock by stockViewModel.selectedStock.observeAsState()
+    val selectedAccount by stockViewModel.selectedAccount.observeAsState()
+    Log.d("selectedAccount", "$selectedAccount")
     val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
     var selectedStockSymbol by remember { mutableStateOf<StockSymbol?>(null) }
     //股數
@@ -109,22 +116,7 @@ fun StockDetailScreen(
     //股票類型
     var selectedStockTypeIndex by remember { mutableIntStateOf(0) }
     var selectedStockMarket by remember { mutableIntStateOf(0) }
-    LaunchedEffect(selectedStock, stockSymbolList) {
-        selectedStock?.let { stock ->
-            stockQuantity = selectedStock!!.quantity.toString()
-            stockPrice = selectedStock!!.pricePerUnit.toString()
-            selectedStockSymbol = stockSymbolList.find { it.stockSymbol == stock.stockSymbol }
-            selectedTransactionType = selectedStock!!.transactionType
-            selectedStockTypeIndex = selectedStock!!.stockType
-            commission = selectedStock!!.commission.toString()
-            transactionTax = selectedStock!!.transactionTax.toString()
-            selectedStockMarket = selectedStock!!.stockMarket
-        }
-    }
 
-    LaunchedEffect(selectedStockMarket) {
-        stockSymbolViewModel.fetchStockSymbolsListByMarket(selectedStockMarket)
-    }
     val priceName = when(selectedTransactionType) {
         0 -> "每股價格"
         1 -> "每股價格"
@@ -179,6 +171,75 @@ fun StockDetailScreen(
 
     val combinedTimestamp: Long = combineDateAndTime(selectedDate, selectedTime, selectedStock!!.transactionDate)
 
+
+//    val stockAccount by stockAccountViewModel.getStockAccountByID(
+//        selectedStock!!.accountId ?: -1
+//    ).observeAsState()
+    //自動計算手續費
+    var autoCalculateChecked by remember { mutableStateOf(false) }
+//    var selectedAutoCalculate by remember { mutableStateOf(false) }
+    var selectedCommissionDecimal by remember { mutableDoubleStateOf(0.0) }
+    var selectedTransactionTax by remember { mutableDoubleStateOf(0.0) }
+    var selectedDiscount by remember { mutableDoubleStateOf(0.0) }
+
+    val decimalFormat = DecimalFormat("#.00")
+    val calculatedCommission = remember(stockQuantity, stockPrice, selectedCommissionDecimal) {
+        Log.d("stockQuantity", stockQuantity)
+        Log.d("stockPrice", stockPrice)
+        Log.d("selectedCommissionDecimal", "$selectedCommissionDecimal")
+        Log.d("selectedDiscount", "$selectedDiscount")
+        val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
+        val price = stockPrice.toDoubleOrNull() ?: 0.0
+        val commissionPercent = selectedCommissionDecimal
+        decimalFormat.format(quantity * price * commissionPercent * selectedDiscount)
+
+    }
+
+    val calculatedTransactionTax = remember(stockQuantity, stockPrice, selectedTransactionTax) {
+        val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
+        val price = stockPrice.toDoubleOrNull() ?: 0.0
+        val transactionTaxPercent = selectedTransactionTax
+        decimalFormat.format(quantity * price * transactionTaxPercent * selectedDiscount)
+    }
+    // Update commission field automatically
+    LaunchedEffect(autoCalculateChecked, selectedTransactionType, calculatedCommission, calculatedTransactionTax) {
+        // 更新手續費
+        commission = if (autoCalculateChecked && (selectedTransactionType == 0 || selectedTransactionType == 1)) {
+            calculatedCommission.toString()
+        } else {
+            "0.0"
+        }
+        // 更新證交稅
+        transactionTax = if (autoCalculateChecked && selectedTransactionType == 1) {
+            calculatedTransactionTax.toString()
+        } else {
+            "0.0"
+        }
+        Log.d("selectedTransactionType", "$selectedTransactionType")
+        Log.d("autoCalculateChecked", "$autoCalculateChecked")
+        Log.d("commission", commission)
+    }
+
+    LaunchedEffect(selectedStock, stockSymbolList) {
+        selectedStock?.let { stock ->
+            stockQuantity = selectedStock!!.quantity.toString()
+            stockPrice = selectedStock!!.pricePerUnit.toString()
+            selectedStockSymbol = stockSymbolList.find { it.stockSymbol == stock.stockSymbol }
+            selectedTransactionType = selectedStock!!.transactionType
+            selectedStockTypeIndex = selectedStock!!.stockType
+            commission = selectedStock!!.commission.toString()
+            transactionTax = selectedStock!!.transactionTax.toString()
+            selectedStockMarket = selectedStock!!.stockMarket
+            selectedTransactionTax = selectedAccount!!.transactionTaxDecimal
+            selectedCommissionDecimal = selectedAccount!!.commissionDecimal
+            selectedDiscount = selectedAccount!!.discount
+        }
+    }
+
+    LaunchedEffect(selectedStockMarket) {
+        stockSymbolViewModel.fetchStockSymbolsListByMarket(selectedStockMarket)
+    }
+
     Scaffold(
         topBar = {
             StockDetailHeader(
@@ -230,6 +291,38 @@ fun StockDetailScreen(
                                 selectedStockSymbol = it
                             }
                         )
+                    }
+                }
+                item {
+                    //台股支援自動計算
+                    if (selectedStockMarket == 0 ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp)
+                        ) {
+                            Text(
+                                text = "自動計算",
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .width(100.dp)
+                                    .padding(start = 10.dp, end = 20.dp),
+                            )
+                            Switch(
+                                checked = autoCalculateChecked,
+                                onCheckedChange = {
+                                    autoCalculateChecked = it
+                                }
+                            )
+                        }
+                        Row(modifier = Modifier.padding(10.dp)){
+                            Text(
+                                text = "只支援台股手續費、證交稅自動計算。",
+                                modifier = Modifier
+                                    .align(Alignment.CenterVertically)
+                                    .padding(start = 10.dp, end = 20.dp),
+                                fontSize = 14.sp,
+                                color = Gray1
+                            )
+                        }
                     }
                 }
                 item {
@@ -296,7 +389,7 @@ fun StockDetailScreen(
                                 keyboardType = KeyboardType.Number
                             ),
                             isError = isCommissionError,
-//                            enabled = !autoCalculateChecked,
+                            enabled = !autoCalculateChecked,
                             modifier = Modifier.weight(1f).padding(end = 5.dp)
                         )
                         OutlinedTextField(
@@ -315,6 +408,7 @@ fun StockDetailScreen(
                                 keyboardType = KeyboardType.Number
                             ),
                             isError = isTransactionTaxError,
+                            enabled = !autoCalculateChecked,
                             modifier = Modifier.weight(1f).padding(start = 5.dp)
                         )
                     }

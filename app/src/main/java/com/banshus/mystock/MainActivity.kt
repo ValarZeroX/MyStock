@@ -199,7 +199,7 @@ fun MyApp(
             )
         }
         composable("addAccountScreen") {
-            AddAccountScreen(navController, stockAccountViewModel)
+            AddAccountScreen(navController, stockAccountViewModel, currencyViewModel, currencyApiViewModel)
         }
         composable("accountListScreen") {
             AccountListScreen(navController, stockViewModel, stockAccountViewModel)

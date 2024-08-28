@@ -11,24 +11,17 @@ import kotlinx.coroutines.launch
 
 class CurrencyViewModel(private val repository: CurrencyRepository) : ViewModel() {
 
-    private val _allCurrencies = MutableLiveData<List<Currency>>()
-    val allCurrencies: LiveData<List<Currency>> = _allCurrencies
+    val allCurrencies: LiveData<List<Currency>> = repository.fetchAllCurrencies()
 
-    private fun fetchAllCurrencies() {
-        viewModelScope.launch {
-            val currencies = repository.fetchAllCurrencies()
-            _allCurrencies.value = currencies
-        }
-    }
 
     fun insertCurrency(currency: Currency) = viewModelScope.launch {
         repository.insertCurrency(currency)
-        fetchAllCurrencies() // 插入新货币后刷新列表
+//        fetchAllCurrencies() // 插入新货币后刷新列表
     }
 
     fun updateCurrency(currency: Currency) = viewModelScope.launch {
         repository.updateCurrency(currency)
-        fetchAllCurrencies() // 更新货币后刷新列表
+//        fetchAllCurrencies() // 更新货币后刷新列表
     }
 }
 

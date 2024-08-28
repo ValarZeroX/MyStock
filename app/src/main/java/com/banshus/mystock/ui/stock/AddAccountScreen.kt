@@ -1,5 +1,6 @@
 package com.banshus.mystock.ui.stock
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -40,32 +41,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import com.banshus.mystock.StockViewModel
-import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.repository.StockAccountRepository
-import com.banshus.mystock.repository.StockMarketRepository
-import com.banshus.mystock.repository.StockSymbolRepository
+import com.banshus.mystock.viewmodels.CurrencyApiViewModel
+import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
-import com.banshus.mystock.viewmodels.StockMarketViewModel
-import com.banshus.mystock.viewmodels.StockMarketViewModelFactory
-import com.banshus.mystock.viewmodels.StockSymbolViewModel
-import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import java.math.BigDecimal
-import java.math.MathContext
 import java.math.RoundingMode
+import java.util.Date
 
 data class Currency(val code: String, val name: String)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: StockAccountViewModel) {
+fun AddAccountScreen(
+    navController: NavHostController,
+    stockAccountViewModel: StockAccountViewModel,
+    currencyViewModel: CurrencyViewModel,
+    currencyApiViewModel: CurrencyApiViewModel,
+) {
 
 //    val context = LocalContext.current
 //    val stockAccountViewModel: StockAccountViewModel = viewModel(
@@ -100,6 +96,10 @@ fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: Sto
     var discount by remember { mutableStateOf("100") }
     var isDiscountError by remember { mutableStateOf(false) }
 
+    val currencyRates by currencyApiViewModel.currencyRates.observeAsState()
+    LaunchedEffect(Unit) {
+        currencyApiViewModel.fetchCurrencyRates()
+    }
     Scaffold(
         topBar = {
             AddAccountScreenHeader(
@@ -130,6 +130,29 @@ fun AddAccountScreen(navController: NavHostController,stockAccountViewModel: Sto
                         transactionTax,
                         newDiscount
                     )
+                    var currencyKey = "USD"
+                    if (currencyCode != "USD"){
+                         currencyKey = "USD$currencyCode"
+                    }
+// 从 currencyRates 中获取 CurrencyRate 对象
+                    val currencyRate = currencyRates?.get(currencyKey)
+//                    val lastUpdatedTimeFormatted =
+//                        stockSymbol.lastUpdatedTime?.let {
+//                            dateFormat.format(Date(it))
+//                        } ?: "未知时间"
+                    val currentTime = System.currentTimeMillis()
+                    val currency = currencyRate?.let {
+                        com.banshus.mystock.data.entities.Currency(
+                            currencyCode = currencyCode,
+                            exchangeRate = it.exchangeRate,
+                            lastUpdatedTime = currentTime
+                        )
+                    }
+                    if (currency != null) {
+                        currencyViewModel.insertCurrency(
+                            currency,
+                        )
+                    }
                     navController.popBackStack() // 儲存完成後返回上一頁
                 }
             )

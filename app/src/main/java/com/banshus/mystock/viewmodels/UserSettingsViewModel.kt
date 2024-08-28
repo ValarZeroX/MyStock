@@ -25,6 +25,19 @@ class UserSettingsViewModel(private val repository: UserSettingsRepository) : Vi
         }
     }
 
+    fun updateCurrencyCode(newCurrencyCode: String) {
+        viewModelScope.launch {
+            // 获取当前的设置
+            val currentSettings = userSettings.value
+            // 更新数据库
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(currency = newCurrencyCode)
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
+
+
     fun updateReportSettings(isCommissionCalculationEnabled: Boolean,isTransactionTaxCalculationEnabled: Boolean, isDividendCalculationEnabled: Boolean) {
         viewModelScope.launch {
             // 获取当前的设置

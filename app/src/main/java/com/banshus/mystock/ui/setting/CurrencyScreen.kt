@@ -1,5 +1,6 @@
 package com.banshus.mystock.ui.setting
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -9,6 +10,7 @@ import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -50,9 +52,13 @@ import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
 import com.banshus.mystock.CurrencyUtils
 import com.banshus.mystock.SharedOptions
+import com.banshus.mystock.api.response.CurrencyRate
+import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
+import java.math.BigDecimal
+import java.math.RoundingMode
 
 @Composable
 fun CurrencyScreen(
@@ -63,7 +69,22 @@ fun CurrencyScreen(
 ) {
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     var selectedCurrencyCode by remember { mutableStateOf(userSettings?.currency ?: "") }
-
+    val allCurrencies by currencyViewModel.allCurrencies.observeAsState()
+    val currencyRates by currencyApiViewModel.currencyRates.observeAsState()
+    LaunchedEffect(Unit) {
+        currencyApiViewModel.fetchCurrencyRates()
+    }
+    LaunchedEffect(selectedCurrencyCode) {
+        if (selectedCurrencyCode.isNotEmpty()) {
+            updateCurrenciesWithNewBase(
+                selectedCurrencyCode = selectedCurrencyCode,
+                currencyRates = currencyRates ?: emptyMap(),
+                allCurrencies = allCurrencies ?: emptyList(),
+                currencyViewModel = currencyViewModel
+            )
+        }
+    }
+//    Log.d("allCurrencies", "$allCurrencies")
     Scaffold(
         topBar = {
             CurrencyScreenHeader(
@@ -93,9 +114,20 @@ fun CurrencyScreen(
                             selectedCurrencyCode = selectedCurrencyCode,
                             onCurrencySelected = { newCurrencyCode ->
                                 selectedCurrencyCode = newCurrencyCode
-//                                userSettingsViewModel.updateCurrencyCode(newCurrencyCode)
+                                userSettingsViewModel.updateCurrencyCode(newCurrencyCode)
                             }
                         )
+                    }
+                }
+                items(allCurrencies ?: emptyList()) { currency ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Text(text = currency.currencyCode)
+                        Spacer(modifier = Modifier.weight(1f))
+                        Text(text = currency.exchangeRate.toString())
                     }
                 }
             }
@@ -220,4 +252,31 @@ fun CurrencyDropdown(
             }
         }
     }
+}
+
+private fun updateCurrenciesWithNewBase(
+    selectedCurrencyCode: String,
+    currencyRates: Map<String, CurrencyRate>,
+    allCurrencies: List<Currency>,
+    currencyViewModel: CurrencyViewModel
+) {
+    val usdToNewBaseRate = currencyRates["USD$selectedCurrencyCode"]?.exchangeRate
+
+    if (usdToNewBaseRate != null) {
+        for (currency in allCurrencies) {
+            val usdToCurrencyRate = currencyRates["USD${currency.currencyCode}"]?.exchangeRate
+            if (usdToCurrencyRate != null) {
+                val newExchangeRate = roundToDecimal(usdToCurrencyRate / usdToNewBaseRate, 6)
+                val updatedCurrency = currency.copy(
+                    exchangeRate = newExchangeRate,
+                    lastUpdatedTime = System.currentTimeMillis()
+                )
+                currencyViewModel.updateCurrency(updatedCurrency)
+            }
+        }
+    }
+}
+
+fun roundToDecimal(value: Double, decimalPlaces: Int): Double {
+    return BigDecimal(value).setScale(decimalPlaces, RoundingMode.HALF_UP).toDouble()
 }

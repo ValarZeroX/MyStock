@@ -7,5 +7,6 @@ import androidx.room.PrimaryKey
 data class Currency(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val currencyCode: String, // 货币代码，例如 USD, EUR
-    val exchangeRate: Double   // 汇率，例如 1.0, 0.85
+    val exchangeRate: Double,   // 汇率，例如 1.0, 0.85
+    val lastUpdatedTime: Long? = null // 匯率價格最後更新時間
 )

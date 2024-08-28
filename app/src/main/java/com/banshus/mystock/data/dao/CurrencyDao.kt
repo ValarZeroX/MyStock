@@ -1,5 +1,6 @@
 package com.banshus.mystock.data.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -16,5 +17,5 @@ interface CurrencyDao {
     suspend fun updateCurrency(currency: Currency)
 
     @Query("SELECT * FROM stock_currency")
-    fun getAllCurrencies(): List<Currency>
+    fun getAllCurrencies(): LiveData<List<Currency>>
 }

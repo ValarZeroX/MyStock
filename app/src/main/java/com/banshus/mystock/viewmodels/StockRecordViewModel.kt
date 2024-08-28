@@ -12,6 +12,8 @@ import androidx.lifecycle.asFlow
 import androidx.lifecycle.liveData
 import androidx.lifecycle.map
 import androidx.lifecycle.viewModelScope
+import com.banshus.mystock.data.entities.Currency
+import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.RealizedResult
@@ -347,6 +349,84 @@ class StockRecordViewModel(
 
         // 计算年化报酬率
         return ((1 + investmentReturn).pow(1 / investmentYears) - 1) * 100
+    }
+
+    fun calculateTotalMetricsForAllAccounts(
+        startDateMillis: Long,
+        endDateMillis: Long,
+        includeCommission: Boolean,
+        includeTransactionTax: Boolean,
+        includeDividends: Boolean,
+        totalDividends: Double,
+        allCurrencies: List<Currency>?,
+        stockAccounts: Map<Int, StockAccount>
+    ): LiveData<DetailedStockMetrics> {
+        return getFilteredRealizedTrades(startDateMillis, endDateMillis).map { allTrades ->
+            var totalCostBasis = 0.0
+            var totalSellIncome = 0.0
+            var totalProfit = 0.0
+            var totalCommission = 0.0
+            var totalTransactionTax = 0.0
+
+            val currencyMap = convertCurrenciesToMap(allCurrencies)
+            Log.d("allTrades", "$allTrades")
+            Log.d("currencyMap", "$currencyMap")
+            allTrades.forEach { (accountId, tradesBySymbol) ->
+                val account = stockAccounts[accountId]
+                val accountCurrency = account?.currency
+                Log.d("account", "$account")
+                Log.d("accountCurrency", "$accountCurrency")
+                val exchangeRate = currencyMap[accountCurrency]?.exchangeRate ?: 1.0
+                tradesBySymbol.values.flatten().forEach { trade ->
+                    var buyTotal = 0.0
+                    var sellTotal = 0.0
+
+                    trade.buy.forEach { record ->
+                        buyTotal += (record.quantity * record.pricePerUnit) / exchangeRate
+                        totalCommission += record.commission / exchangeRate
+                        totalTransactionTax += record.transactionTax / exchangeRate
+                    }
+
+                    sellTotal += (trade.sell.quantity * trade.sell.pricePerUnit) / exchangeRate
+                    totalCommission += trade.sell.commission / exchangeRate
+                    totalTransactionTax += trade.sell.transactionTax / exchangeRate
+
+                    val profit = sellTotal - buyTotal
+                    totalProfit += profit
+                    totalCostBasis += buyTotal
+                    totalSellIncome += sellTotal
+                }
+            }
+
+            if (includeCommission) {
+                totalProfit -= totalCommission
+            }
+            if (includeTransactionTax) {
+                totalProfit -= totalTransactionTax
+            }
+            if (includeDividends) {
+                totalProfit += totalDividends
+            }
+
+            val totalProfitPercent = if (totalCostBasis != 0.0) {
+                (totalProfit / totalCostBasis) * 100
+            } else {
+                0.0
+            }
+
+            DetailedStockMetrics(
+                totalCostBasis = totalCostBasis,
+                totalSellIncome = totalSellIncome,
+                totalProfit = totalProfit,
+                totalProfitPercent = totalProfitPercent,
+                totalCommission = totalCommission,
+                totalTransactionTax = totalTransactionTax
+            )
+        }
+    }
+
+    private fun convertCurrenciesToMap(allCurrencies: List<Currency>?): Map<String, Currency> {
+        return allCurrencies?.associateBy { it.currencyCode } ?: emptyMap()
     }
 }
 

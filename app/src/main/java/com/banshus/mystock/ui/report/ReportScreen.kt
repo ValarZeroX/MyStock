@@ -80,6 +80,7 @@ import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
 import com.banshus.mystock.ui.tool.RangeTypeSelectionDialog
 import com.banshus.mystock.ui.tool.getStartAndEndDate
+import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
@@ -112,17 +113,20 @@ fun ReportScreen(
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
-    userSettingsViewModel: UserSettingsViewModel
+    userSettingsViewModel: UserSettingsViewModel,
+    currencyViewModel: CurrencyViewModel
 ) {
     var calculateCommission by remember { mutableStateOf(false) }
     var calculateTransactionTax by remember { mutableStateOf(false) }
     var calculateDividend by remember { mutableStateOf(false) }
+    var mainCurrency by remember { mutableStateOf("") }
 
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     LaunchedEffect(userSettings){
         calculateCommission = userSettings!!.isCommissionCalculationEnabled
         calculateTransactionTax = userSettings!!.isTransactionTaxCalculationEnabled
         calculateDividend = userSettings!!.isDividendCalculationEnabled
+        mainCurrency = userSettings!!.currency
     }
 
 
@@ -235,32 +239,7 @@ fun ReportScreen(
         includeDividends = calculateDividend,
         totalDividends = totalDividends
     )
-    Log.d("annualizedReturn", "$annualizedReturn")
-//    // 处理获取到的数据，并展示在 UI 中
-//    allAccountsRecord.forEach { (accountId, realizedTradesByStock) ->
-//        Text(text = "Account ID: $accountId")
-//        Log.d("Account", "$accountId")
-//        realizedTradesByStock.forEach { (stockSymbol, trades) ->
-//            Log.d("Stock", stockSymbol)
-//            Log.d("Stock", "$trades")
-////            trades.forEach { trade ->
-////                Text(text = "Buy: ${trade.buy}")
-////                Text(text = "Sell: ${trade.sell}")
-////            }
-//        }
-//    }
-
-
-//    stockRecordViewModel.loadRealizedGainsAndLossesForAllAccounts(startDateMillis, endDateMillis)
-//    val allAccountsRecord by stockRecordViewModel.realizedGainsAndLossesForAllAccounts.observeAsState(emptyMap())
-//    val accountId = 3
-//    val accountRecord = allAccountsRecord[accountId]
-//
-//// 打印 accountId 为 3 的数据
-//    Log.d("AccountRecord", "$accountRecord")
-//
-//    Log.d("startDate", "$startDate")
-//    Log.d("endDate", "$endDate")
+    val allCurrencies by currencyViewModel.allCurrencies.observeAsState()
     if (stockAccounts.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "請建立帳戶")
@@ -298,16 +277,6 @@ fun ReportScreen(
                             onClick = { selectedReportTabIndex = 1 },
                             text = { Text("帳戶") }
                         )
-                        Tab(
-                            selected = selectedReportTabIndex == 2,
-                            onClick = { selectedReportTabIndex = 2 },
-                            text = { Text("市場") }
-                        )
-                        Tab(
-                            selected = selectedReportTabIndex == 3,
-                            onClick = { selectedReportTabIndex = 3 },
-                            text = { Text("股票") }
-                        )
                     }
                     DateSwitcher(
                         stockViewModel = stockViewModel,
@@ -318,6 +287,18 @@ fun ReportScreen(
                     )
                     when (selectedReportTabIndex) {
                         0 -> {
+                            AllReportScreen(
+                                stockRecordViewModel,
+                                stockViewModel,
+                                calculateCommission,
+                                calculateTransactionTax,
+                                calculateDividend,
+                                allCurrencies,
+                                stockAccounts
+                            )
+                        }
+
+                        1 -> {
                             AccountTab(
                                 allAccountsRecord[selectedAccountId],
                                 accountMetrics,
@@ -328,18 +309,6 @@ fun ReportScreen(
                                 totalDividends,
                                 annualizedReturn
                             )
-                        }
-
-                        1 -> {
-                            Text("帳戶")
-                        }
-
-                        2 -> {
-                            Text("市場")
-                        }
-
-                        3 -> {
-                            Text("股票")
                         }
                     }
                 }

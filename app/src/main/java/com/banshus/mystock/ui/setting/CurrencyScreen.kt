@@ -84,7 +84,7 @@ fun CurrencyScreen(
             )
         }
     }
-//    Log.d("allCurrencies", "$allCurrencies")
+    Log.d("allCurrencies", "$allCurrencies")
     Scaffold(
         topBar = {
             CurrencyScreenHeader(

@@ -255,7 +255,8 @@ fun MyApp(
                 stockAccountViewModel,
                 stockRecordViewModel,
                 stockSymbolViewModel,
-                userSettingsViewModel
+                userSettingsViewModel,
+                currencyViewModel
             )
         }
         composable("accountScreen") {

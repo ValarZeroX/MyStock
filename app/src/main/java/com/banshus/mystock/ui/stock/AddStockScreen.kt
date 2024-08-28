@@ -5,15 +5,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
@@ -27,6 +30,7 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -54,6 +58,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
@@ -96,7 +101,7 @@ fun AddStockScreen(
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
 
     //日期選擇棄
-    val initialDate =  Calendar.getInstance().timeInMillis
+    val initialDate = Calendar.getInstance().timeInMillis
     var showDatePicker by remember { mutableStateOf(false) }
     var selectedDate by remember { mutableStateOf<Long?>(initialDate) }
 
@@ -112,7 +117,7 @@ fun AddStockScreen(
     } ?: "選擇日期"
 
     //時間選擇器
-    val initialDateTime =  System.currentTimeMillis()
+    val initialDateTime = System.currentTimeMillis()
     val calendar = Calendar.getInstance().apply {
         timeInMillis = initialDateTime
     }
@@ -193,7 +198,7 @@ fun AddStockScreen(
     var selectedAutoCalculate by remember { mutableStateOf(false) }
     var selectedCommissionDecimal by remember { mutableDoubleStateOf(0.0) }
     var selectedTransactionTax by remember { mutableDoubleStateOf(0.0) }
-    var selectedDiscount by remember {mutableDoubleStateOf(0.0) }
+    var selectedDiscount by remember { mutableDoubleStateOf(0.0) }
 
     val decimalFormat = DecimalFormat("#.00")
 //     Calculate commission based on quantity, price and commission percentage
@@ -211,13 +216,19 @@ fun AddStockScreen(
         decimalFormat.format(quantity * price * transactionTaxPercent * selectedDiscount)
     }
     // Update commission field automatically
-    LaunchedEffect(autoCalculateChecked, selectedTransactionType, calculatedCommission, calculatedTransactionTax) {
+    LaunchedEffect(
+        autoCalculateChecked,
+        selectedTransactionType,
+        calculatedCommission,
+        calculatedTransactionTax
+    ) {
         // 更新手續費
-        commission = if (autoCalculateChecked && (selectedTransactionType == 0 || selectedTransactionType == 1)) {
-            calculatedCommission.toString()
-        } else {
-            "0.0"
-        }
+        commission =
+            if (autoCalculateChecked && (selectedTransactionType == 0 || selectedTransactionType == 1)) {
+                calculatedCommission.toString()
+            } else {
+                "0.0"
+            }
         // 更新證交稅
         transactionTax = if (autoCalculateChecked && selectedTransactionType == 1) {
             calculatedTransactionTax.toString()
@@ -226,7 +237,7 @@ fun AddStockScreen(
         }
     }
 //
-    val priceName = when(selectedTransactionType) {
+    val priceName = when (selectedTransactionType) {
         0 -> "每股價格"
         1 -> "每股價格"
         else -> "每股股利"
@@ -236,7 +247,7 @@ fun AddStockScreen(
         if (selectedAccount == null) {
             accountText = firstStockAccount?.account ?: "No account selected"
             selectedAccountId = firstStockAccount?.accountId ?: 0
-            selectedStockMarket= firstStockAccount?.stockMarket ?: 0
+            selectedStockMarket = firstStockAccount?.stockMarket ?: 0
             selectedAutoCalculate = firstStockAccount?.autoCalculate ?: false
             selectedCommissionDecimal = firstStockAccount?.commissionDecimal ?: 0.0
             selectedTransactionTax = firstStockAccount?.transactionTaxDecimal ?: 0.0
@@ -244,7 +255,7 @@ fun AddStockScreen(
         } else {
             accountText = selectedAccount?.account ?: "No account selected"
             selectedAccountId = selectedAccount?.accountId ?: 0
-            selectedStockMarket= selectedAccount?.stockMarket ?: 0
+            selectedStockMarket = selectedAccount?.stockMarket ?: 0
             selectedAutoCalculate = selectedAccount?.autoCalculate ?: false
             selectedCommissionDecimal = selectedAccount?.commissionDecimal ?: 0.0
             selectedTransactionTax = selectedAccount?.transactionTaxDecimal ?: 0.0
@@ -351,7 +362,7 @@ fun AddStockScreen(
             }
             item {
                 //台股支援自動計算
-                if (selectedStockMarket == 0 ) {
+                if (selectedStockMarket == 0) {
                     Row(
                         modifier = Modifier.padding(10.dp)
                     ) {
@@ -369,7 +380,7 @@ fun AddStockScreen(
                             }
                         )
                     }
-                    Row(modifier = Modifier.padding(10.dp)){
+                    Row(modifier = Modifier.padding(10.dp)) {
                         Text(
                             text = "只支援台股手續費、證交稅自動計算。",
                             modifier = Modifier
@@ -396,12 +407,14 @@ fun AddStockScreen(
                                 isStockQuantityError = true
                             }
                         },
-                        label = { Text(text = "股數")},
+                        label = { Text(text = "股數") },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isStockQuantityError,
-                        modifier = Modifier.weight(1f).padding(end = 5.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 5.dp)
                     )
                     OutlinedTextField(
                         value = stockPrice,
@@ -416,12 +429,14 @@ fun AddStockScreen(
                                 isStockPriceError = true
                             }
                         },
-                        label = { Text(text = priceName)},
+                        label = { Text(text = priceName) },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isStockPriceError,
-                        modifier = Modifier.weight(1f).padding(start = 5.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 5.dp)
                     )
                 }
             }
@@ -440,13 +455,15 @@ fun AddStockScreen(
                                 isCommissionError = true
                             }
                         },
-                        label = { Text(text = "手續費")},
+                        label = { Text(text = "手續費") },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isCommissionError,
                         enabled = !autoCalculateChecked,
-                        modifier = Modifier.weight(1f).padding(end = 5.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(end = 5.dp)
                     )
                     OutlinedTextField(
                         value = transactionTax,
@@ -459,13 +476,15 @@ fun AddStockScreen(
                                 isTransactionTaxError = true
                             }
                         },
-                        label = { Text(text = "證交稅")},
+                        label = { Text(text = "證交稅") },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
                         isError = isTransactionTaxError,
                         enabled = !autoCalculateChecked,
-                        modifier = Modifier.weight(1f).padding(start = 5.dp)
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(start = 5.dp)
                     )
                 }
             }
@@ -655,7 +674,7 @@ fun AddStockScreen(
 fun AddHeader(
     onSaveStockRecord: () -> Unit,
     navController: NavHostController,
-    ) {
+) {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -724,34 +743,52 @@ fun StockSymbolDropdown(
                 },
             modifier = Modifier.padding(5.dp)
         )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("搜尋股票代碼") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            )
-            val filteredStockSymbols = stockSymbols.filter {
-                it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
-                        it.stockName.contains(searchQuery, ignoreCase = true)
-            }
-            filteredStockSymbols.forEach { stockSymbol ->
-                DropdownMenuItem(
-                    text = { Text("${stockSymbol.stockSymbol} - ${stockSymbol.stockName}") },
-                    onClick = {
-                        onStockSymbolSelected(stockSymbol)
-                        expanded = false
+        if (expanded) {
+            Dialog(onDismissRequest = { expanded = false }) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(MaterialTheme.colorScheme.surfaceContainer)
+                        .height(400.dp)
+                ) {
+                    Column {
+                        TextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            label = { Text("搜尋股票代碼") },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(15.dp)
+                        )
+                        val filteredStockSymbols = stockSymbols.filter {
+                            it.stockSymbol.contains(searchQuery, ignoreCase = true) ||
+                                    it.stockName.contains(searchQuery, ignoreCase = true)
+                        }
+                        LazyColumn(
+                            modifier = Modifier
+                                .fillMaxWidth()
+//                                .heightIn(max = 400.dp) // 限制下拉列表的最大高度
+                        ) {
+                            items(filteredStockSymbols) { stockSymbol ->
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .clickable {
+                                            onStockSymbolSelected(stockSymbol)
+                                            expanded = false
+                                        }
+                                        .padding(10.dp)
+                                ) {
+                                    Text(
+                                        text = "${stockSymbol.stockSymbol} - ${stockSymbol.stockName}",
+                                        modifier = Modifier.padding(start = 10.dp)
+                                    )
+                                }
+                                HorizontalDivider()
+                            }
+                        }
                     }
-                )
+                }
             }
         }
     }

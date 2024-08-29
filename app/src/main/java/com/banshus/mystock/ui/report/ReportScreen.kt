@@ -240,6 +240,30 @@ fun ReportScreen(
         totalDividends = totalDividends
     )
     val allCurrencies by currencyViewModel.allCurrencies.observeAsState()
+
+    val dividends by stockRecordViewModel.getTotalDividendsByDateRangeAndAccountGroupBy(
+        startDate = startDateMillis,
+        endDate = endDateMillis,
+    ).observeAsState(initial = emptyMap())
+    val allAccounts by stockRecordViewModel.calculateTotalGroupByAccount(
+        startDateMillis = startDateMillis,
+        endDateMillis = endDateMillis,
+        includeCommission = calculateCommission,
+        includeTransactionTax = calculateTransactionTax,
+        includeDividends = calculateDividend,
+        dividends = dividends,
+    ).observeAsState(initial = emptyMap())
+
+    val annualizedGroupByAccount by stockRecordViewModel.calculateAnnualizedReturnGroupedByAccount(
+        allAccounts,
+        startDateMillis,
+        endDateMillis,
+        calculateCommission,
+        calculateTransactionTax,
+        calculateDividend,
+        dividends
+    ).observeAsState(initial = emptyMap())
+
     if (stockAccounts.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Text(text = "請建立帳戶")
@@ -295,7 +319,17 @@ fun ReportScreen(
                                 calculateDividend,
                                 allCurrencies,
                                 stockAccounts,
-                                currentRangeType
+                                currentRangeType,
+                                allAccounts,
+                                annualizedGroupByAccount,
+                                mainCurrency,
+                                onTabSelected = { tabIndex, accountId, stockAccount ->
+                                    selectedReportTabIndex = tabIndex
+                                    selectedAccountId = accountId
+                                    if (stockAccount != null) {
+                                        stockViewModel.updateSelectedAccount(stockAccount)
+                                    }
+                                }
                             )
                         }
 

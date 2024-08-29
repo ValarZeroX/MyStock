@@ -312,6 +312,17 @@ class StockRecordViewModel(
                 records.sumOf { it.totalAmount } // 加总所有股利记录的 totalAmount
             }
     }
+    fun getTotalDividendsByDateRangeAndAccountGroupBy(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, Double>> {
+        return repository.getAllDividendRecordsByDateRangeAndAccount(startDate, endDate).map { records ->
+            records.groupBy { it.accountId } // 按 accountId 分组
+                .mapValues { (_, groupedRecords) ->
+                    groupedRecords.sumOf { it.totalAmount } // 计算每个账户的总股利金额
+                }
+        }
+    }
 
     fun getAllTotalDividendsByDateRangeAndAccount(
         startDate: Long,
@@ -441,6 +452,115 @@ class StockRecordViewModel(
 
     private fun convertCurrenciesToMap(allCurrencies: List<Currency>?): Map<String, Currency> {
         return allCurrencies?.associateBy { it.currencyCode } ?: emptyMap()
+    }
+
+    fun calculateTotalGroupByAccount(
+        startDateMillis: Long,
+        endDateMillis: Long,
+        includeCommission: Boolean,
+        includeTransactionTax: Boolean,
+        includeDividends: Boolean,
+        dividends: Map<Int, Double>?
+    ): LiveData<Map<Int, DetailedStockMetrics>> {
+        return getFilteredRealizedTrades(startDateMillis, endDateMillis).map { allTrades ->
+            allTrades.mapValues { (accountId, tradesBySymbol) ->
+                var totalCostBasis = 0.0
+                var totalSellIncome = 0.0
+                var totalProfit = 0.0
+                var totalCommission = 0.0
+                var totalTransactionTax = 0.0
+
+                tradesBySymbol.values.flatten().forEach { trade ->
+                    var buyTotal = 0.0
+                    var sellTotal = 0.0
+
+                    trade.buy.forEach { record ->
+                        buyTotal += (record.quantity * record.pricePerUnit)
+                        totalCommission += record.commission
+                        totalTransactionTax += record.transactionTax
+                    }
+
+                    sellTotal += (trade.sell.quantity * trade.sell.pricePerUnit)
+                    totalCommission += trade.sell.commission
+                    totalTransactionTax += trade.sell.transactionTax
+
+                    val profit = sellTotal - buyTotal
+                    totalProfit += profit
+                    totalCostBasis += buyTotal
+                    totalSellIncome += sellTotal
+                }
+
+                if (includeCommission) {
+                    totalProfit -= totalCommission
+                }
+                if (includeTransactionTax) {
+                    totalProfit -= totalTransactionTax
+                }
+
+                // 如果需要包括股利收入
+                if (includeDividends) {
+                    val accountDividends = dividends?.get(accountId) ?: 0.0
+                    totalProfit += accountDividends
+                }
+
+                val totalProfitPercent = if (totalCostBasis != 0.0) {
+                    (totalProfit / totalCostBasis) * 100
+                } else {
+                    0.0
+                }
+
+                DetailedStockMetrics(
+                    totalCostBasis = totalCostBasis,
+                    totalSellIncome = totalSellIncome,
+                    totalProfit = totalProfit,
+                    totalProfitPercent = totalProfitPercent,
+                    totalCommission = totalCommission,
+                    totalTransactionTax = totalTransactionTax
+                )
+            }
+        }
+    }
+
+    fun calculateAnnualizedReturnGroupedByAccount(
+        accountMetricsMap: Map<Int, DetailedStockMetrics>,
+        startDateMillis: Long,
+        endDateMillis: Long,
+        includeCommission: Boolean,
+        includeTransactionTax: Boolean,
+        includeDividends: Boolean,
+        dividendsMap: Map<Int, Double>
+    ): LiveData<Map<Int, Double>> {
+        val result = MutableLiveData<Map<Int, Double>>()
+        val annualizedReturnMap = mutableMapOf<Int, Double>()
+
+        accountMetricsMap.forEach { (accountId, accountMetrics) ->
+            var totalProfit = accountMetrics.totalProfit
+            var totalCostBasis = accountMetrics.totalCostBasis
+
+            if (includeCommission) {
+                totalCostBasis += accountMetrics.totalCommission
+            }
+            if (includeTransactionTax) {
+                totalCostBasis += accountMetrics.totalTransactionTax
+            }
+            if (includeDividends) {
+                val totalDividends = dividendsMap[accountId] ?: 0.0
+                totalProfit += totalDividends
+            }
+
+            if (totalCostBasis == 0.0) {
+                annualizedReturnMap[accountId] = 0.0
+            } else {
+                val periodInDays = ((endDateMillis - startDateMillis) / (1000 * 60 * 60 * 24)).toInt()
+                val investmentYears = periodInDays / 365.0
+                val investmentReturn = totalProfit / totalCostBasis
+                val annualizedReturn = ((1 + investmentReturn).pow(1 / investmentYears) - 1) * 100
+                annualizedReturnMap[accountId] = annualizedReturn
+            }
+        }
+
+        result.value = annualizedReturnMap
+        return result
     }
 }
 

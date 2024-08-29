@@ -1,29 +1,46 @@
 package com.banshus.mystock.ui.report
 
-import android.util.Log
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.data.entities.StockAccount
+import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockRecordViewModel
-import com.google.type.Color
 import java.time.LocalDate
 import java.time.ZoneId
 
@@ -36,7 +53,11 @@ fun AllReportScreen(
     includeDividends : Boolean,
     allCurrencies: List<Currency>?,
     stockAccounts: Map<Int, StockAccount>,
-    currentRangeType: DateRangeType
+    currentRangeType: DateRangeType,
+    allAccountsRecord: Map<Int, DetailedStockMetrics>,
+    annualizedGroupByAccount: Map<Int, Double>,
+    mainCurrency: String,
+    onTabSelected: (Int, Int, StockAccount?) -> Unit
 ) {
     val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
     val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
@@ -71,7 +92,7 @@ fun AllReportScreen(
         totalDividends = totalDividends
     )
 
-//    Log.d("allCurrencies", "$allCurrencies")
+//    Log.d("allAccountsRecord", "$allAccountsRecord")
     val profitColor = getProfitColor(
         totalMetrics.totalProfit,
         StockRed,
@@ -87,6 +108,43 @@ fun AllReportScreen(
     Column(
         modifier = Modifier.padding(start = 10.dp, end = 10.dp)
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(text = "全部帳戶", fontSize = 24.sp, modifier = Modifier.weight(1f))
+            Box(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp,
+                        color = Gray1,
+                        shape = RoundedCornerShape(8.dp)
+                    )
+                    .padding(
+                        top = 1.dp,
+                        bottom = 1.dp,
+                        start = 10.dp,
+                        end = 10.dp
+                    )
+            ) {
+                Row(
+                    modifier = Modifier.padding(vertical = 3.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        Icons.Filled.AttachMoney,
+                        contentDescription = "Localized description",
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = mainCurrency,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
+            }
+        }
         Row {
             Text(text = "總買進", modifier = Modifier.weight(1f))
             Text(text = "總賣出", modifier = Modifier.weight(1f))
@@ -154,30 +212,73 @@ fun AllReportScreen(
             )
 
         }
-        // Display total metrics
-//        Row(label = "總買進", value = formatNumber(totalMetrics.totalCostBasis))
-//        Row(label = "總賣出", value = formatNumber(totalMetrics.totalSellIncome))
-//        Row(label = "總手續費", value = formatNumber(totalMetrics.totalCommission))
-//        Row(label = "總交易稅", value = formatNumber(totalMetrics.totalTransactionTax))
-//        Row(label = "總股利", value = formatNumber(totalDividends))
-//        Row(label = "總損益", value = formatNumber(totalMetrics.totalProfit))
-//        Row(label = "總損益率", value = "${formatNumber(totalMetrics.totalProfitPercent)}%")
-//        MetricsRow(label = "年化報酬率", value = "${formatNumber(annualizedReturn)}%")
-
-        // Display individual account metrics
         LazyColumn {
-//            items(stockRecordViewModel.calculateTotalCostAndProfitForAllAccounts().value ?: emptyMap()) { (accountId, metrics) ->
-//                Text(text = "Account ID: $accountId")
-////                MetricsRow(label = "總買進", value = formatNumber(metrics.totalCostBasis))
-////                MetricsRow(label = "總賣出", value = formatNumber(metrics.totalPrice))
-////                MetricsRow(label = "總手續費", value = formatNumber(metrics.totalCommission))
-////                MetricsRow(label = "總交易稅", value = formatNumber(metrics.totalTransactionTax))
-////                MetricsRow(label = "總股利", value = formatNumber(totalDividends))
-////                MetricsRow(label = "總損益", value = formatNumber(metrics.totalProfit))
-////                MetricsRow(label = "總損益率", value = "${formatNumber(metrics.totalProfitPercent)}%")
-////                MetricsRow(label = "年化報酬率", value = "${formatNumber(annualizedReturn)}%")
-////                Spacer(modifier = Modifier.height(8.dp))
-//            }
+            items(allAccountsRecord.toList()) { (accountId, metrics) ->
+                ListItem(
+                    modifier = Modifier.clickable {
+                        onTabSelected(1, accountId, stockAccounts[accountId])
+                    },
+                    headlineContent = { Text(stockAccounts[accountId]!!.account) },
+                    supportingContent = {
+                        Column {
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = "總損益", modifier = Modifier.weight(1f))
+                                Text(text = "總損益率", modifier = Modifier.weight(1f))
+                                Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+                            }
+                            Row(
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(text = formatNumber(metrics.totalProfit), modifier = Modifier.weight(1f))
+                                Text(text = "${formatNumber(metrics.totalProfitPercent)}%", modifier = Modifier.weight(1f))
+                                if (currentRangeType == DateRangeType.YEAR || currentRangeType == DateRangeType.ALL) {
+                                    Text(
+                                        text = "${formatNumber(annualizedGroupByAccount[accountId]!!)}%",
+                                        modifier = Modifier.weight(1f),
+                                        color = annualizedColor
+                                    )
+                                } else {
+                                    Text(
+                                        text = "-",
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                }
+                            }
+                        }
+                    },
+                    trailingContent = {
+                        Column {
+                            Text(
+                                text = stockAccounts[accountId]!!.currency,
+                                modifier = Modifier
+                                    .padding(4.dp)  // 添加一些内边距
+                                    .border(
+                                        width = 2.dp,  // 边框宽度
+                                        color = MaterialTheme.colorScheme.primary,  // 边框颜色
+                                        shape = RoundedCornerShape(50)  // 椭圆形边框
+                                    )
+                                    .clip(RoundedCornerShape(50))  // 将内容裁剪为椭圆形
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)  // 内部文本的填充
+                            )
+                            Text(
+                                text = optionStockMarket[stockAccounts[accountId]!!.stockMarket],
+                                modifier = Modifier
+                                    .padding(4.dp)  // 添加一些内边距
+                                    .border(
+                                        width = 2.dp,  // 边框宽度
+                                        color = MaterialTheme.colorScheme.primary,
+                                        shape = RoundedCornerShape(50)
+                                    )
+                                    .clip(RoundedCornerShape(50))
+                                    .padding(horizontal = 12.dp, vertical = 6.dp)
+                            )
+                        }
+                    }
+                )
+                HorizontalDivider()
+            }
         }
     }
 }

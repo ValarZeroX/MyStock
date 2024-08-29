@@ -313,6 +313,24 @@ class StockRecordViewModel(
             }
     }
 
+    fun getAllTotalDividendsByDateRangeAndAccount(
+        startDate: Long,
+        endDate: Long,
+        allCurrencies: List<Currency>?,
+        stockAccounts: Map<Int, StockAccount>,
+    ): LiveData<Double> {
+        val currencyMap = convertCurrenciesToMap(allCurrencies)
+        return repository.getAllDividendRecordsByDateRangeAndAccount(startDate, endDate)
+            .map { records ->
+                records.sumOf { record ->
+                    val account = stockAccounts[record.accountId]
+                    val accountCurrency = account?.currency ?: "USD" // 假设默认是 USD
+                    val exchangeRate = currencyMap[accountCurrency]?.exchangeRate ?: 1.0
+                    record.totalAmount / exchangeRate
+                }
+            }
+    }
+
     fun calculateAnnualizedReturnWithoutDividends(
         accountMetrics: DetailedStockMetrics,
         startDateMillis: Long,
@@ -369,13 +387,9 @@ class StockRecordViewModel(
             var totalTransactionTax = 0.0
 
             val currencyMap = convertCurrenciesToMap(allCurrencies)
-            Log.d("allTrades", "$allTrades")
-            Log.d("currencyMap", "$currencyMap")
             allTrades.forEach { (accountId, tradesBySymbol) ->
                 val account = stockAccounts[accountId]
                 val accountCurrency = account?.currency
-                Log.d("account", "$account")
-                Log.d("accountCurrency", "$accountCurrency")
                 val exchangeRate = currencyMap[accountCurrency]?.exchangeRate ?: 1.0
                 tradesBySymbol.values.flatten().forEach { trade ->
                     var buyTotal = 0.0

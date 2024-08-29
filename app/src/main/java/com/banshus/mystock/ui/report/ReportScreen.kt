@@ -294,7 +294,8 @@ fun ReportScreen(
                                 calculateTransactionTax,
                                 calculateDividend,
                                 allCurrencies,
-                                stockAccounts
+                                stockAccounts,
+                                currentRangeType
                             )
                         }
 

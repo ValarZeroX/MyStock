@@ -57,4 +57,10 @@ interface StockRecordDao {
         startDate: Long,
         endDate: Long
     ): LiveData<List<StockRecord>>
+
+    @Query("SELECT * FROM stock_record WHERE transactionDate BETWEEN :startDate AND :endDate AND transactionType = 2 ORDER BY transactionDate")
+    fun getAllDividendRecordsByDateRangeAndAccount(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<List<StockRecord>>
 }

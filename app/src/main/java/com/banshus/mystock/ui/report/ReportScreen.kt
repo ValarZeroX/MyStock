@@ -149,13 +149,7 @@ fun ReportScreen(
         accountText = "No account selected"
     }
 
-    val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRangeByAccountId(
-        selectedAccountId
-    ).observeAsState()
-    stockViewModel.setTransactionDateRange(
-        getAccountStockMaxMinDate?.first,
-        getAccountStockMaxMinDate?.second
-    )
+
 //    Log.d("selectedAccountId", "$selectedAccountId")
 //    Log.d("getAccountStock", "$getAccountStockMaxMinDate")
     //DateSwitcher使用
@@ -302,15 +296,20 @@ fun ReportScreen(
                             text = { Text("帳戶") }
                         )
                     }
-                    DateSwitcher(
-                        stockViewModel = stockViewModel,
-                        initialDate = startDate,
-                        onDateChanged = { start, end ->
-                            stockViewModel.setDateRange(start, end)
-                        }
-                    )
                     when (selectedReportTabIndex) {
                         0 -> {
+                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange().observeAsState()
+                            stockViewModel.setTransactionDateRange(
+                                getAccountStockMaxMinDate?.first,
+                                getAccountStockMaxMinDate?.second
+                            )
+                            DateSwitcher(
+                                stockViewModel = stockViewModel,
+                                initialDate = startDate,
+                                onDateChanged = { start, end ->
+                                    stockViewModel.setDateRange(start, end)
+                                }
+                            )
                             AllReportScreen(
                                 stockRecordViewModel,
                                 stockViewModel,
@@ -334,6 +333,20 @@ fun ReportScreen(
                         }
 
                         1 -> {
+                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRangeByAccountId(
+                                selectedAccountId
+                            ).observeAsState()
+                            stockViewModel.setTransactionDateRange(
+                                getAccountStockMaxMinDate?.first,
+                                getAccountStockMaxMinDate?.second
+                            )
+                            DateSwitcher(
+                                stockViewModel = stockViewModel,
+                                initialDate = startDate,
+                                onDateChanged = { start, end ->
+                                    stockViewModel.setDateRange(start, end)
+                                }
+                            )
                             AccountTab(
                                 allAccountsRecord[selectedAccountId],
                                 accountMetrics,

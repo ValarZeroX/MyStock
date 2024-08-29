@@ -63,4 +63,10 @@ interface StockRecordDao {
         startDate: Long,
         endDate: Long
     ): LiveData<List<StockRecord>>
+
+    @Query("SELECT MIN(transactionDate) FROM stock_record")
+    suspend fun getMinTransactionDate(): Long?
+
+    @Query("SELECT MAX(transactionDate) FROM stock_record")
+    suspend fun getMaxTransactionDate(): Long?
 }

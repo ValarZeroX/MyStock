@@ -51,6 +51,14 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         return stockRecordDao.getMaxTransactionDateByAccountId(accountId)
     }
 
+    suspend fun getMinTransactionDate(): Long? {
+        return stockRecordDao.getMinTransactionDate()
+    }
+
+    suspend fun getMaxTransactionDate(): Long? {
+        return stockRecordDao.getMaxTransactionDate()
+    }
+
     fun getStockRecordsByDateRangeAndAccount(
         accountId: Int,
         startDate: Long,

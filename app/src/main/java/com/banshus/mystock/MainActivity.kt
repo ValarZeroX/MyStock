@@ -22,6 +22,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.banshus.mystock.api.RetrofitInstance
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.CurrencyApiRepository
@@ -66,7 +69,9 @@ import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
+import com.banshus.mystock.work.StockPriceUpdateWorker
 import com.github.mikephil.charting.utils.Utils
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : ComponentActivity() {
@@ -135,6 +140,18 @@ class MainActivity : ComponentActivity() {
             this,
             CurrencyApiViewModelFactory(currencyApiRepository)
         )[CurrencyApiViewModel::class.java]
+
+//        setupStockPriceUpdateWorker()
+        val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
+            4, TimeUnit.HOURS // 每4小时执行一次任务
+        ).build()
+
+        // 使用 WorkManager 安排任务
+        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+            "StockPriceUpdate",
+            ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
+            stockPriceUpdateRequest
+        )
 
         setContent {
             MyStockTheme(
@@ -293,15 +310,16 @@ fun MyApp(
     }
 }
 
-//@Composable
-//fun MySetting() {
-//    val navController = rememberNavController()
-//    NavHost(navController = navController, startDestination = "stockSettingScreen") {
-//        composable("stockSettingScreen") {
-//            StockSettingScreen(navController)
-//        }
-//        composable("colorThemeScreen") {
-//            ColorThemeScreen(navController)
-//        }
-//    }
+//private fun setupStockPriceUpdateWorker() {
+//    // 创建一个 PeriodicWorkRequest 来定期执行任务
+//    val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
+//        4, TimeUnit.HOURS // 每4小时执行一次任务
+//    ).build()
+//
+//    // 使用 WorkManager 安排任务
+//    WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+//        "StockPriceUpdate",
+//        ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
+//        stockPriceUpdateRequest
+//    )
 //}

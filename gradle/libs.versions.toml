@@ -22,6 +22,7 @@ sheetsComposeDialogsClock = "1.3.0"
 navigationCompose = "2.7.7"
 roomRuntime = "2.6.1"
 runtimeLivedata = "1.6.8"
+workRuntimeKtx = "2.9.1"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -54,6 +55,7 @@ sheetsComposeDialogsCalendar = { module = "com.maxkeppeler.sheets-compose-dialog
 sheetsComposeDialogsClock = { module = "com.maxkeppeler.sheets-compose-dialogs:clock", version.ref = "sheetsComposeDialogsClock" }
 androidx-navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigationCompose" }
 androidx-runtime-livedata = { group = "androidx.compose.runtime", name = "runtime-livedata", version.ref = "runtimeLivedata" }
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workRuntimeKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

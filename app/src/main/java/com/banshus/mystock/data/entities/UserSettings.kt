@@ -13,6 +13,9 @@ data class UserSettings(
     val isDividendCalculationEnabled: Boolean = false, //損益是否包含股利
     val currency: String = "USD", //主幣別
     val textColor: Int = 0, //漲跌文字顏色
-    val autoUpdateStock: Int = 180, //自動更新股價(秒)
+    val autoUpdateStock: Boolean = false, //是否自動更新股價
+    val autoUpdateStockSecond: Int = 180, //自動更新股價(秒)
+    val autoUpdateExchangeRate: Boolean = false, //是否自動更新匯率
+    val autoUpdateExchangeRateSecond: Int = 180, //自動更新匯率(秒)
 )
 

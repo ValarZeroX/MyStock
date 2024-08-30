@@ -28,6 +28,32 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
         }
     }
 
+    suspend fun getStockPriceWorker(symbol: String, period1: Long, period2: Long, marketCode: String): StockChartResponse? {
+        return try {
+            val combinedSymbol: String = if (marketCode != "US") {
+                "${symbol}.${marketCode}"
+            } else {
+                symbol
+            }
+            apiService.getStockPrice(combinedSymbol, period1, period2)
+        } catch (e: HttpException) {
+            Log.d("error000", "$e")
+            Log.d("error000", "${e.response()}")
+            val errorBody = e.response()?.errorBody()?.string()
+            Log.d("error000", "Error body: $errorBody")
+            Log.d("error000", e.message())
+            if (e.code() == 404) {
+                throw e
+            } else {
+                // 处理其他HTTP错误
+                throw e
+            }
+        } catch (e: Exception) {
+            Log.d("error001", "$e")
+            throw e
+        }
+    }
+
     suspend fun searchStock(symbol: String): StockSearchResponse? {
         return try {
             apiService.searchStock(symbol)

@@ -17,6 +17,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -40,6 +41,7 @@ import com.banshus.mystock.ui.StockSettingScreen
 import com.banshus.mystock.ui.record.RecordScreen
 import com.banshus.mystock.ui.report.ReportScreen
 import com.banshus.mystock.ui.setting.AccountScreen
+import com.banshus.mystock.ui.setting.AutoUpdateScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.CurrencyScreen
 import com.banshus.mystock.ui.setting.EditAccountScreen
@@ -71,6 +73,7 @@ import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 import com.banshus.mystock.work.StockPriceUpdateWorker
 import com.github.mikephil.charting.utils.Utils
+import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
 
@@ -141,17 +144,40 @@ class MainActivity : ComponentActivity() {
             CurrencyApiViewModelFactory(currencyApiRepository)
         )[CurrencyApiViewModel::class.java]
 
-//        setupStockPriceUpdateWorker()
-        val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
-            4, TimeUnit.HOURS // 每4小时执行一次任务
-        ).build()
+////        setupStockPriceUpdateWorker()
+//        val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
+//            4, TimeUnit.HOURS // 每4小时执行一次任务
+//        ).build()
 
-        // 使用 WorkManager 安排任务
-        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-            "StockPriceUpdate",
-            ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
-            stockPriceUpdateRequest
-        )
+//        // 使用 WorkManager 安排任务
+//        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+//            "StockPriceUpdate",
+//            ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
+//            stockPriceUpdateRequest
+//        )
+
+        // 检查是否需要自动更新股价
+        userSettingsViewModel.userSettings.observe(this) { settings ->
+            if (settings.autoUpdateStock) {
+                // 最小更新间隔为 15 分钟
+                val intervalInMinutes = maxOf(15L, settings.autoUpdateStockSecond / 60L)
+                val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
+                    intervalInMinutes, TimeUnit.MINUTES
+                ).build()
+
+                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                    "StockPriceUpdate",
+                    ExistingPeriodicWorkPolicy.UPDATE,
+                    stockPriceUpdateRequest
+                )
+            } else {
+                WorkManager.getInstance(applicationContext).cancelUniqueWork("StockPriceUpdate")
+            }
+        }
+
+        lifecycleScope.launch {
+            StockPriceUpdateWorker.updateStockPrices(applicationContext)
+        }
 
         setContent {
             MyStockTheme(
@@ -305,6 +331,13 @@ fun MyApp(
                 userSettingsViewModel,
                 currencyViewModel,
                 currencyApiViewModel
+            )
+        }
+        composable("autoUpdateScreen") {
+            AutoUpdateScreen(
+                navController,
+                stockViewModel,
+                userSettingsViewModel
             )
         }
     }

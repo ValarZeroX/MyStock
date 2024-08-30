@@ -37,6 +37,26 @@ class UserSettingsViewModel(private val repository: UserSettingsRepository) : Vi
         }
     }
 
+    fun updateAutoExchangeRate(autoUpdateExchangeRate: Boolean) {
+        viewModelScope.launch {
+            val currentSettings = userSettings.value
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(autoUpdateExchangeRate = autoUpdateExchangeRate)
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
+
+    fun updateAutoStockPrice(autoUpdateStock: Boolean) {
+        viewModelScope.launch {
+            val currentSettings = userSettings.value
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(autoUpdateStock = autoUpdateStock)
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
+
 
     fun updateReportSettings(isCommissionCalculationEnabled: Boolean,isTransactionTaxCalculationEnabled: Boolean, isDividendCalculationEnabled: Boolean) {
         viewModelScope.launch {
@@ -49,6 +69,26 @@ class UserSettingsViewModel(private val repository: UserSettingsRepository) : Vi
                     isTransactionTaxCalculationEnabled = isTransactionTaxCalculationEnabled,
                     isDividendCalculationEnabled = isDividendCalculationEnabled
                     )
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
+
+    // 获取自动更新股价的设置和间隔
+    fun shouldAutoUpdateStockPrice(): Boolean {
+        return userSettings.value?.autoUpdateStock ?: false
+    }
+
+    fun getStockUpdateInterval(): Int {
+        return userSettings.value?.autoUpdateStockSecond ?: 180
+    }
+
+    // 更新自动更新股价的时间间隔
+    fun updateAutoStockPriceInterval(seconds: Int) {
+        viewModelScope.launch {
+            val currentSettings = userSettings.value
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(autoUpdateStockSecond = seconds)
                 repository.updateUserSettings(updatedSettings)
             }
         }

@@ -2,6 +2,7 @@ package com.banshus.mystock.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -44,76 +45,77 @@ fun StockSettingScreen(navController: NavHostController){
             SettingHeader()
         },
     ) { innerPadding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
                 .background(MaterialTheme.colorScheme.surface)
-        ){
-            item{
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(10.dp)
-                ) {
-                    Row{
-                        Text(
-                            text = "設定",
-                            style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(10.dp),
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
-                        )
-                    }
-                    ListItem(
-                        headlineContent = { Text("股票帳戶") },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "股票帳戶",
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate("accountScreen")
-                        }
-                    )
-                    HorizontalDivider()
-                    ListItem(
-                        headlineContent = { Text("股票市場") },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "股票市場",
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate("stockMarketScreen")
-                        }
-                    )
-                    HorizontalDivider()
-                    ListItem(
-                        headlineContent = { Text("股票代碼") },
-                        trailingContent = {
-                            Icon(
-                                imageVector = Icons.Filled.ChevronRight,
-                                contentDescription = "股票代碼",
-                            )
-                        },
-                        modifier = Modifier.clickable {
-                            navController.navigate("stockSymbolScreen")
-                        }
-                    )
-                    HorizontalDivider()
-                }
-            }
-            item{
+                .padding(innerPadding)
+        ) {
+            LazyColumn{
+                item {
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(10.dp)
-                    ){
-                        Row{
+                    ) {
+                        Row {
+                            Text(
+                                text = "設定",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        ListItem(
+                            headlineContent = { Text("股票帳戶") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "股票帳戶",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("accountScreen")
+                            }
+                        )
+                        HorizontalDivider()
+                        ListItem(
+                            headlineContent = { Text("股票市場") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "股票市場",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("stockMarketScreen")
+                            }
+                        )
+                        HorizontalDivider()
+                        ListItem(
+                            headlineContent = { Text("股票代碼") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "股票代碼",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("stockSymbolScreen")
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row {
                             Text(
                                 text = "偏好",
                                 style = MaterialTheme.typography.titleLarge,
@@ -162,10 +164,21 @@ fun StockSettingScreen(navController: NavHostController){
                             }
                         )
                         HorizontalDivider()
+                        ListItem(
+                            headlineContent = { Text("自動更新") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "自動更新",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("autoUpdateScreen")
+                            }
+                        )
+                        HorizontalDivider()
                     }
-            }
-            item{
-
+                }
             }
         }
     }

@@ -28,4 +28,7 @@ interface StockMarketDao {
 
     @Query("SELECT * FROM stock_market ORDER BY stockMarketSort")
     fun getAllStockMarkets(): LiveData<List<StockMarket>>
+
+    @Query("SELECT * FROM stock_market ORDER BY stockMarketSort")
+    suspend fun getAllStockMarketsWorker(): List<StockMarket>
 }

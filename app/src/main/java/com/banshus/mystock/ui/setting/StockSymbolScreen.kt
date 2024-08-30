@@ -262,8 +262,6 @@ fun StockSymbolScreen(
                                                     onSuccess = { _ ->
                                                         val quotes = result?.meta
                                                         val shortName = quotes?.shortName
-                                                        Log.d("shortName", "$shortName")
-                                                        Log.d("stockName", stockSymbol.stockName)
 //                                                    updatedName = stockSymbol.stockName.ifEmpty {
 //                                                        shortName ?: stockSymbol.stockName
 //                                                    }

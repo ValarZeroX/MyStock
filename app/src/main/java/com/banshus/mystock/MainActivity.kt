@@ -71,6 +71,7 @@ import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModelFactory
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
+import com.banshus.mystock.work.CurrencyRateUpdateWorker
 import com.banshus.mystock.work.StockPriceUpdateWorker
 import com.github.mikephil.charting.utils.Utils
 import kotlinx.coroutines.launch
@@ -167,17 +168,35 @@ class MainActivity : ComponentActivity() {
 
                 WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
                     "StockPriceUpdate",
-                    ExistingPeriodicWorkPolicy.UPDATE,
+                    ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
                     stockPriceUpdateRequest
                 )
             } else {
                 WorkManager.getInstance(applicationContext).cancelUniqueWork("StockPriceUpdate")
             }
+
+            if (settings.autoUpdateExchangeRate) {
+                val currencyIntervalInMinutes = maxOf(15L, settings.autoUpdateExchangeRateSecond / 60L)
+                val currencyRateUpdateRequest = PeriodicWorkRequestBuilder<CurrencyRateUpdateWorker>(
+                    currencyIntervalInMinutes, TimeUnit.MINUTES
+                ).build()
+
+                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                    "CurrencyRateUpdate",
+                    ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
+                    currencyRateUpdateRequest
+                )
+            } else {
+                WorkManager.getInstance(applicationContext).cancelUniqueWork("CurrencyRateUpdate")
+            }
         }
 
         lifecycleScope.launch {
             StockPriceUpdateWorker.updateStockPrices(applicationContext)
+            CurrencyRateUpdateWorker.updateCurrencyRates(applicationContext)
         }
+
+
 
         setContent {
             MyStockTheme(

@@ -17,6 +17,9 @@ interface StockAccountDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(stockAccount: StockAccount)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStockAccounts(stockAccounts: List<StockAccount>)
+
     @Query("SELECT * FROM stock_account LIMIT 1")
     fun getFirstStockAccount(): LiveData<StockAccount?>
 
@@ -31,4 +34,7 @@ interface StockAccountDao {
 
     @Update
     suspend fun updateStockAccount(stockAccount: StockAccount)
+
+    @Query("SELECT * FROM stock_account ORDER BY accountSort")
+    suspend fun getAllStockAccountsSync(): List<StockAccount>
 }

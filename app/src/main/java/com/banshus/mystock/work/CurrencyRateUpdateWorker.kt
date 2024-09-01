@@ -2,12 +2,16 @@ package com.banshus.mystock.work
 
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.map
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.banshus.mystock.api.RetrofitInstance
+import com.banshus.mystock.api.response.CurrencyRate
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.repository.CurrencyApiRepository
+import com.banshus.mystock.ui.setting.roundToDecimal
+import com.banshus.mystock.viewmodels.CurrencyViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
@@ -29,12 +33,21 @@ class CurrencyRateUpdateWorker(
                     // 获取最新的汇率数据
                     val response = currencyApiRepository.fetchCurrencyRates()
 
+                    val stockAccountDao = database.stockAccountDao()
+//                    val stockAccounts = stockAccountDao.getAllStockAccounts()
+                    val stockAccounts = database.stockAccountDao().getAllStockAccountsSync()
+
+                    val currentTime = System.currentTimeMillis()
                     response?.forEach { (currencyCode, currencyRate) ->
-                        val currency = Currency(
-                            currencyCode = currencyCode,
-                            exchangeRate = currencyRate.exchangeRate
-                        )
-                        currencyDao.insertCurrency(currency)
+                        val accountsUsingCurrency = stockAccounts.filter { it.currency == currencyCode }
+                        if ("USD$accountsUsingCurrency" == currencyCode || "$accountsUsingCurrency" == "USD"){
+                            val currency = Currency(
+                                currencyCode = "$accountsUsingCurrency",
+                                exchangeRate = currencyRate.exchangeRate,
+                                lastUpdatedTime = currentTime,
+                            )
+                            currencyDao.insertCurrency(currency)
+                        }
                     }
 
                     Log.d("CurrencyRateUpdateWorker", "Currency rates updated successfully")

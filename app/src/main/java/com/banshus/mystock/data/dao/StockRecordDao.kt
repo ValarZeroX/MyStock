@@ -14,6 +14,9 @@ interface StockRecordDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStockRecord(stockRecord: StockRecord)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStockRecords(stockRecords: List<StockRecord>)
+
     @Update
     suspend fun updateStockRecord(stockRecord: StockRecord)
 
@@ -69,4 +72,7 @@ interface StockRecordDao {
 
     @Query("SELECT MAX(transactionDate) FROM stock_record")
     suspend fun getMaxTransactionDate(): Long?
+
+    @Query("SELECT * FROM stock_record ORDER BY transactionDate")
+    suspend fun getAllStockRecordsSync(): List<StockRecord>
 }

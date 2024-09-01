@@ -11,10 +11,10 @@ class CurrencyApiRepository (private val apiService: CurrencyApiService) {
         return try {
             apiService.getCurrencyRates()
         } catch (e: HttpException) {
-            Log.e("CurrencyRepository", "HTTP error: ${e.message()}", e)
+//            Log.e("CurrencyRepository", "HTTP error: ${e.message()}", e)
             null
         } catch (e: Exception) {
-            Log.e("CurrencyRepository", "Error: ${e.message}", e)
+//            Log.e("CurrencyRepository", "Error: ${e.message}", e)
             null
         }
     }

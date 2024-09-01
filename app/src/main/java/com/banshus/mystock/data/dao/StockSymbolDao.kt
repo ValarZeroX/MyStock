@@ -1,5 +1,6 @@
 package com.banshus.mystock.data.dao
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -13,6 +14,9 @@ interface StockSymbolDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStockSymbol(stockSymbol: StockSymbol)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStockSymbols(stockSymbols: List<StockSymbol>)
+
     @Query("SELECT * FROM stock_symbol WHERE stockMarket = :stockMarket ORDER BY stockSymbol ASC")
     suspend fun fetchStockSymbolsListByMarket(stockMarket: Int): List<StockSymbol>
 
@@ -22,11 +26,6 @@ interface StockSymbolDao {
     @Query("SELECT * FROM stock_symbol ORDER BY stockSymbol ASC")
     suspend fun fetchAllStockSymbols(): List<StockSymbol>
 
-//    @Query("SELECT COUNT(*) FROM stock_symbol WHERE stockSymbol = :stockSymbol AND stockMarket = :stockMarket")
-//    suspend fun countBySymbolAndMarket(stockSymbol: String, stockMarket: Int): Int
-
-//    @Query("UPDATE stock_symbol SET stockName = :stockName WHERE stockSymbol = :stockSymbol AND stockMarket = :stockMarket")
-//    suspend fun updateStockSymbol(stockSymbol: String, stockMarket: Int, stockName: String)
-
-
+    @Query("SELECT * FROM stock_symbol ORDER BY stockSymbol ASC")
+    suspend fun getAllStockSymbolsSync(): List<StockSymbol>
 }

@@ -82,7 +82,7 @@ fun AutoUpdateScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "自動更新股價開關，關閉可到股票代碼功能手動更新。",
+                            text = "自動更新股價開關，每15分鐘更新股價。關閉可到股票代碼功能手動更新。",
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -114,7 +114,7 @@ fun AutoUpdateScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "自動更新匯率。",
+                            text = "自動更新匯率，每15分鐘更新匯率。",
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),

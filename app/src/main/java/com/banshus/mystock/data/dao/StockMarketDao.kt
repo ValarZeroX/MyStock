@@ -14,6 +14,9 @@ interface StockMarketDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertStockMarket(stockMarket: StockMarket)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertStockMarkets(stockMarkets: List<StockMarket>)
+
     @Update
     suspend fun updateStockMarket(stockMarket: StockMarket)
 
@@ -31,4 +34,7 @@ interface StockMarketDao {
 
     @Query("SELECT * FROM stock_market ORDER BY stockMarketSort")
     suspend fun getAllStockMarketsWorker(): List<StockMarket>
+
+    @Query("SELECT * FROM stock_market ORDER BY stockMarketSort")
+    suspend fun getAllStockMarketsSync(): List<StockMarket>
 }

@@ -1,5 +1,8 @@
 package com.banshus.mystock.ui
 
+import android.content.Context
+import android.content.Intent
+import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -24,6 +27,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -31,15 +35,24 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.FileProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.banshus.mystock.MainActivity
+import com.banshus.mystock.csv.exportCSV
 import com.banshus.mystock.ui.setting.ColorThemeScreen
+import kotlinx.coroutines.launch
+import java.io.File
 
 
 @Composable
-fun StockSettingScreen(navController: NavHostController){
+fun StockSettingScreen(
+    navController: NavHostController,
+    csvImportLauncher: ActivityResultLauncher<Intent>
+){
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             SettingHeader()
@@ -179,6 +192,61 @@ fun StockSettingScreen(navController: NavHostController){
                         HorizontalDivider()
                     }
                 }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row {
+                            Text(
+                                text = "匯入匯出",
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        ListItem(
+                            headlineContent = { Text("匯出CSV") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "匯出CSV",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                coroutineScope.launch {
+                                    val csvFile = exportCSV(navController.context)
+                                    if (csvFile.exists()) {
+                                        shareCSVFile(navController.context, csvFile)
+                                    }
+                                }
+                            }
+                        )
+                        HorizontalDivider()
+                        ListItem(
+                            headlineContent = { Text("匯入CSV") },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "匯入CSV",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                coroutineScope.launch {
+                                    val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                                        addCategory(Intent.CATEGORY_OPENABLE)
+                                        type = "text/csv"
+                                    }
+                                    csvImportLauncher.launch(intent)
+                                }
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
             }
         }
     }
@@ -196,4 +264,14 @@ fun SettingHeader() {
             )
         },
     )
+}
+
+fun shareCSVFile(context: Context, file: File) {
+    val uri = FileProvider.getUriForFile(context, "${context.packageName}.provider", file)
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/csv"
+        putExtra(Intent.EXTRA_STREAM, uri)
+        addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+    }
+    context.startActivity(Intent.createChooser(intent, "Share CSV via"))
 }

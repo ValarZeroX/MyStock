@@ -30,14 +30,11 @@ class StockPriceUpdateWorker(
                     val stockSymbols = stockSymbolDao.fetchAllStockSymbols()
 
                     val stockMarkets = stockMarketDao.getAllStockMarketsWorker()
-                    Log.w("stockMarkets", "No stockMarketCode found for stockMarket: $stockMarkets")
                     // 遍历每个股票符号，获取对应的股票市场代码，并通过 API 获取最新价格
                     val stockMarketMap = stockMarkets.associateBy { it.stockMarket }
-                    Log.w("stockMarketMap", "No stockMarketCode found for stockMarket: $stockMarketMap")
                     // 遍历每个股票符号，获取最新价格并更新数据库
                     stockSymbols.forEach { stockSymbol ->
                         val stockMarketCode = stockMarketMap[stockSymbol.stockMarket]?.stockMarketCode
-                        Log.w("stockMarketCode", "No stockMarketCode found for stockMarket: $stockMarketCode")
                         if (stockMarketCode != null) {
                             val response = stockPriceApiRepository.getStockPriceWorker(
                                 symbol = stockSymbol.stockSymbol,

@@ -1,9 +1,12 @@
 package com.banshus.mystock
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -27,6 +30,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.banshus.mystock.api.RetrofitInstance
+import com.banshus.mystock.csv.importDataFromCSV
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.CurrencyApiRepository
 import com.banshus.mystock.repository.CurrencyRepository
@@ -88,6 +92,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var stockPriceApiViewModel: StockPriceApiViewModel
     private lateinit var currencyViewModel: CurrencyViewModel
     private lateinit var currencyApiViewModel: CurrencyApiViewModel
+    private lateinit var csvImportLauncher: ActivityResultLauncher<Intent>
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         //圖表初始化
@@ -95,10 +101,18 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
-//        val dao = AppDatabase.getDatabase(this).userSettingsDao()
-//        val repository = UserSettingsRepository(dao)
-//        val factory = UserSettingsViewModelFactory(repository)
-//        userSettingsViewModel = ViewModelProvider(this, factory)[UserSettingsViewModel::class.java]
+        // 注册 ActivityResultLauncher
+        csvImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                val uri = result.data?.data
+                if (uri != null) {
+                    lifecycleScope.launch {
+                        importDataFromCSV(applicationContext, uri)
+                        // 在这里调用你的CSV导入函数，比如 importStockRecordsFromCSV(applicationContext, uri)
+                    }
+                }
+            }
+        }
 
         // 数据库和 Repository 的初始化
         val database = AppDatabase.getDatabase(this)
@@ -144,18 +158,6 @@ class MainActivity : ComponentActivity() {
             this,
             CurrencyApiViewModelFactory(currencyApiRepository)
         )[CurrencyApiViewModel::class.java]
-
-////        setupStockPriceUpdateWorker()
-//        val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
-//            4, TimeUnit.HOURS // 每4小时执行一次任务
-//        ).build()
-
-//        // 使用 WorkManager 安排任务
-//        WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-//            "StockPriceUpdate",
-//            ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
-//            stockPriceUpdateRequest
-//        )
 
         // 检查是否需要自动更新股价
         userSettingsViewModel.userSettings.observe(this) { settings ->
@@ -227,6 +229,7 @@ class MainActivity : ComponentActivity() {
                                 userSettingsViewModel = userSettingsViewModel,
                                 currencyViewModel = currencyViewModel,
                                 currencyApiViewModel = currencyApiViewModel,
+                                csvImportLauncher = csvImportLauncher
                             )
                         }
                     }
@@ -247,6 +250,7 @@ fun MyApp(
     userSettingsViewModel: UserSettingsViewModel,
     currencyViewModel: CurrencyViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
+    csvImportLauncher: ActivityResultLauncher<Intent>
 ) {
 //    val viewModel: StockViewModel = viewModel()
     val stockViewModel: StockViewModel = viewModel()
@@ -267,7 +271,7 @@ fun MyApp(
             AccountListScreen(navController, stockViewModel, stockAccountViewModel)
         }
         composable("stockSettingScreen") {
-            StockSettingScreen(navController)
+            StockSettingScreen(navController, csvImportLauncher)
         }
         composable("colorThemeScreen") {
             ColorThemeScreen(navController, userSettingsViewModel)
@@ -361,17 +365,3 @@ fun MyApp(
         }
     }
 }
-
-//private fun setupStockPriceUpdateWorker() {
-//    // 创建一个 PeriodicWorkRequest 来定期执行任务
-//    val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
-//        4, TimeUnit.HOURS // 每4小时执行一次任务
-//    ).build()
-//
-//    // 使用 WorkManager 安排任务
-//    WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-//        "StockPriceUpdate",
-//        ExistingPeriodicWorkPolicy.KEEP, // 如果任务已经存在，不会重新创建
-//        stockPriceUpdateRequest
-//    )
-//}

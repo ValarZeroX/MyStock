@@ -18,4 +18,10 @@ interface CurrencyDao {
 
     @Query("SELECT * FROM stock_currency")
     fun getAllCurrencies(): LiveData<List<Currency>>
+
+    @Query("SELECT * FROM stock_currency")
+    suspend fun getAllCurrenciesSync(): List<Currency>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertCurrencies(currencies: List<Currency>)
 }

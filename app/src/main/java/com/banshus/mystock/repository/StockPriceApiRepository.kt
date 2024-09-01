@@ -11,11 +11,7 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
         return try {
             apiService.getStockPrice(symbol, period1, period2)
         } catch (e: HttpException) {
-            Log.d("error000", "$e")
-            Log.d("error000", "${e.response()}")
             val errorBody = e.response()?.errorBody()?.string()
-            Log.d("error000", "Error body: $errorBody")
-            Log.d("error000", e.message())
             if (e.code() == 404) {
                 throw e
             } else {
@@ -23,7 +19,6 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
                 throw e
             }
         } catch (e: Exception) {
-            Log.d("error001", "$e")
             throw e
         }
     }
@@ -37,11 +32,7 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
             }
             apiService.getStockPrice(combinedSymbol, period1, period2)
         } catch (e: HttpException) {
-            Log.d("error000", "$e")
-            Log.d("error000", "${e.response()}")
             val errorBody = e.response()?.errorBody()?.string()
-            Log.d("error000", "Error body: $errorBody")
-            Log.d("error000", e.message())
             if (e.code() == 404) {
                 throw e
             } else {
@@ -49,7 +40,6 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
                 throw e
             }
         } catch (e: Exception) {
-            Log.d("error001", "$e")
             throw e
         }
     }
@@ -58,11 +48,7 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
         return try {
             apiService.searchStock(symbol)
         } catch (e: HttpException) {
-            Log.d("error000", "$e")
-            Log.d("error000", "${e.response()}")
             val errorBody = e.response()?.errorBody()?.string()
-            Log.d("error000", "Error body: $errorBody")
-            Log.d("error000", e.message())
             if (e.code() == 404) {
                 throw e
             } else {
@@ -70,7 +56,6 @@ class StockPriceApiRepository(private val apiService: YahooFinanceApiService) {
                 throw e
             }
         } catch (e: Exception) {
-            Log.d("error001", "$e")
             throw e
         }
     }

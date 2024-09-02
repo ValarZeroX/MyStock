@@ -8,6 +8,7 @@ import com.banshus.mystock.ui.stock.Currency
 data class UserSettings(
     @PrimaryKey(autoGenerate = true) val id: Int = 0,
     val themeIndex: Int = 0, //主題顏色
+    val darkTheme: Boolean = true,
     val isCommissionCalculationEnabled: Boolean = false, //損益是否包含手續費
     val isTransactionTaxCalculationEnabled: Boolean = false, //損益是否包含證交稅
     val isDividendCalculationEnabled: Boolean = false, //損益是否包含股利

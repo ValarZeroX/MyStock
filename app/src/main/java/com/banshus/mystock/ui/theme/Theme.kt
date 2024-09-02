@@ -186,13 +186,14 @@ data class ColorFamily(
 @Composable
 fun MyStockTheme(
     userSettingsViewModel: UserSettingsViewModel,
-    darkTheme: Boolean = isSystemInDarkTheme(),
+//    darkTheme: Boolean = isSystemInDarkTheme(),
     dynamicColor: Boolean = true,
     content: @Composable () -> Unit
 ) {
     //取資料庫app設定
     val userSettings = userSettingsViewModel.userSettings.observeAsState()
     val themeIndex = userSettings.value?.themeIndex
+    val darkTheme = userSettings.value!!.darkTheme
 //    println(userSettings.value?.themeIndex)
 
     val colorScheme = when {

@@ -203,19 +203,20 @@ private suspend fun importUserSettings(context: Context, lines: List<String>, st
 
     while (index < lines.size) {
         val tokens = lines[index].split(",").map { it.trim() }
-        if (tokens.size == 11) {
+        if (tokens.size == 12) {
             val userSettings = UserSettings(
                 id = tokens[0].toInt(),
                 themeIndex = tokens[1].toInt(),
-                isCommissionCalculationEnabled = tokens[2].toBoolean(),
-                isTransactionTaxCalculationEnabled = tokens[3].toBoolean(),
-                isDividendCalculationEnabled = tokens[4].toBoolean(),
-                currency = tokens[5],
-                textColor = tokens[6].toInt(),
-                autoUpdateStock = tokens[7].toBoolean(),
-                autoUpdateStockSecond = tokens[8].toInt(),
-                autoUpdateExchangeRate = tokens[9].toBoolean(),
-                autoUpdateExchangeRateSecond = tokens[10].toInt()
+                darkTheme = tokens[2].toBoolean(),
+                isCommissionCalculationEnabled = tokens[3].toBoolean(),
+                isTransactionTaxCalculationEnabled = tokens[4].toBoolean(),
+                isDividendCalculationEnabled = tokens[5].toBoolean(),
+                currency = tokens[6],
+                textColor = tokens[7].toInt(),
+                autoUpdateStock = tokens[8].toBoolean(),
+                autoUpdateStockSecond = tokens[9].toInt(),
+                autoUpdateExchangeRate = tokens[10].toBoolean(),
+                autoUpdateExchangeRateSecond = tokens[11].toInt()
             )
             userSettingsList.add(userSettings)
         }

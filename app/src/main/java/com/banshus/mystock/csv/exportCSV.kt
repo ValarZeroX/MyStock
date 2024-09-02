@@ -42,7 +42,7 @@ suspend fun exportCSV(context: Context): File {
     stockMarkets.forEach { csvContent.append(it.toCSVRow()).append("\n") }
 
     // UserSettings部分
-    csvContent.append("id,themeIndex,isCommissionCalculationEnabled,isTransactionTaxCalculationEnabled,isDividendCalculationEnabled," +
+    csvContent.append("id,themeIndex,darkTheme,isCommissionCalculationEnabled,isTransactionTaxCalculationEnabled,isDividendCalculationEnabled," +
             "currency,textColor,autoUpdateStock,autoUpdateStockSecond,autoUpdateExchangeRate,autoUpdateExchangeRateSecond\n")
     csvContent.append(userSettings.toCSVRow())
 

@@ -20,14 +20,22 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -42,10 +50,16 @@ import com.banshus.mystock.ui.theme.Blue1
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.primaryDark
 import com.banshus.mystock.ui.theme.primaryDarkGreen
+import com.banshus.mystock.ui.theme.primaryLight
+import com.banshus.mystock.ui.theme.primaryLightGreen
 import com.banshus.mystock.ui.theme.surfaceContainerDark
 import com.banshus.mystock.ui.theme.surfaceContainerDarkGreen
+import com.banshus.mystock.ui.theme.surfaceContainerLight
+import com.banshus.mystock.ui.theme.surfaceContainerLightGreen
 import com.banshus.mystock.ui.theme.surfaceDark
 import com.banshus.mystock.ui.theme.surfaceDarkGreen
+import com.banshus.mystock.ui.theme.surfaceLight
+import com.banshus.mystock.ui.theme.surfaceLightGreen
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 
@@ -64,7 +78,13 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
 //    )
     // 观察 LiveData<UserSettings>
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
-    val themeIndex = userSettings?.themeIndex
+//    val themeIndex = userSettings?.themeIndex
+    var themeIndex by remember { mutableIntStateOf(0) }
+    var darkTheme by remember { mutableStateOf(true) }
+    LaunchedEffect(userSettings) {
+        themeIndex = userSettings!!.themeIndex
+        darkTheme = userSettings!!.darkTheme
+    }
     //選擇的主題
 //    val selectedThemeIndex = remember { mutableIntStateOf(themeIndex ?: 0) }
     Scaffold(
@@ -85,14 +105,6 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                         )
                     }
                 },
-//                actions = {
-//                    IconButton(onClick = { /* do something */ }) {
-//                        Icon(
-//                            imageVector = Icons.Filled.Check,
-//                            contentDescription = "確定"
-//                        )
-//                    }
-//                }
             )
         },
         bottomBar = {
@@ -109,115 +121,199 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                 modifier = Modifier.padding(20.dp)
             ) {
                 Row(
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.padding(5.dp, bottom = 20.dp)
                 ) {
-                    Card(
+                    Text(
+                        text = "深夜模式",
                         modifier = Modifier
-                            .size(100.dp, 150.dp)
-                            .weight(1f)
-                            .clickable {
-                                userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
-                            },
-                        border = BorderStroke(
-                            width = if (themeIndex == 0) 2.dp else 1.dp,
-                            color = if (themeIndex == 0) Blue1 else Gray1
-                        ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Transparent
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceDark)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceContainerDark)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(primaryDark)
+                            .align(Alignment.CenterVertically)
+                            .width(150.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    Switch(
+                        checked = darkTheme,
+                        onCheckedChange = {
+                            darkTheme = it
+                            userSettingsViewModel.updateDarkTheme(
+                                darkTheme,
                             )
                         }
-                    }
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Card(
+                    )
+                }
+                HorizontalDivider()
+                Row(
+                    modifier = Modifier.padding(5.dp)
+                ) {
+                    Text(
+                        text = "顏色",
                         modifier = Modifier
-                            .size(100.dp, 150.dp)
-                            .weight(1f)
-                            .clickable {
-                                userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
-                            },
-                        border = BorderStroke(
-                            width = if (themeIndex == 1) 2.dp else 1.dp,
-                            color = if (themeIndex == 1) Blue1 else Gray1
-                        ),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Transparent
-                        )
+                            .align(Alignment.CenterVertically)
+                            .width(150.dp)
+                            .padding(start = 10.dp, end = 20.dp, bottom = 20.dp),
+                    )
+                }
+                if (darkTheme) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
+                        Card(
+                            modifier = Modifier
+                                .size(100.dp, 150.dp)
+                                .weight(1f)
+                                .clickable {
+                                    userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
+                                },
+                            border = BorderStroke(
+                                width = if (themeIndex == 0) 2.dp else 1.dp,
+                                color = if (themeIndex == 0) Blue1 else Gray1
+                            ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
+                            )
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceDarkGreen)
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceDark)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceContainerDark)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(primaryDark)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Card(
+                            modifier = Modifier
+                                .size(100.dp, 150.dp)
+                                .weight(1f)
+                                .clickable {
+                                    userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
+                                },
+                            border = BorderStroke(
+                                width = if (themeIndex == 1) 2.dp else 1.dp,
+                                color = if (themeIndex == 1) Blue1 else Gray1
+                            ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
                             )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceContainerDarkGreen)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(primaryDarkGreen)
-                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceDarkGreen)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceContainerDarkGreen)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(primaryDarkGreen)
+                                )
+                            }
                         }
                     }
-                    Spacer(modifier = Modifier.width(20.dp))
-                    Card(
-                        modifier = Modifier
-                            .size(100.dp, 150.dp).weight(1f),
-                        border = BorderStroke(1.dp, Gray1),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color.Transparent
-                        )
+                }else{
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize()
+                        Card(
+                            modifier = Modifier
+                                .size(100.dp, 150.dp)
+                                .weight(1f)
+                                .clickable {
+                                    userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
+                                },
+                            border = BorderStroke(
+                                width = if (themeIndex == 0) 2.dp else 1.dp,
+                                color = if (themeIndex == 0) Blue1 else Gray1
+                            ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
+                            )
                         ) {
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceDark)
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceLight)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceContainerLight)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(primaryLight)
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.width(20.dp))
+                        Card(
+                            modifier = Modifier
+                                .size(100.dp, 150.dp)
+                                .weight(1f)
+                                .clickable {
+                                    userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
+                                },
+                            border = BorderStroke(
+                                width = if (themeIndex == 1) 2.dp else 1.dp,
+                                color = if (themeIndex == 1) Blue1 else Gray1
+                            ),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Transparent
                             )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(surfaceContainerDark)
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .fillMaxWidth()
-                                    .background(primaryDark)
-                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceLightGreen)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(surfaceContainerLightGreen)
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .fillMaxWidth()
+                                        .background(primaryLightGreen)
+                                )
+                            }
                         }
                     }
                 }

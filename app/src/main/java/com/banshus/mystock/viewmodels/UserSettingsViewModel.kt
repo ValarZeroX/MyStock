@@ -74,6 +74,16 @@ class UserSettingsViewModel(private val repository: UserSettingsRepository) : Vi
         }
     }
 
+    fun updateDarkTheme(darkTheme: Boolean) {
+        viewModelScope.launch {
+            val currentSettings = userSettings.value
+            if (currentSettings != null) {
+                val updatedSettings = currentSettings.copy(darkTheme = darkTheme)
+                repository.updateUserSettings(updatedSettings)
+            }
+        }
+    }
+
     // 获取自动更新股价的设置和间隔
     fun shouldAutoUpdateStockPrice(): Boolean {
         return userSettings.value?.autoUpdateStock ?: false

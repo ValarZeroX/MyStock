@@ -213,7 +213,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MyStockTheme(
                 userSettingsViewModel = userSettingsViewModel,
-                darkTheme = true,
                 dynamicColor = false
             ) {
                 Surface(tonalElevation = 5.dp) {

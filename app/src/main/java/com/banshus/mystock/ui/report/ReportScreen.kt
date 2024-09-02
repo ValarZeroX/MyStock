@@ -1,8 +1,6 @@
 package com.banshus.mystock.ui.report
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,8 +23,6 @@ import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -41,7 +37,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -63,7 +58,6 @@ import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPointDouble
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.PercentValueFormatter
-//import com.banshus.mystock.PercentValueFormatter
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.SharedOptions.optionsStockType
 import com.banshus.mystock.SharedOptions.optionsTransactionType
@@ -72,15 +66,13 @@ import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.repository.RealizedTrade
-import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.ui.theme.StockBlack
 import com.banshus.mystock.ui.theme.StockBlue
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.theme.StockText
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
-import com.banshus.mystock.ui.tool.RangeTypeSelectionDialog
-import com.banshus.mystock.ui.tool.getStartAndEndDate
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -88,7 +80,6 @@ import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 import com.github.mikephil.charting.charts.CombinedChart
-import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
@@ -121,6 +112,7 @@ fun ReportScreen(
     var calculateTransactionTax by remember { mutableStateOf(false) }
     var calculateDividend by remember { mutableStateOf(false) }
     var mainCurrency by remember { mutableStateOf("") }
+    var darkTheme by remember { mutableStateOf(true) }
 
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     LaunchedEffect(userSettings){
@@ -128,6 +120,7 @@ fun ReportScreen(
         calculateTransactionTax = userSettings!!.isTransactionTaxCalculationEnabled
         calculateDividend = userSettings!!.isDividendCalculationEnabled
         mainCurrency = userSettings!!.currency
+        darkTheme = userSettings!!.darkTheme
     }
 
 
@@ -359,7 +352,8 @@ fun ReportScreen(
                                 stockAccounts[selectedAccountId]!!,
                                 currentRangeType,
                                 totalDividends,
-                                annualizedReturn
+                                annualizedReturn,
+                                darkTheme
                             )
                         }
                     }
@@ -378,7 +372,8 @@ fun AccountTab(
     stockAccounts: StockAccount,
     currentRangeType: DateRangeType,
     totalDividends: Double,
-    annualizedReturn: Double
+    annualizedReturn: Double,
+    darkTheme: Boolean
 ) {
     val profitColor = getProfitColor(
         accountMetrics.totalProfit,
@@ -397,7 +392,7 @@ fun AccountTab(
 
     LazyColumn {
         item {
-            Column(modifier = Modifier.padding(4.dp)) {
+            Column(modifier = Modifier.padding(start = 10.dp, end = 10.dp)) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
@@ -467,8 +462,6 @@ fun AccountTab(
                 Row {
                     Text(text = "總買進", modifier = Modifier.weight(1f))
                     Text(text = "總賣出", modifier = Modifier.weight(1f))
-                    Text(text = "總手續費", modifier = Modifier.weight(1f))
-                    Text(text = "總交易稅", modifier = Modifier.weight(1f))
                 }
                 Row {
                     Text(
@@ -479,6 +472,12 @@ fun AccountTab(
                         text = formatNumber(accountMetrics.totalSellIncome),
                         modifier = Modifier.weight(1f)
                     )
+                }
+                Row {
+                    Text(text = "總手續費", modifier = Modifier.weight(1f))
+                    Text(text = "總交易稅", modifier = Modifier.weight(1f))
+                }
+                Row {
                     Text(
                         text = formatNumber(accountMetrics.totalCommission),
                         modifier = Modifier.weight(1f)
@@ -491,8 +490,6 @@ fun AccountTab(
                 Row {
                     Text(text = "總股利", modifier = Modifier.weight(1f))
                     Text(text = "總損益", modifier = Modifier.weight(1f))
-                    Text(text = "總損益率", modifier = Modifier.weight(1f))
-                        Text(text = "年化報酬率", modifier = Modifier.weight(1f))
                 }
                 Row {
                     Text(
@@ -504,6 +501,12 @@ fun AccountTab(
                         modifier = Modifier.weight(1f),
                         color = profitColor
                     )
+                }
+                Row {
+                    Text(text = "總損益率", modifier = Modifier.weight(1f))
+                    Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+                }
+                Row {
                     Text(
                         text = "${formatNumber(accountMetrics.totalProfitPercent)}%",
                         modifier = Modifier.weight(1f),
@@ -525,7 +528,7 @@ fun AccountTab(
             }
         }
         item {
-            AccountMetricsLineChart(map, currentRangeType)
+            AccountMetricsLineChart(map, currentRangeType, darkTheme)
         }
         map?.forEach { (stockSymbol, realizedTrades) ->
             realizedTrades.forEach { trade ->
@@ -692,13 +695,17 @@ fun ListItemDetail(record: StockRecord) {
 @Composable
 fun AccountMetricsLineChart(
     realizedTrades: Map<String, List<RealizedTrade>>?,
-    currentRangeType: DateRangeType
+    currentRangeType: DateRangeType,
+    darkTheme: Boolean
 ) {
-    var textColor = StockText.toArgb()
+    var textColor = StockBlack.toArgb()
+    if(darkTheme) {
+        textColor = StockText.toArgb()
+    }
     val profitColor = StockRed.toArgb()
     val profitPercentColor = StockBlue.toArgb()
-    var primary = MaterialTheme.colorScheme.primary.toArgb()
-    var onPrimary = MaterialTheme.colorScheme.onPrimary.toArgb()
+//    var primary = MaterialTheme.colorScheme.primary.toArgb()
+//    var onPrimary = MaterialTheme.colorScheme.onPrimary.toArgb()
     // 创建数据集
     val profitEntries = mutableListOf<Entry>()
     val profitPercentEntries = mutableListOf<BarEntry>()
@@ -758,9 +765,9 @@ fun AccountMetricsLineChart(
                     calendar.timeInMillis
                 }
             }
-            val dateTime = Instant.ofEpochMilli(dateKey)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDateTime()
+//            val dateTime = Instant.ofEpochMilli(dateKey)
+//                .atZone(ZoneId.systemDefault())
+//                .toLocalDateTime()
 //            Log.d("trade", "$trade")
 //            Log.d("dateKey", "$dateTime")
             tradesByDate.getOrPut(dateKey) { mutableListOf() }.add(trade)
@@ -800,7 +807,7 @@ fun AccountMetricsLineChart(
             DateRangeType.MONTH -> dateTime.format(formatterMonthDay)
             DateRangeType.YEAR -> dateTime.format(formatterMonth)
             DateRangeType.ALL -> dateTime.format(formatterYear)
-            else -> dateTime.format(formatterMonthDay)
+//            else -> dateTime.format(formatterMonthDay)
         }
 
         // 存储 xValue 和格式化后的日期

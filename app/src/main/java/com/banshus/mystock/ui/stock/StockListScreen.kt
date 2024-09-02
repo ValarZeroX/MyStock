@@ -73,6 +73,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.tool.DateRangeType
@@ -215,6 +216,9 @@ fun StockListScreen(
         topBar = {
             StockListHeader(navController, stockAccount, stockViewModel, selectedTabIndex)
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

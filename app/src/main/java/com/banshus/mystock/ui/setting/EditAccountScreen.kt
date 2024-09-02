@@ -39,6 +39,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.ui.stock.roundToDecimal
@@ -113,6 +114,9 @@ fun EditAccountScreen(
                 }
             )
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier

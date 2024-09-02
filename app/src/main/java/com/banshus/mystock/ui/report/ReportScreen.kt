@@ -68,6 +68,7 @@ import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.SharedOptions.optionsStockType
 import com.banshus.mystock.SharedOptions.optionsTransactionType
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.repository.RealizedTrade
@@ -273,6 +274,9 @@ fun ReportScreen(
             topBar = {
                 ReportHeader(stockViewModel)
             },
+            bottomBar = {
+                AdBanner() // 将广告放在底部栏
+            }
         ) { innerPadding ->
             Box(
                 modifier = Modifier

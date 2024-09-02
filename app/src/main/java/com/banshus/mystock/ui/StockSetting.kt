@@ -41,6 +41,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.banshus.mystock.MainActivity
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.csv.exportCSV
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import kotlinx.coroutines.launch
@@ -57,6 +58,9 @@ fun StockSettingScreen(
         topBar = {
             SettingHeader()
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

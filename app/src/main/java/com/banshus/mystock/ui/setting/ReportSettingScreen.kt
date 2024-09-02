@@ -30,6 +30,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 
@@ -54,6 +55,9 @@ fun ReportSettingScreen(
                 navController,
             )
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

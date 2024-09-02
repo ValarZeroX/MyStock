@@ -45,6 +45,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -157,6 +158,9 @@ fun AddAccountScreen(
                 }
             )
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier

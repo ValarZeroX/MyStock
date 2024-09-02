@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.StockChartResponse
 import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockSymbol
@@ -156,6 +157,9 @@ fun StockSymbolScreen(
                 navController,
 //                onAddClick = { showAddDialog = true }
             )
+        },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
         },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)

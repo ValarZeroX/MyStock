@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.RetrofitInstance
 import com.banshus.mystock.csv.importDataFromCSV
 import com.banshus.mystock.data.database.AppDatabase
@@ -78,6 +79,9 @@ import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 import com.banshus.mystock.work.CurrencyRateUpdateWorker
 import com.banshus.mystock.work.StockPriceUpdateWorker
 import com.github.mikephil.charting.utils.Utils
+import com.google.android.gms.ads.MobileAds
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
@@ -100,7 +104,13 @@ class MainActivity : ComponentActivity() {
         Utils.init(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
+        // google廣告
+//        MobileAds.initialize(this) {}
+        val backgroundScope = CoroutineScope(Dispatchers.IO)
+        backgroundScope.launch {
+            // Initialize the Google Mobile Ads SDK on a background thread.
+            MobileAds.initialize(this@MainActivity) {}
+        }
         // 注册 ActivityResultLauncher
         csvImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {

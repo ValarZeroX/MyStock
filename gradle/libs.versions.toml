@@ -13,6 +13,7 @@ composeBom = "2024.04.01"
 material3 = "1.2.1"
 materialIconsExtended = "1.6.8"
 mpandroidchart = "v3.1.0"
+playServicesAds = "23.3.0"
 protoliteWellKnownTypes = "18.0.0"
 reorderable = "2.3.0"
 retrofit = "2.9.0"
@@ -47,6 +48,7 @@ androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit
 androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 material3 = { module = "androidx.compose.material3:material3", version.ref = "material3" }
 mpandroidchart = { module = "com.github.PhilJay:MPAndroidChart", version.ref = "mpandroidchart" }
+play-services-ads = { module = "com.google.android.gms:play-services-ads", version.ref = "playServicesAds" }
 protolite-well-known-types = { group = "com.google.firebase", name = "protolite-well-known-types", version.ref = "protoliteWellKnownTypes" }
 reorderable = { module = "sh.calvin.reorderable:reorderable", version.ref = "reorderable" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

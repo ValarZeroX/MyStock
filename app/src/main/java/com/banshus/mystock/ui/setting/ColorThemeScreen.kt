@@ -35,6 +35,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.theme.Blue1
@@ -94,6 +95,9 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
 //                }
             )
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Column(
             modifier = Modifier

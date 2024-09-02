@@ -49,6 +49,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.viewmodels.StockMarketViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -77,6 +78,9 @@ fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: Sto
         topBar = {
             StockMarketScreenHeader(navController, onAddClick = { showAddDialog = true })
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

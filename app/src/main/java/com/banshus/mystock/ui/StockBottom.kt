@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.ads.AdBanner
 
 data class TabData(val icon: ImageVector, val description: String, val router: String)
 

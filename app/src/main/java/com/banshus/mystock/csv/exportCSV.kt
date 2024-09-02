@@ -47,7 +47,7 @@ suspend fun exportCSV(context: Context): File {
     csvContent.append(userSettings.toCSVRow())
 
     // 写入文件
-    val csvFile = File(context.getExternalFilesDir(null), "exported_data.csv")
+    val csvFile = File(context.getExternalFilesDir(null), "skynier_data.csv")
     csvFile.writeText(csvContent.toString())
     return csvFile
 }

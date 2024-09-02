@@ -50,6 +50,7 @@ import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockOrange
@@ -71,6 +72,9 @@ fun StockAccountScreen(
         topBar = {
             AccountHeader(navController)
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         StockMainScreen(
             innerPadding,

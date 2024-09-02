@@ -52,6 +52,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -89,6 +90,9 @@ fun AccountScreen(
         topBar = {
             AccountScreenHeader(navController)
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

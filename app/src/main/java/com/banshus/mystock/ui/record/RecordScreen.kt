@@ -45,6 +45,7 @@ import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.formatToDisplayString
 import com.banshus.mystock.SharedOptions.optionStockMarket
 import com.banshus.mystock.StockViewModel
+import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -153,6 +154,9 @@ fun RecordScreen(
         topBar = {
             RecordScreenHeader(navController,selectedRecordDate)
         },
+        bottomBar = {
+            AdBanner() // 将广告放在底部栏
+        }
     ) { innerPadding ->
         Box(
             modifier = Modifier

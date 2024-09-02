@@ -1,10 +1,6 @@
 package com.banshus.mystock.ui.stock
 
-import android.util.Log
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,12 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +23,6 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -41,17 +33,20 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Date
 
 data class Currency(val code: String, val name: String)
 
@@ -63,29 +58,10 @@ fun AddAccountScreen(
     currencyViewModel: CurrencyViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
 ) {
-
-//    val context = LocalContext.current
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = StockAccountViewModelFactory(
-//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//        )
-//    )
-
-//    val stockMarketViewModel: StockMarketViewModel = viewModel(
-//        factory = StockMarketViewModelFactory(
-//            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
-//        )
-//    )
-//    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//    val factory = StockAccountViewModelFactory(repository)
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = factory
-//    )
+    val context = LocalContext.current
 
     var accountName by remember { mutableStateOf("") }
-//    var selectedCurrency by remember { mutableStateOf<Currency?>(null) }
     var selectedStockMarketIndex by remember { mutableIntStateOf(0) }
-    var selectedBrokerageIndex by remember { mutableIntStateOf(0) }
     var checked by remember { mutableStateOf(false) }
     // 手續費
     var commissionPercent by remember { mutableStateOf("0.1425") }
@@ -107,7 +83,6 @@ fun AddAccountScreen(
                 navController,
                 onSave = {
                     // 在保存時，將帳戶名稱和所選幣別儲存到數據庫
-//                    val currencyCode = selectedCurrency?.code ?: ""
                     val currencyCode = when (selectedStockMarketIndex) {
                         0 -> "TWD"
                         1 -> "USD"
@@ -135,12 +110,9 @@ fun AddAccountScreen(
                     if (currencyCode != "USD"){
                          currencyKey = "USD$currencyCode"
                     }
-// 从 currencyRates 中获取 CurrencyRate 对象
+
                     val currencyRate = currencyRates?.get(currencyKey)
-//                    val lastUpdatedTimeFormatted =
-//                        stockSymbol.lastUpdatedTime?.let {
-//                            dateFormat.format(Date(it))
-//                        } ?: "未知时间"
+
                     val currentTime = System.currentTimeMillis()
                     val currency = currencyRate?.let {
                         com.banshus.mystock.data.entities.Currency(
@@ -169,18 +141,9 @@ fun AddAccountScreen(
                 .padding(innerPadding)
         ) {
 
-//            val currencies = listOf(
-//                Currency("TWD", "新台幣"),
-//                Currency("USD", "美金"),
-//                // 添加更多幣別
-//            )
-//            // 設定預設的貨幣為 USD
-//            LaunchedEffect(currencies) {
-//                selectedCurrency = currencies.find { it.code == "TWD" }
-//            }
             Row(modifier = Modifier.padding(15.dp)){
                 Text(
-                    text = "帳戶名稱",
+                    text = stringResource(id = R.string.account_name),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(100.dp)
@@ -203,13 +166,13 @@ fun AddAccountScreen(
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "股票市場",
+                    text = stringResource(id = R.string.stock_market),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(100.dp)
                         .padding(start = 10.dp, end = 20.dp),
                 )
-                val options = listOf("台股", "美股")
+                val options = SharedOptions.getOptionStockMarket(context)
                 SingleChoiceSegmentedButtonRow(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -233,7 +196,7 @@ fun AddAccountScreen(
                     modifier = Modifier.padding(15.dp)
                 ) {
                     Text(
-                        text = "進階設定",
+                        text = stringResource(id = R.string.advanced_settings),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -251,7 +214,7 @@ fun AddAccountScreen(
             if (checked && selectedStockMarketIndex == 0) {
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "手續費",
+                        text = stringResource(id = R.string.commission),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -281,7 +244,7 @@ fun AddAccountScreen(
                 }
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "證交稅",
+                        text = stringResource(id = R.string.transaction_tax),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -311,7 +274,7 @@ fun AddAccountScreen(
                 }
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "手續費折扣",
+                        text = stringResource(id = R.string.commission_discount),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -340,113 +303,6 @@ fun AddAccountScreen(
                     )
                 }
             }
-
-//            if (selectedStockMarketIndex == 1 && checked) {
-//                Row(
-//                    modifier = Modifier.padding(15.dp)
-//                ) {
-//                    Text(
-//                        text = "股票券商",
-//                        modifier = Modifier
-//                            .align(Alignment.CenterVertically)
-//                            .width(100.dp)
-//                            .padding(start = 10.dp, end = 20.dp),
-//                    )
-//                    val options = listOf("複委託", "海外券商")
-//                    SingleChoiceSegmentedButtonRow(
-//                        modifier = Modifier.fillMaxWidth(),
-//                    ) {
-//                        options.forEachIndexed { index, label ->
-//                            SegmentedButton(
-//                                shape = SegmentedButtonDefaults.itemShape(index = index, count = options.size),
-//                                onClick = { selectedBrokerageIndex = index },
-//                                selected = index == selectedBrokerageIndex,
-//                            ) {
-//                                Text(
-//                                    text = label,
-//                                    modifier = Modifier.padding(5.dp)
-//                                )
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-
-
-//            CurrencyDropdown(
-//                currencies = currencies,
-//                selectedCurrency = selectedCurrency,
-//                onCurrencySelected = { selectedCurrency = it }
-//            )
-        }
-    }
-}
-
-@Composable
-fun CurrencyDropdown(
-    currencies: List<Currency>,
-    selectedCurrency: Currency?,
-    onCurrencySelected: (Currency) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var searchQuery by remember { mutableStateOf("") }
-
-    Column {
-        OutlinedTextField(
-            value = selectedCurrency?.code ?: "",
-            onValueChange = {},
-            label = { Text("選擇幣別") },
-            readOnly = true,
-            trailingIcon = {
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = "Dropdown Arrow",
-                    modifier = Modifier.clickable { expanded = true }
-                )
-            },
-            interactionSource = remember { MutableInteractionSource() }
-                .also { interactionSource ->
-                    LaunchedEffect(interactionSource) {
-                        interactionSource.interactions.collect {
-                            if (it is PressInteraction.Release) {
-                                expanded = true
-                            }
-                        }
-                    }
-                },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(15.dp)
-        )
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surfaceContainer)
-        ) {
-            TextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                label = { Text("搜尋幣別") },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(15.dp)
-            )
-            val filteredCurrencies = currencies.filter {
-                it.name.contains(searchQuery, ignoreCase = true) ||
-                        it.code.contains(searchQuery, ignoreCase = true)
-            }
-            filteredCurrencies.forEach { currency ->
-                DropdownMenuItem(
-                    text = {Text("${currency.code} - ${currency.name}")},
-                    onClick = {
-                        onCurrencySelected(currency)
-                        expanded = false
-                    }
-                )
-            }
         }
     }
 }
@@ -460,7 +316,7 @@ fun AddAccountScreenHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "新增帳戶",
+                stringResource(id = R.string.add_account),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -469,7 +325,7 @@ fun AddAccountScreenHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "返回"
+                    contentDescription = "Back"
                 )
             }
         },
@@ -479,7 +335,7 @@ fun AddAccountScreenHeader(
             }) {
                 Icon(
                     imageVector = Icons.Filled.Check,
-                    contentDescription = "確定"
+                    contentDescription = "Check"
                 )
             }
         }

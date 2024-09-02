@@ -26,10 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
@@ -71,7 +73,7 @@ fun ReportSettingScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "手續費計算",
+                            text = stringResource(id = R.string.commission_calculation),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -91,7 +93,7 @@ fun ReportSettingScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "損益包含手續費成本。",
+                            text = stringResource(id = R.string.profit_loss_includes_commission),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -105,7 +107,7 @@ fun ReportSettingScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "證交稅計算",
+                            text = stringResource(id = R.string.transaction_tax_calculation),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -125,7 +127,7 @@ fun ReportSettingScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "損益包含證交稅成本。",
+                            text = stringResource(id = R.string.profit_loss_includes_transaction_tax),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -139,7 +141,7 @@ fun ReportSettingScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "股利計算",
+                            text = stringResource(id = R.string.dividend_calculation),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -159,7 +161,7 @@ fun ReportSettingScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "損益包含股利。",
+                            text = stringResource(id = R.string.profit_loss_includes_dividends),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -181,7 +183,7 @@ fun ReportSettingScreenHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "報表設定",
+                stringResource(id = R.string.report_settings),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -190,7 +192,7 @@ fun ReportSettingScreenHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "返回"
+                    contentDescription = "Back"
                 )
             }
         },

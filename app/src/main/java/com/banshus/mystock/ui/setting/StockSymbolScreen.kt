@@ -47,12 +47,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.StockChartResponse
 import com.banshus.mystock.data.entities.StockMarket
@@ -150,7 +152,8 @@ fun StockSymbolScreen(
             put(symbol, response)
         }
     }
-
+    val updateSuccessfulMessage = stringResource(id = R.string.update_successful)
+    val addSuccessfulMessage = stringResource(id = R.string.addition_successful)
     Scaffold(
         topBar = {
             StockSymbolScreenHeader(
@@ -181,7 +184,7 @@ fun StockSymbolScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { newValue -> searchQuery = newValue },
-                label = { Text("搜索股票") },
+                label = { Text(stringResource(id = R.string.search_stock)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(10.dp),
@@ -213,8 +216,9 @@ fun StockSymbolScreen(
                                     val price =
                                         response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
                                     Text(
-                                        text = price?.let { "股價: ${"%.2f".format(it)}" }
-                                            ?: "股價: ${stockSymbol.stockPrice}",
+                                        text = price?.let {
+                                            stringResource(id = R.string.stock_price, "%.2f".format(it))
+                                        } ?: stringResource(id = R.string.stock_price, "%.2f".format(stockSymbol.stockPrice))
                                     )
                                 }
                                 Row(
@@ -226,9 +230,9 @@ fun StockSymbolScreen(
                                     val lastUpdatedTimeFormatted =
                                         stockSymbol.lastUpdatedTime?.let {
                                             dateFormat.format(Date(it))
-                                        } ?: "未知时间"
+                                        } ?: stringResource(id = R.string.unknown_time)
                                     Text(
-                                        text = "最後更新時間: $lastUpdatedTimeFormatted", // Align text to the right
+                                        text = stringResource(id = R.string.last_updated_time, lastUpdatedTimeFormatted),
                                         textAlign = TextAlign.End
                                     )
                                 }
@@ -302,7 +306,7 @@ fun StockSymbolScreen(
                                             }
 
                                             scope.launch {
-                                                snackbarHostState.showSnackbar("更新成功")
+                                                snackbarHostState.showSnackbar(updateSuccessfulMessage)
                                             }
                                             showAddDialog = false
                                         },
@@ -402,7 +406,7 @@ fun StockSymbolScreen(
 
 
                                 scope.launch {
-                                    snackbarHostState.showSnackbar("新增成功")
+                                    snackbarHostState.showSnackbar(addSuccessfulMessage)
                                 }
                             },
                             onError = { errorMessage ->
@@ -461,7 +465,7 @@ fun StockSymbolUpdate(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "更新股票",
+                    text = stringResource(id = R.string.update_stock),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
@@ -472,7 +476,7 @@ fun StockSymbolUpdate(
 
                 // 顯示股票代碼
                 Text(
-                    text = "股票代碼: $stockSymbol",
+                    text = stringResource(id = R.string.stock_symbol, stockSymbol),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp),
@@ -486,7 +490,7 @@ fun StockSymbolUpdate(
                             nameUpdate = newName
                         }
                     },
-                    label = { Text("股票名稱") },
+                    label = { Text(stringResource(id = R.string.stock_name)) },
                     modifier = Modifier.fillMaxWidth()
                 )
                 Row(
@@ -496,7 +500,7 @@ fun StockSymbolUpdate(
                         .padding(top = 16.dp)
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("取消")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -504,7 +508,7 @@ fun StockSymbolUpdate(
                             onUpdate(stockSymbol, nameUpdate, stockMarket)
                         }
                     ) {
-                        Text("更新")
+                        Text(stringResource(id = R.string.update))
                     }
                 }
             }
@@ -529,7 +533,7 @@ fun StockSymbolAdd(
                 modifier = Modifier.padding(16.dp)
             ) {
                 Text(
-                    text = "新增股票",
+                    text = stringResource(id = R.string.add_stock),
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 8.dp),
@@ -544,7 +548,7 @@ fun StockSymbolAdd(
                             symbol = newName
                         }
                     },
-                    label = { Text("股票代碼") },
+                    label = { Text(stringResource(id = R.string.stock_symbol)) },
                     modifier = Modifier.fillMaxWidth()
                 )
 //                OutlinedTextField(
@@ -564,7 +568,7 @@ fun StockSymbolAdd(
                         .padding(top = 16.dp)
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("取消")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -573,7 +577,7 @@ fun StockSymbolAdd(
                             onAdd(symbol, name, marketId)
                         }
                     ) {
-                        Text("新增")
+                        Text(stringResource(id = R.string.tab_add))
                     }
                 }
             }
@@ -587,7 +591,7 @@ fun StockSymbolScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "股票代碼",
+                stringResource(id = R.string.stock_symbol),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -596,18 +600,10 @@ fun StockSymbolScreenHeader(navController: NavHostController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "返回"
+                    contentDescription = "Back"
                 )
             }
         },
-//        actions = {
-//            IconButton(onClick = onAddClick) {
-//                Icon(
-//                    imageVector = Icons.Filled.Add,
-//                    contentDescription = "新增"
-//                )
-//            }
-//        }
     )
 }
 
@@ -624,7 +620,7 @@ fun StockMarketDropdown(
         OutlinedTextField(
             value = selectedStockMarket?.stockMarketName ?: "", // 假設 stockMarketName 是股票市場的顯示名稱
             onValueChange = {},
-            label = { Text("選擇股票市場") },
+            label = { Text(stringResource(id = R.string.select_stock_market)) },
             readOnly = true,
             interactionSource = remember { MutableInteractionSource() }
                 .also { interactionSource ->
@@ -651,7 +647,7 @@ fun StockMarketDropdown(
             TextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("搜尋股票市場") },
+                label = { Text(stringResource(id = R.string.search_stock_market)) },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(15.dp)

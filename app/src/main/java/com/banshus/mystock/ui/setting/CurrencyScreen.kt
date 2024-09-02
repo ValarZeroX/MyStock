@@ -45,12 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.Popup
 import androidx.navigation.NavHostController
 import com.banshus.mystock.CurrencyUtils
+import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.CurrencyRate
@@ -85,7 +87,7 @@ fun CurrencyScreen(
             )
         }
     }
-    Log.d("allCurrencies", "$allCurrencies")
+
     Scaffold(
         topBar = {
             CurrencyScreenHeader(
@@ -108,7 +110,7 @@ fun CurrencyScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "主幣別",
+                            text = stringResource(id = R.string.primary_currency),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -147,7 +149,7 @@ fun CurrencyScreenHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "幣別匯率",
+                stringResource(id = R.string.currency_rate),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -156,7 +158,7 @@ fun CurrencyScreenHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "返回"
+                    contentDescription = "Back"
                 )
             }
         },
@@ -218,7 +220,7 @@ fun CurrencyDropdown(
                         TextField(
                             value = searchQuery,
                             onValueChange = { searchQuery = it },
-                            label = { Text("搜尋幣別") },
+                            label = { Text(stringResource(id = R.string.search_currency)) },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .padding(15.dp)

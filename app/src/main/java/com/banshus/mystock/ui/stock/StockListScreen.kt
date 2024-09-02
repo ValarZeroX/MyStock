@@ -52,6 +52,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +75,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
@@ -96,6 +100,7 @@ fun StockListScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ) {
+    val context = LocalContext.current
     val decimalFormat = DecimalFormat("#.00")
     val selectedAccountForStockList by stockViewModel.selectedAccountForStockList.observeAsState()
 
@@ -113,14 +118,6 @@ fun StockListScreen(
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(StockMetrics(0.0, 0.0, 0.0, 0.0))
 
-//    var currentMonth by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
-//
-//    val startDate = currentMonth.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-//    val endDate =
-//        currentMonth.plusMonths(1).minusDays(1).atTime(LocalTime.MAX).atZone(ZoneId.systemDefault())
-//            .toInstant().toEpochMilli()
-//    var startDate by remember { mutableStateOf(LocalDate.now().withDayOfMonth(1)) }
-//    var endDate by remember { mutableStateOf(startDate.plusMonths(1).minusDays(1)) }
     val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
     val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
 
@@ -134,48 +131,12 @@ fun StockListScreen(
         startDate = startDateMillis,
         endDate = endDateMillis
     ).observeAsState(initial = emptyList())
-    //帳戶全部交易紀錄
-//    val stockRecordsAll by stockRecordViewModel.getStockRecordsByAccountId(
-//        accountId = selectedAccountForStockList?.accountId ?: -1,
-//    ).observeAsState(initial = emptyList())
 
     //個股總成本、帳戶總成本
     val holdingsAndTotalCost by stockRecordViewModel.getHoldingsAndTotalCost(
         accountId = selectedAccountForStockList?.accountId ?: -1
     ).observeAsState(Pair(emptyMap(), 0.0))
     val (holdings, _) = holdingsAndTotalCost
-//    var isDataReady by remember { mutableStateOf(holdings.isNotEmpty()) }
-
-
-    //已實現
-//    val realizedGainsAndLosses by stockRecordViewModel.getRealizedGainsAndLosses(
-//        accountId = selectedAccountForStockList?.accountId ?: -1
-//    ).observeAsState(emptyMap())
-//Log.d("realizedGainsAndLosses", "$realizedGainsAndLosses")
-//
-//    val totalRealizedResult = realizedGainsAndLosses.values.fold(RealizedResult(0.0, 0.0, 0.0, 0.0, 0.0)) { acc, result ->
-//        RealizedResult(
-//            buyCost = acc.buyCost + result.buyCost,
-//            sellIncome = acc.sellIncome + result.sellIncome,
-//            dividendIncome = acc.dividendIncome + result.dividendIncome,
-//            totalCommission = acc.totalCommission + result.totalCommission,
-//            totalTransactionTax = acc.totalTransactionTax + result.totalTransactionTax
-//        )
-//    }
-//    Log.d("totalRealizedResult", "$totalRealizedResult")
-
-//    LaunchedEffect(computedTotalPrice) {
-//        totalPrice = computedTotalPrice
-//    }
-
-//    LaunchedEffect(holdings) {
-//        Log.d("hold", "$holdings")
-//        // 更新状态
-//        isDataReady = holdings.isNotEmpty()
-//    }
-
-
-//    var selectedTabIndex by remember { mutableIntStateOf(0) }
 
     stockAccount?.let {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(it.stockMarket)
@@ -195,23 +156,7 @@ fun StockListScreen(
     )
 
     var selectedTabIndex by stockViewModel.selectedTabIndex
-//    Log.d("stockAccount", "$stockAccount")
 
-//    val isLoading = remember { mutableStateOf(true) }
-//
-//    LaunchedEffect(stockAccount) {
-//        if (stockAccount != null) {
-//            isLoading.value = false
-//        }
-//    }
-//
-//    if (isLoading.value) {
-//        // 显示加载指示器
-//        CircularProgressIndicator()
-//    } else {
-//        // 显示数据
-//        // 你的界面代码
-//    }
     Scaffold(
         topBar = {
             StockListHeader(navController, stockAccount, stockViewModel, selectedTabIndex)
@@ -235,12 +180,12 @@ fun StockListScreen(
                     Tab(
                         selected = selectedTabIndex == 0,
                         onClick = { selectedTabIndex = 0 },
-                        text = { Text("帳戶庫存") }
+                        text = { Text(stringResource(id = R.string.account_inventory)) }
                     )
                     Tab(
                         selected = selectedTabIndex == 1,
                         onClick = { selectedTabIndex = 1 },
-                        text = { Text("交易紀錄") }
+                        text = { Text(stringResource(id = R.string.transaction_record)) }
                     )
                 }
                 // Display content based on the selected tab
@@ -254,7 +199,7 @@ fun StockListScreen(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Text(
-                                            text = "帳戶市值",
+                                            text = stringResource(id = R.string.account_value),
                                             modifier = Modifier.weight(1f),
                                             fontSize = 24.sp
                                         )
@@ -290,17 +235,6 @@ fun StockListScreen(
                                                 )
                                             }
                                         }
-//                                        AssistChip(
-//                                            onClick = {  },
-//                                            label = { Text("${stockAccount?.currency}") },
-//                                            leadingIcon = {
-//                                                Icon(
-//                                                    Icons.Filled.AttachMoney,
-//                                                    contentDescription = "Localized description",
-//                                                    Modifier.size(AssistChipDefaults.IconSize)
-//                                                )
-//                                            }
-//                                        )
                                     }
                                     Row(
                                         modifier = Modifier
@@ -316,9 +250,9 @@ fun StockListScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text(text = "帳戶成本", modifier = Modifier.weight(1f))
-                                        Text(text = "未實現損益", modifier = Modifier.weight(1f))
-                                        Text(text = "未實現報酬率", modifier = Modifier.weight(1f))
+                                        Text(text = stringResource(id = R.string.account_cost), modifier = Modifier.weight(1f))
+                                        Text(text = stringResource(id = R.string.unrealized_gain_loss), modifier = Modifier.weight(1f))
+                                        Text(text = stringResource(id = R.string.unrealized_gain_loss_percentage), modifier = Modifier.weight(1f))
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
@@ -346,14 +280,10 @@ fun StockListScreen(
                                         val (totalQuantity, _) = holdingData
                                         totalQuantity != 0
                                     }.toList()) { (stockSymbol, holdingData) ->
-//                                        Log.d(
-//                                            "ttt",
-//                                            "Stock: $stockSymbol, Total Value: $holdingData"
-//                                        )
                                         val (totalQuantity, totalValue) = holdingData
                                         val stockName =
                                             stockSymbols.find { it.stockSymbol == stockSymbol }?.stockName
-                                                ?: "未知股票名稱"
+                                                ?: stringResource(id = R.string.unknown_stock_name)
                                         val averageQuantity = totalValue / totalQuantity
                                         val formattedAverage = decimalFormat.format(averageQuantity)
                                         val currentPrice =
@@ -376,15 +306,15 @@ fun StockListScreen(
                                                         modifier = Modifier.fillMaxWidth()
                                                     ) {
                                                         Text(
-                                                            "持有股數",
+                                                            stringResource(id = R.string.shares_held),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            "單位成本",
+                                                            stringResource(id = R.string.unit_cost),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            "總成本",
+                                                            stringResource(id = R.string.total_cost),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                     }
@@ -408,15 +338,15 @@ fun StockListScreen(
                                                         modifier = Modifier.fillMaxWidth()
                                                     ) {
                                                         Text(
-                                                            "市值",
+                                                            stringResource(id = R.string.market_value),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            "損益",
+                                                            stringResource(id = R.string.profit_loss),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                         Text(
-                                                            "損益率",
+                                                            stringResource(id = R.string.profit_loss_percentage),
                                                             modifier = Modifier.weight(1f)
                                                         )
                                                     }
@@ -469,18 +399,8 @@ fun StockListScreen(
                         )
                         LazyColumn {
                             items(stockRecords) { record ->
-                                val transactionType = when (record.transactionType) {
-                                    0 -> "買入"
-                                    1 -> "賣出"
-                                    2 -> "股利"
-                                    else -> "買入"
-                                }
-                                val stockType = when (record.stockType) {
-                                    0 -> "一般"
-                                    1 -> "ETF"
-                                    2 -> "當沖"
-                                    else -> "一般"
-                                }
+                                val transactionType = SharedOptions.getOptionsTransactionType(context)[record.transactionType]
+                                val stockType = SharedOptions.getOptionsStockType(context)[record.stockType]
                                 val textColor = when (record.transactionType) {
                                     0 -> StockGreen
                                     1 -> StockRed
@@ -494,13 +414,8 @@ fun StockListScreen(
                                 }
                                 val stockSymbol =
                                     stockSymbols.find { it.stockSymbol == record.stockSymbol }
-                                val stockName = stockSymbol?.stockName ?: "未知股票名稱"
-                                val priceName = when (record.transactionType) {
-                                    0 -> "每股價格"
-                                    1 -> "每股價格"
-                                    2 -> "每股股利"
-                                    else -> "每股價格"
-                                }
+                                val stockName = stockSymbol?.stockName ?: stringResource(id = R.string.unknown_stock_name)
+                                val priceName = SharedOptions.getPriceName(context, record.transactionType)
                                 //時間
                                 val recordDateMillis = record.transactionDate
                                 val dateTime = Instant.ofEpochMilli(recordDateMillis)
@@ -545,7 +460,7 @@ fun StockListScreen(
                                                             contentDescription = "Edit"
                                                         )
                                                     Text(
-                                                        text = "編輯",
+                                                        text = stringResource(id = R.string.edit),
                                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                                     )
                                                 }
@@ -569,7 +484,7 @@ fun StockListScreen(
                                                             contentDescription = "Delete"
                                                         )
                                                     Text(
-                                                        text = "刪除",
+                                                        text = stringResource(id = R.string.delete),
                                                         color = MaterialTheme.colorScheme.onPrimaryContainer
                                                     )
                                                 }
@@ -584,9 +499,9 @@ fun StockListScreen(
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth()
                                                 ) {
-                                                    Text("股數", modifier = Modifier.weight(1f))
+                                                    Text(stringResource(id = R.string.quantity), modifier = Modifier.weight(1f))
                                                     Text(priceName, modifier = Modifier.weight(1f))
-                                                    Text("淨收付", modifier = Modifier.weight(1f))
+                                                    Text(stringResource(id = R.string.net_proceeds), modifier = Modifier.weight(1f))
                                                 }
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth()
@@ -685,41 +600,6 @@ fun StockListHeader(
         }
     )
 }
-
-//@Composable
-//fun StockLineChart(stockRecords: List<StockRecord>) {
-//    // Convert StockRecord data to MPAndroidChart Entries
-//    val entries = stockRecords.mapIndexed { index, record ->
-//        Entry(index.toFloat(), record.pricePerUnit.toFloat())
-//    }
-//
-//    val dataSet = LineDataSet(entries, "Stock Prices").apply {
-//        color = ColorTemplate.COLORFUL_COLORS[0]
-//        valueTextColor = ColorTemplate.COLORFUL_COLORS[0]
-//        valueTextSize = 12f
-//    }
-//
-//    val lineData = LineData(dataSet)
-//
-//    AndroidView(
-//        factory = { context ->
-//            LineChart(context).apply {
-//                this.data = lineData
-//                this.description.isEnabled = false
-//                this.legend.isEnabled = true
-//                this.xAxis.valueFormatter = object : ValueFormatter() {
-//                    override fun getFormattedValue(value: Float): String {
-//                        return "${value.toInt() + 1}"  // Custom format if needed
-//                    }
-//                }
-//            }
-//        },
-//        modifier = Modifier
-//            .fillMaxSize()
-//            .padding(16.dp)
-//    )
-//}
-
 
 @Composable
 fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {

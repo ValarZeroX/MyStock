@@ -46,6 +46,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntOffset
@@ -58,9 +60,8 @@ import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPointDouble
 import com.banshus.mystock.NumberUtils.getProfitColor
 import com.banshus.mystock.PercentValueFormatter
-import com.banshus.mystock.SharedOptions.optionStockMarket
-import com.banshus.mystock.SharedOptions.optionsStockType
-import com.banshus.mystock.SharedOptions.optionsTransactionType
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
@@ -108,6 +109,7 @@ fun ReportScreen(
     userSettingsViewModel: UserSettingsViewModel,
     currencyViewModel: CurrencyViewModel
 ) {
+
     var calculateCommission by remember { mutableStateOf(false) }
     var calculateTransactionTax by remember { mutableStateOf(false) }
     var calculateDividend by remember { mutableStateOf(false) }
@@ -115,7 +117,7 @@ fun ReportScreen(
     var darkTheme by remember { mutableStateOf(true) }
 
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
-    LaunchedEffect(userSettings){
+    LaunchedEffect(userSettings) {
         calculateCommission = userSettings!!.isCommissionCalculationEnabled
         calculateTransactionTax = userSettings!!.isTransactionTaxCalculationEnabled
         calculateDividend = userSettings!!.isDividendCalculationEnabled
@@ -217,7 +219,6 @@ fun ReportScreen(
     ).observeAsState(DetailedStockMetrics(0.0, 0.0, 0.0, 0.0, 0.0, 0.0))
 
 
-
     val annualizedReturn = stockRecordViewModel.calculateAnnualizedReturnWithoutDividends(
         accountMetrics = accountMetrics,
         startDateMillis = startDateMillis,
@@ -254,13 +255,13 @@ fun ReportScreen(
 
     if (stockAccounts.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(text = "請建立帳戶")
+            Text(text = stringResource(id = R.string.please_create_account))
         }
     } else if (allAccountsRecord.isEmpty()) {
         // 顯示加載動畫
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
 //            CircularProgressIndicator()
-            Text(text = "請新增交易紀錄")
+            Text(text = stringResource(id = R.string.please_add_transaction_record))
         }
     } else {
         Scaffold(
@@ -285,17 +286,18 @@ fun ReportScreen(
                         Tab(
                             selected = selectedReportTabIndex == 0,
                             onClick = { selectedReportTabIndex = 0 },
-                            text = { Text("總覽") }
+                            text = { Text(stringResource(id = R.string.overview)) }
                         )
                         Tab(
                             selected = selectedReportTabIndex == 1,
                             onClick = { selectedReportTabIndex = 1 },
-                            text = { Text("帳戶") }
+                            text = { Text(stringResource(id = R.string.tab_account)) }
                         )
                     }
                     when (selectedReportTabIndex) {
                         0 -> {
-                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange().observeAsState()
+                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange()
+                                .observeAsState()
                             stockViewModel.setTransactionDateRange(
                                 getAccountStockMaxMinDate?.first,
                                 getAccountStockMaxMinDate?.second
@@ -375,6 +377,7 @@ fun AccountTab(
     annualizedReturn: Double,
     darkTheme: Boolean
 ) {
+    val context = LocalContext.current
     val profitColor = getProfitColor(
         accountMetrics.totalProfit,
         StockRed,
@@ -403,7 +406,7 @@ fun AccountTab(
                         leadingIcon = {
                             Icon(
                                 Icons.Filled.AccountBalance,
-                                contentDescription = "帳戶",
+                                contentDescription = "Account",
                                 Modifier.size(AssistChipDefaults.IconSize)
                             )
                         },
@@ -424,7 +427,7 @@ fun AccountTab(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = optionStockMarket[stockAccounts.stockMarket],
+                                text = SharedOptions.getOptionStockMarket(context)[stockAccounts.stockMarket],
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold
                             )
@@ -460,8 +463,14 @@ fun AccountTab(
                     }
                 }
                 Row {
-                    Text(text = "總買進", modifier = Modifier.weight(1f))
-                    Text(text = "總賣出", modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.total_buy),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.total_sell),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
                     Text(
@@ -474,8 +483,14 @@ fun AccountTab(
                     )
                 }
                 Row {
-                    Text(text = "總手續費", modifier = Modifier.weight(1f))
-                    Text(text = "總交易稅", modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.total_commission),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.total_transaction_tax),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
                     Text(
@@ -488,8 +503,14 @@ fun AccountTab(
                     )
                 }
                 Row {
-                    Text(text = "總股利", modifier = Modifier.weight(1f))
-                    Text(text = "總損益", modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.total_dividend),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.total_profit_loss),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
                     Text(
@@ -503,8 +524,14 @@ fun AccountTab(
                     )
                 }
                 Row {
-                    Text(text = "總損益率", modifier = Modifier.weight(1f))
-                    Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+                    Text(
+                        text = stringResource(id = R.string.total_profit_loss_percentage),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.annualized_return),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row {
                     Text(
@@ -560,15 +587,15 @@ fun AccountTab(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Text(
-                                            "買進",
+                                            stringResource(id = R.string.buy),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            "賣出",
+                                            stringResource(id = R.string.sell),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            "交易費用",
+                                            stringResource(id = R.string.transaction_cost),
                                             modifier = Modifier.weight(1f)
                                         )
                                     }
@@ -592,11 +619,11 @@ fun AccountTab(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
                                         Text(
-                                            "損益",
+                                            stringResource(id = R.string.profit_loss),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
-                                            "損益率",
+                                            stringResource(id = R.string.profit_loss_percentage),
                                             modifier = Modifier.weight(1f)
                                         )
                                         Text(
@@ -650,8 +677,9 @@ fun AccountTab(
 
 @Composable
 fun ListItemDetail(record: StockRecord) {
-    val transactionType = optionsTransactionType[record.transactionType]
-    val stockType = optionsStockType[record.stockType]
+    val context = LocalContext.current
+    val transactionType = SharedOptions.getOptionsTransactionType(context)[record.transactionType]
+    val stockType = SharedOptions.getOptionsStockType(context)[record.stockType]
 
     // 时间格式化
     val recordDateMillis = record.transactionDate
@@ -668,10 +696,16 @@ fun ListItemDetail(record: StockRecord) {
         supportingContent = {
             Column {
                 Row(modifier = Modifier.fillMaxWidth()) {
-                    Text("股數", modifier = Modifier.weight(1f))
-                    Text("每股價格", modifier = Modifier.weight(1f))
-                    Text("手續費", modifier = Modifier.weight(1f))
-                    Text("證交稅", modifier = Modifier.weight(1f))
+                    Text(stringResource(id = R.string.quantity), modifier = Modifier.weight(1f))
+                    Text(
+                        stringResource(id = R.string.price_per_share),
+                        modifier = Modifier.weight(1f)
+                    )
+                    Text(stringResource(id = R.string.commission), modifier = Modifier.weight(1f))
+                    Text(
+                        stringResource(id = R.string.transaction_tax),
+                        modifier = Modifier.weight(1f)
+                    )
                 }
                 Row(modifier = Modifier.fillMaxWidth()) {
                     Text("${record.quantity}", modifier = Modifier.weight(1f))
@@ -699,7 +733,7 @@ fun AccountMetricsLineChart(
     darkTheme: Boolean
 ) {
     var textColor = StockBlack.toArgb()
-    if(darkTheme) {
+    if (darkTheme) {
         textColor = StockText.toArgb()
     }
     val profitColor = StockRed.toArgb()
@@ -819,21 +853,25 @@ fun AccountMetricsLineChart(
     }
 
     // 创建数据集
-    val profitDataSet = LineDataSet(profitEntries, "損益金額").apply {
-        color = profitColor
-        lineWidth = 2.5f
-        valueTextColor = textColor
-        valueTextSize = 8f
-        mode = LineDataSet.Mode.HORIZONTAL_BEZIER
+    val profitDataSet =
+        LineDataSet(profitEntries, stringResource(id = R.string.profit_loss_amount)).apply {
+            color = profitColor
+            lineWidth = 2.5f
+            valueTextColor = textColor
+            valueTextSize = 8f
+            mode = LineDataSet.Mode.HORIZONTAL_BEZIER
 //        setDrawFilled(true) // 啟用填充
-        fillColor = profitColor // 設置填充顏色
-        fillAlpha = 85 // 設置填充透明度 (0-255)
-        axisDependency = (YAxis.AxisDependency.LEFT)
-        setDrawValues(false) // 隐藏线上文字
-    }
+            fillColor = profitColor // 設置填充顏色
+            fillAlpha = 85 // 設置填充透明度 (0-255)
+            axisDependency = (YAxis.AxisDependency.LEFT)
+            setDrawValues(false) // 隐藏线上文字
+        }
 
     val barWidth = 0.5f
-    val profitPercentDataSet = BarDataSet(profitPercentEntries, "損益率").apply {
+    val profitPercentDataSet = BarDataSet(
+        profitPercentEntries,
+        stringResource(id = R.string.profit_loss_percentage)
+    ).apply {
         color = profitPercentColor
         valueTextColor = textColor
         valueTextSize = 8f
@@ -854,6 +892,8 @@ fun AccountMetricsLineChart(
     var showPopup by remember { mutableStateOf(false) }
     var popupText by remember { mutableStateOf("") }
     var popupPosition by remember { mutableStateOf(Offset.Zero) }
+    val profitLossPercentage = stringResource(id = R.string.profit_loss_percentage)
+    val profitLossAmount = stringResource(id = R.string.profit_loss_amount)
     Box {
         AndroidView(
             factory = { context ->
@@ -900,12 +940,12 @@ fun AccountMetricsLineChart(
                                 val dataSetLabel = data.getDataSetForEntry(e).label
                                 var text = ""
                                 text = when (dataSetLabel) {
-                                    "損益金額" -> {
+                                    profitLossAmount -> {
                                         // 点击的是 Line
                                         "${it.y}"
                                     }
 
-                                    "損益率" -> {
+                                    profitLossPercentage -> {
                                         // 点击的是 Bar
                                         "${it.y}%"
                                     }
@@ -981,7 +1021,7 @@ fun ReportHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "報表",
+                text = stringResource(id = R.string.tab_report),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -996,14 +1036,5 @@ fun ReportHeader(
                 )
             }
         },
-//        actions = {
-//            IconButton(onClick = {
-//            }) {
-//                Icon(
-//                    imageVector = Icons.Filled.Save,
-//                    contentDescription = "儲存"
-//                )
-//            }
-//        }
     )
 }

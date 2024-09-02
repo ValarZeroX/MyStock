@@ -1,10 +1,8 @@
 package com.banshus.mystock.ui.stock
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,8 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AttachMoney
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.AssistChip
-import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -41,6 +36,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -48,15 +45,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockGreen
-import com.banshus.mystock.ui.theme.StockOrange
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockMetrics
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 
@@ -96,6 +92,7 @@ fun StockMainScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
 ) {
+    val context = LocalContext.current
     val stockSymbols by stockSymbolViewModel.allStockSymbols.observeAsState(emptyList())
     //calculateTotalCostAndProfitForAllAccounts 需要
     stockSymbolViewModel.fetchAllStockSymbols()
@@ -183,7 +180,7 @@ fun StockMainScreen(
                         ) {
                             Row(modifier = Modifier.padding(vertical = 3.dp),verticalAlignment = Alignment.CenterVertically) {
                                 Text(
-                                    text = optionStockMarket[stockAccount.stockMarket],
+                                    text = SharedOptions.getOptionStockMarket(context)[stockAccount.stockMarket],
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -236,12 +233,12 @@ fun StockMainScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "帳戶現值",
+                                text = stringResource(id = R.string.account_value),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = "投資成本",
+                                text = stringResource(id = R.string.investment_cost),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
@@ -270,12 +267,12 @@ fun StockMainScreen(
                             modifier = Modifier.fillMaxWidth(),
                         ) {
                             Text(
-                                text = "未實現損益",
+                                text = stringResource(id = R.string.unrealized_gain_loss),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
                             Text(
-                                text = "未實現報酬率",
+                                text = stringResource(id = R.string.unrealized_gain_loss_percentage),
                                 style = MaterialTheme.typography.bodyMedium,
                                 modifier = Modifier.weight(1f)
                             )
@@ -306,7 +303,7 @@ fun AccountHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "帳戶總覽",
+                stringResource(id = R.string.account_overview),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -317,7 +314,7 @@ fun AccountHeader(navController: NavHostController) {
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "新增"
+                    contentDescription = "Add"
                 )
             }
         }

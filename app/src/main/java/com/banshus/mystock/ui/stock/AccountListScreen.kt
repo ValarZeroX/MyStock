@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -26,23 +25,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.banshus.mystock.R
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
-import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.repository.StockAccountRepository
 import com.banshus.mystock.viewmodels.StockAccountViewModel
-import com.banshus.mystock.viewmodels.StockAccountViewModelFactory
 
 @Composable
 fun AccountListScreen(
@@ -50,29 +43,9 @@ fun AccountListScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel
 ) {
-//    val context = LocalContext.current
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = StockAccountViewModelFactory(
-//            StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//        )
-//    )
-//    val repository = StockAccountRepository(AppDatabase.getDatabase(context).stockAccountDao())
-//    val factory = StockAccountViewModelFactory(repository)
-//    val stockAccountViewModel: StockAccountViewModel = viewModel(
-//        factory = factory
-//    )
-
+    val context = LocalContext.current
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
 
-//    val stockViewModel: StockViewModel = viewModel()
-//    val selectedAccount by remember { mutableStateOf(viewModel.selectedAccount) }
-//    val selectedAccount = remember {
-//
-//    }
-//    val viewModel: StockViewModel by viewModels()
-//    val viewModel by viewModels<StockViewModel>()
-//    private lateinit var viewModel: StockViewModel
-//    println(viewModel.selectedAccount)
     Scaffold(
         topBar = {
             AccountListHeader(navController)
@@ -92,19 +65,15 @@ fun AccountListScreen(
                     .padding(top = 10.dp)
             ) {
                 items(stockAccounts) { stockAccount ->
-                    val stockMarketName = when (stockAccount.stockMarket) {
-                        0 -> stringResource(R.string.taiwan_stocks)
-                        1 -> stringResource(R.string.us_stocks)
-                        else -> stringResource(R.string.taiwan_stocks) // 默认值，可以根据需要调整
-                    }
+                    val stockMarketName = SharedOptions.getOptionStockMarket(context)[stockAccount.stockMarket]
                     ListItem(
                         headlineContent = { Text(text = stockAccount.account) },
                         supportingContent = {
                             Column {
                                 Row(modifier = Modifier.fillMaxWidth()) {
-                                    Text(text = "手續費", Modifier.weight(1f))
-                                    Text(text = "證交稅", Modifier.weight(1f))
-                                    Text(text = "手續費優惠", Modifier.weight(1f))
+                                    Text(text = stringResource(id = R.string.commission) , Modifier.weight(1f))
+                                    Text(text = stringResource(id = R.string.transaction_tax), Modifier.weight(1f))
+                                    Text(text = stringResource(id = R.string.commission_discount), Modifier.weight(1f))
                                 }
                                 Row(modifier = Modifier.fillMaxWidth()) {
                                     Text(
@@ -120,12 +89,6 @@ fun AccountListScreen(
 
                             }
                         },
-//                        leadingContent = {
-//                            Icon(
-//                                Icons.Filled.Favorite,
-//                                contentDescription = "Localized description",
-//                            )
-//                        },
                         trailingContent = { Text(text = stockMarketName) },
                         modifier = Modifier.clickable {
                             stockViewModel.updateSelectedAccount(stockAccount)
@@ -146,7 +109,7 @@ fun AccountListHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "選擇帳戶",
+                stringResource(id = R.string.select_account),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -155,7 +118,7 @@ fun AccountListHeader(navController: NavHostController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "關閉"
+                    contentDescription = "Close"
                 )
             }
         },
@@ -165,7 +128,7 @@ fun AccountListHeader(navController: NavHostController) {
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "新增"
+                    contentDescription = "Add"
                 )
             }
         }

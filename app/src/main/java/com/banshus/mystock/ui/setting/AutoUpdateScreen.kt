@@ -26,10 +26,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
@@ -68,7 +70,7 @@ fun AutoUpdateScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "股價",
+                            text = stringResource(id = R.string.stock_price),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -86,7 +88,7 @@ fun AutoUpdateScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "自動更新股價開關，每15分鐘更新股價。關閉可到股票代碼功能手動更新。",
+                            text = stringResource(id = R.string.auto_update_stock_price_description),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -100,7 +102,7 @@ fun AutoUpdateScreen(
                         modifier = Modifier.padding(5.dp)
                     ) {
                         Text(
-                            text = "匯率",
+                            text = stringResource(id = R.string.exchange_rate),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(150.dp)
@@ -118,7 +120,7 @@ fun AutoUpdateScreen(
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
-                            text = "自動更新匯率，每15分鐘更新匯率。",
+                            text = stringResource(id = R.string.auto_update_exchange_rate_description),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -140,7 +142,7 @@ fun AutoUpdateScreenHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "自動更新設定",
+                stringResource(id = R.string.auto_update_settings),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -149,7 +151,7 @@ fun AutoUpdateScreenHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "返回"
+                    contentDescription = "Back"
                 )
             }
         },

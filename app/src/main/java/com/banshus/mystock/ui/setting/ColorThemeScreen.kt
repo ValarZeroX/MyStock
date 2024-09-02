@@ -14,8 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -38,14 +36,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
-import com.banshus.mystock.data.database.AppDatabase
-import com.banshus.mystock.repository.UserSettingsRepository
 import com.banshus.mystock.ui.theme.Blue1
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.primaryDark
@@ -61,38 +57,24 @@ import com.banshus.mystock.ui.theme.surfaceDarkGreen
 import com.banshus.mystock.ui.theme.surfaceLight
 import com.banshus.mystock.ui.theme.surfaceLightGreen
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
-import com.banshus.mystock.viewmodels.UserSettingsViewModelFactory
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: UserSettingsViewModel) {
-    // 获取 Context
-//    val context = LocalContext.current
-//    // 创建 Repository 和 Factory
-//    val repository = UserSettingsRepository(AppDatabase.getDatabase(context).userSettingsDao())
-//    val factory = UserSettingsViewModelFactory(repository)
-//
-//    // 获取 ViewModel 实例
-//    val userSettingsViewModel: UserSettingsViewModel = viewModel(
-//        factory = factory
-//    )
-    // 观察 LiveData<UserSettings>
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
-//    val themeIndex = userSettings?.themeIndex
     var themeIndex by remember { mutableIntStateOf(0) }
     var darkTheme by remember { mutableStateOf(true) }
     LaunchedEffect(userSettings) {
         themeIndex = userSettings!!.themeIndex
         darkTheme = userSettings!!.darkTheme
     }
-    //選擇的主題
-//    val selectedThemeIndex = remember { mutableIntStateOf(themeIndex ?: 0) }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
                 title = {
                     Text(
-                        "主題顏色",
+                        stringResource(id = R.string.theme_color),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -101,7 +83,7 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
-                            contentDescription = "返回"
+                            contentDescription = "Back"
                         )
                     }
                 },
@@ -124,7 +106,7 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                     modifier = Modifier.padding(5.dp, bottom = 20.dp)
                 ) {
                     Text(
-                        text = "深夜模式",
+                        text = stringResource(id = R.string.dark_mode),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(150.dp)
@@ -145,7 +127,7 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                     modifier = Modifier.padding(5.dp)
                 ) {
                     Text(
-                        text = "顏色",
+                        text = stringResource(id = R.string.color),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(150.dp)

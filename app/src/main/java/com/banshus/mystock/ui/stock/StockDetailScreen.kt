@@ -17,16 +17,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +38,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimeInput
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -51,12 +45,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableDoubleStateOf
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -64,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
@@ -76,12 +72,7 @@ import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
-import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -93,9 +84,9 @@ fun StockDetailScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ){
+    val context = LocalContext.current
     val selectedStock by stockViewModel.selectedStock.observeAsState()
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
-    Log.d("selectedAccount", "$selectedAccount")
     val stockSymbolList by stockSymbolViewModel.stockSymbolsListByMarket.observeAsState(emptyList())
     var selectedStockSymbol by remember { mutableStateOf<StockSymbol?>(null) }
     //股數
@@ -118,13 +109,9 @@ fun StockDetailScreen(
     var selectedStockTypeIndex by remember { mutableIntStateOf(0) }
     var selectedStockMarket by remember { mutableIntStateOf(0) }
 
-    val priceName = when(selectedTransactionType) {
-        0 -> "每股價格"
-        1 -> "每股價格"
-        else -> "每股股利"
-    }
-    val optionsTransactionType = SharedOptions.optionsTransactionType
-    val optionsStockType = SharedOptions.optionsStockType
+    val priceName = SharedOptions.getPriceName(context, selectedTransactionType)
+    val optionsTransactionType = SharedOptions.getOptionsTransactionType(context)
+    val optionsStockType = SharedOptions.getOptionsStockType(context)
 
     //日期選擇棄
     val initialDate = selectedStock?.transactionDate ?: Calendar.getInstance().timeInMillis
@@ -140,7 +127,7 @@ fun StockDetailScreen(
             set(Calendar.MILLISECOND, 0)
         }
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
-    } ?: "選擇日期"
+    } ?: stringResource(id = R.string.select_date)
 
     //時間選擇器
     val initialDateTime = selectedStock?.transactionDate ?: System.currentTimeMillis()
@@ -172,13 +159,8 @@ fun StockDetailScreen(
 
     val combinedTimestamp: Long = combineDateAndTime(selectedDate, selectedTime, selectedStock!!.transactionDate)
 
-
-//    val stockAccount by stockAccountViewModel.getStockAccountByID(
-//        selectedStock!!.accountId ?: -1
-//    ).observeAsState()
     //自動計算手續費
     var autoCalculateChecked by remember { mutableStateOf(false) }
-//    var selectedAutoCalculate by remember { mutableStateOf(false) }
     var selectedCommissionDecimal by remember { mutableDoubleStateOf(0.0) }
     var selectedTransactionTax by remember { mutableDoubleStateOf(0.0) }
     var selectedDiscount by remember { mutableDoubleStateOf(0.0) }
@@ -216,9 +198,6 @@ fun StockDetailScreen(
         } else {
             "0.0"
         }
-        Log.d("selectedTransactionType", "$selectedTransactionType")
-        Log.d("autoCalculateChecked", "$autoCalculateChecked")
-        Log.d("commission", commission)
     }
 
     LaunchedEffect(selectedStock, stockSymbolList) {
@@ -281,7 +260,7 @@ fun StockDetailScreen(
                         modifier = Modifier.padding(10.dp)
                     ) {
                         Text(
-                            text = "股票代碼",
+                            text = stringResource(id = R.string.stock_symbol),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(100.dp)
@@ -304,7 +283,7 @@ fun StockDetailScreen(
                             modifier = Modifier.padding(10.dp)
                         ) {
                             Text(
-                                text = "自動計算",
+                                text = stringResource(id = R.string.auto_calculate),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .width(100.dp)
@@ -319,7 +298,7 @@ fun StockDetailScreen(
                         }
                         Row(modifier = Modifier.padding(10.dp)){
                             Text(
-                                text = "只支援台股手續費、證交稅自動計算。",
+                                text = stringResource(id = R.string.taiwan_stock_support_note),
                                 modifier = Modifier
                                     .align(Alignment.CenterVertically)
                                     .padding(start = 10.dp, end = 20.dp),
@@ -344,7 +323,7 @@ fun StockDetailScreen(
                                     isStockQuantityError = true
                                 }
                             },
-                            label = { Text(text = "股數")},
+                            label = { Text(text = stringResource(id = R.string.quantity))},
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number
                             ),
@@ -388,7 +367,7 @@ fun StockDetailScreen(
                                     isCommissionError = true
                                 }
                             },
-                            label = { Text(text = "手續費")},
+                            label = { Text(text = stringResource(id = R.string.commission))},
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number
                             ),
@@ -407,7 +386,7 @@ fun StockDetailScreen(
                                     isTransactionTaxError = true
                                 }
                             },
-                            label = { Text(text = "證交稅")},
+                            label = { Text(text = stringResource(id = R.string.transaction_tax))},
                             keyboardOptions = KeyboardOptions.Default.copy(
                                 keyboardType = KeyboardType.Number
                             ),
@@ -423,7 +402,7 @@ fun StockDetailScreen(
                             .padding(10.dp)
                     ) {
                         Text(
-                            text = "交易類型",
+                            text = stringResource(id = R.string.transaction_type),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(100.dp)
@@ -456,7 +435,7 @@ fun StockDetailScreen(
                             .padding(10.dp)
                     ) {
                         Text(
-                            text = "股票類型",
+                            text = stringResource(id = R.string.stock_type),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(100.dp)
@@ -489,7 +468,7 @@ fun StockDetailScreen(
                             .padding(10.dp)
                     ) {
                         Text(
-                            text = "交易日期",
+                            text = stringResource(id = R.string.transaction_date),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(100.dp)
@@ -551,7 +530,7 @@ fun StockDetailHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                text = "編輯交易紀錄",
+                text = stringResource(id = R.string.edit_transaction_record),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -560,7 +539,7 @@ fun StockDetailHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "關閉"
+                    contentDescription = "Back"
                 )
             }
         },
@@ -571,7 +550,7 @@ fun StockDetailHeader(
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Save,
-                        contentDescription = "儲存"
+                        contentDescription = "Save"
                     )
                 }
 
@@ -631,7 +610,7 @@ fun AdvancedTimePickerExample(
 }
 @Composable
 fun AdvancedTimePickerDialog(
-    title: String = "選擇時間",
+    title: String = stringResource(id = R.string.select_time),
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
     toggle: @Composable () -> Unit = {},
@@ -672,48 +651,14 @@ fun AdvancedTimePickerDialog(
                 ) {
                     toggle()
                     Spacer(modifier = Modifier.weight(1f))
-                    TextButton(onClick = onDismiss) { Text("取消") }
-                    TextButton(onClick = onConfirm) { Text("確定") }
+                    TextButton(onClick = onDismiss) { Text(stringResource(id = R.string.cancel))}
+                    TextButton(onClick = onConfirm) { Text(stringResource(id = R.string.confirm))}
                 }
             }
         }
     }
 }
 
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun DatePickerModal(
-//    selectedDate: Long?,
-//    onDateSelected: (Long?) -> Unit,
-//    onDismiss: () -> Unit
-//) {
-//    val datePickerState = rememberDatePickerState(
-//        initialSelectedDateMillis = selectedDate
-//    )
-//
-//
-//    DatePickerDialog(
-//        onDismissRequest = onDismiss,
-//        confirmButton = {
-//            TextButton(onClick = {
-//                val selectedDateMillis = datePickerState.selectedDateMillis
-//                onDateSelected(selectedDateMillis)
-//                onDismiss()
-//            }) {
-//                Text("確定")
-//            }
-//        },
-//        dismissButton = {
-//            TextButton(onClick = onDismiss) {
-//                Text("取消")
-//            }
-//        }
-//    ) {
-//        DatePicker(
-//            state = datePickerState
-//        )
-//    }
-//}
 
 @OptIn(ExperimentalMaterial3Api::class)
 fun combineDateAndTime(selectedDate: Long?, selectedTime: TimePickerState, transactionDate: Long): Long {

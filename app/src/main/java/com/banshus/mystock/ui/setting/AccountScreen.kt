@@ -44,13 +44,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.StockRed
@@ -69,6 +72,7 @@ fun AccountScreen(
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
 ) {
+    val context = LocalContext.current
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
     val lazyListState = rememberLazyListState()
     val reorderableState = rememberReorderableLazyListState(lazyListState) { from, to ->
@@ -134,7 +138,7 @@ fun AccountScreen(
                                                 contentDescription = "Edit"
                                             )
                                             Text(
-                                                text = "編輯",
+                                                text = stringResource(id = R.string.edit),
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                         }
@@ -162,7 +166,7 @@ fun AccountScreen(
                                                 contentDescription = "Delete"
                                             )
                                             Text(
-                                                text = "刪除",
+                                                text = stringResource(id = R.string.delete),
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                         }
@@ -175,15 +179,15 @@ fun AccountScreen(
                                 supportingContent = {
                                     Column {
                                         Row(modifier = Modifier.fillMaxWidth()) {
-                                            Text(text = "市場", Modifier.weight(1f))
-                                            Text(text = "手續費", Modifier.weight(1f))
-                                            Text(text = "證交稅", Modifier.weight(1f))
-                                            Text(text = "手續費優惠", Modifier.weight(1f))
+                                            Text(text = stringResource(id = R.string.settings_stock_market), Modifier.weight(1f))
+                                            Text(text = stringResource(id = R.string.commission), Modifier.weight(1f))
+                                            Text(text = stringResource(id = R.string.transaction_tax), Modifier.weight(1f))
+                                            Text(text = stringResource(id = R.string.commission_discount), Modifier.weight(1f))
 
                                         }
                                         Row(modifier = Modifier.fillMaxWidth()) {
                                             Text(
-                                                text = optionStockMarket[item.stockMarket],
+                                                text = SharedOptions.getOptionStockMarket(context)[item.stockMarket],
                                                 Modifier.weight(1f)
                                             )
                                             val commission =
@@ -260,17 +264,17 @@ fun DeleteAccountDialog(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "刪除「$selectedAccountName」",
+                    text = stringResource(R.string.delete_account_with_name, selectedAccountName),
                     modifier = Modifier.padding(12.dp),
                     fontWeight = FontWeight.Bold
                 )
                 HorizontalDivider()
                 Text(
-                    text = "帳戶相關交易記錄會刪除",
+                    text = stringResource(R.string.account_related_records_will_be_deleted),
                     modifier = Modifier.padding(4.dp),
                 )
                 Text(
-                    text = "($recordCount)筆交易記錄",
+                    text = stringResource(R.string.transaction_records_count, recordCount),
                     modifier = Modifier.padding(4.dp),
                 )
                 HorizontalDivider()
@@ -283,13 +287,13 @@ fun DeleteAccountDialog(
                         onClick = { onDismissRequest() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("取消")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     TextButton(
                         onClick = { onConfirmation() },
                         modifier = Modifier.padding(8.dp),
                     ) {
-                        Text("刪除")
+                        Text(stringResource(id = R.string.delete))
                     }
                 }
             }
@@ -303,7 +307,7 @@ fun AccountScreenHeader(navController: NavHostController) {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "股票帳戶",
+                stringResource(id = R.string.settings_stock_account),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
@@ -312,7 +316,7 @@ fun AccountScreenHeader(navController: NavHostController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.ArrowBackIosNew,
-                    contentDescription = "返回"
+                    contentDescription = "back"
                 )
             }
         },

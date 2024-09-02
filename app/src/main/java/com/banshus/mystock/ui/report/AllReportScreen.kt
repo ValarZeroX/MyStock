@@ -26,12 +26,13 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.data.entities.StockAccount
@@ -59,6 +60,7 @@ fun AllReportScreen(
     mainCurrency: String,
     onTabSelected: (Int, Int, StockAccount?) -> Unit
 ) {
+    val context = LocalContext.current
     val startDate by stockViewModel.startDate.observeAsState(LocalDate.now().withDayOfMonth(1))
     val endDate by stockViewModel.endDate.observeAsState(startDate.plusMonths(1).minusDays(1))
     val startDateMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
@@ -263,7 +265,7 @@ fun AllReportScreen(
                                     .padding(horizontal = 12.dp, vertical = 6.dp)  // 内部文本的填充
                             )
                             Text(
-                                text = optionStockMarket[stockAccounts[accountId]!!.stockMarket],
+                                text = SharedOptions.getOptionStockMarket(context)[stockAccounts[accountId]!!.stockMarket],
                                 modifier = Modifier
                                     .padding(4.dp)  // 添加一些内边距
                                     .border(

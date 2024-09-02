@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,6 +42,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.banshus.mystock.MainActivity
+import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.csv.exportCSV
 import com.banshus.mystock.ui.setting.ColorThemeScreen
@@ -77,7 +79,7 @@ fun StockSettingScreen(
                     ) {
                         Row {
                             Text(
-                                text = "設定",
+                                text = stringResource(id = R.string.settings_app),
                                 style = MaterialTheme.typography.titleLarge,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -86,7 +88,7 @@ fun StockSettingScreen(
                             )
                         }
                         ListItem(
-                            headlineContent = { Text("股票帳戶") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_stock_account)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -99,7 +101,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("股票市場") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_stock_market)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -112,7 +114,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("股票代碼") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_stock_symbol)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -134,7 +136,7 @@ fun StockSettingScreen(
                     ) {
                         Row {
                             Text(
-                                text = "偏好",
+                                text = stringResource(id = R.string.settings_preferences),
                                 style = MaterialTheme.typography.titleLarge,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -143,7 +145,7 @@ fun StockSettingScreen(
                             )
                         }
                         ListItem(
-                            headlineContent = { Text("主題顏色") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_color_theme)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -156,7 +158,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("報表") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_report)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -169,7 +171,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("幣別匯率") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_currency)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -182,7 +184,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("自動更新") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_auto_update)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -204,7 +206,7 @@ fun StockSettingScreen(
                     ) {
                         Row {
                             Text(
-                                text = "匯入匯出",
+                                text = stringResource(id = R.string.settings_import_export),
                                 style = MaterialTheme.typography.titleLarge,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -213,7 +215,7 @@ fun StockSettingScreen(
                             )
                         }
                         ListItem(
-                            headlineContent = { Text("匯出CSV") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_export_csv),) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -231,7 +233,7 @@ fun StockSettingScreen(
                         )
                         HorizontalDivider()
                         ListItem(
-                            headlineContent = { Text("匯入CSV") },
+                            headlineContent = { Text(stringResource(id = R.string.settings_import_csv)) },
                             trailingContent = {
                                 Icon(
                                     imageVector = Icons.Filled.ChevronRight,
@@ -262,7 +264,7 @@ fun SettingHeader() {
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "功能列表",
+                stringResource(id = R.string.settings_title),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

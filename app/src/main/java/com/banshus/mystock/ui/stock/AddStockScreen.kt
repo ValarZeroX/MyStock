@@ -27,8 +27,6 @@ import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.Button
 import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -55,37 +53,26 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.ui.theme.Gray1
-import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.tool.DatePickerModal
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
-import com.maxkeppeker.sheets.core.models.base.rememberUseCaseState
-import com.maxkeppeler.sheets.calendar.CalendarDialog
-import com.maxkeppeler.sheets.calendar.models.CalendarConfig
-import com.maxkeppeler.sheets.calendar.models.CalendarSelection
-import com.maxkeppeler.sheets.calendar.models.CalendarStyle
-import com.maxkeppeler.sheets.clock.ClockDialog
-import com.maxkeppeler.sheets.clock.models.ClockConfig
-import com.maxkeppeler.sheets.clock.models.ClockSelection
 import java.text.DecimalFormat
 import java.text.SimpleDateFormat
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Locale
 
@@ -98,6 +85,7 @@ fun AddStockScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel
 ) {
+    val context = LocalContext.current
     //撈第一筆帳戶
     val firstStockAccount by stockAccountViewModel.firstStockAccount.observeAsState()
 
@@ -237,12 +225,8 @@ fun AddStockScreen(
             "0.0"
         }
     }
-//
-    val priceName = when (selectedTransactionType) {
-        0 -> "每股價格"
-        1 -> "每股價格"
-        else -> "每股股利"
-    }
+
+    val priceName = SharedOptions.getPriceName(context, selectedTransactionType)
     val accountText: String
     if (firstStockAccount != null) {
         if (selectedAccount == null) {
@@ -269,8 +253,8 @@ fun AddStockScreen(
 
     var isStockQuantityError by remember { mutableStateOf(false) }
     var isStockPriceError by remember { mutableStateOf(false) }
-    val optionsTransactionType = SharedOptions.optionsTransactionType
-    val optionsStockType = SharedOptions.optionsStockType
+    val optionsTransactionType = SharedOptions.getOptionsTransactionType(context)
+    val optionsStockType = SharedOptions.getOptionsStockType(context)
     Scaffold(
         topBar = {
             AddHeader(
@@ -310,7 +294,7 @@ fun AddStockScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "交易帳戶",
+                        text = stringResource(id = R.string.trading_account),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -319,7 +303,7 @@ fun AddStockScreen(
                     if (firstStockAccount == null) {
                         AssistChip(
                             onClick = { navController.navigate("addAccountScreen") },
-                            label = { Text("新增帳戶") },
+                            label = { Text(stringResource(id = R.string.add_account)) },
                             leadingIcon = {
                                 Icon(
                                     Icons.Filled.Add,
@@ -348,7 +332,7 @@ fun AddStockScreen(
                     modifier = Modifier.padding(10.dp)
                 ) {
                     Text(
-                        text = "股票代碼",
+                        text = stringResource(id = R.string.stock_symbol),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -371,7 +355,7 @@ fun AddStockScreen(
                         modifier = Modifier.padding(10.dp)
                     ) {
                         Text(
-                            text = "自動計算",
+                            text = stringResource(id = R.string.auto_calculate),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .width(100.dp)
@@ -386,7 +370,7 @@ fun AddStockScreen(
                     }
                     Row(modifier = Modifier.padding(10.dp)) {
                         Text(
-                            text = "只支援台股手續費、證交稅自動計算。",
+                            text = stringResource(id = R.string.taiwan_stock_support_note),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),
@@ -411,7 +395,7 @@ fun AddStockScreen(
                                 isStockQuantityError = true
                             }
                         },
-                        label = { Text(text = "股數") },
+                        label = { Text(text = stringResource(id = R.string.quantity)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
@@ -459,7 +443,7 @@ fun AddStockScreen(
                                 isCommissionError = true
                             }
                         },
-                        label = { Text(text = "手續費") },
+                        label = { Text(text = stringResource(id = R.string.commission)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
@@ -480,7 +464,7 @@ fun AddStockScreen(
                                 isTransactionTaxError = true
                             }
                         },
-                        label = { Text(text = "證交稅") },
+                        label = { Text(text = stringResource(id = R.string.transaction_tax)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             keyboardType = KeyboardType.Number
                         ),
@@ -498,7 +482,7 @@ fun AddStockScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "交易類型",
+                        text = stringResource(id = R.string.transaction_type),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -531,7 +515,7 @@ fun AddStockScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "股票類型",
+                        text = stringResource(id = R.string.stock_type),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -564,7 +548,7 @@ fun AddStockScreen(
                         .padding(10.dp)
                 ) {
                     Text(
-                        text = "交易日期",
+                        text = stringResource(id = R.string.transaction_date),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -612,63 +596,6 @@ fun AddStockScreen(
                     )
                 }
             }
-            item {
-//                Row(
-//                    modifier = Modifier
-//                        .padding(10.dp)
-//                ) {
-//                    Text(
-//                        text = "交易日期",
-//                        modifier = Modifier
-//                            .align(Alignment.CenterVertically)
-//                            .width(100.dp)
-//                            .padding(start = 10.dp, end = 20.dp),
-//                    )
-//                    Row(
-//                        modifier = Modifier.fillMaxWidth(),
-//                        horizontalArrangement = Arrangement.SpaceBetween
-//                    ) {
-//                        Button(
-//                            modifier = Modifier.weight(1f),
-//                            onClick = {
-//                                calendarState.show()
-//                            }) {
-//                            Text(stockDateTime)
-//                        }
-//                        Spacer(modifier = Modifier.width(16.dp))
-//                        Button(
-//                            modifier = Modifier.weight(1f),
-//                            onClick = {
-//                                clockState.show()
-//                            }) {
-//                            Text(selectedTime.value)
-//                        }
-//                    }
-//                }
-//                CalendarDialog(
-//                    state = calendarState,
-//                    config = CalendarConfig(
-//                        yearSelection = true,
-//                        monthSelection = true,
-//                        style = CalendarStyle.MONTH,
-//                    ),
-//                    selection = CalendarSelection.Dates { newDates ->
-//                        stockDateTime = newDates.firstOrNull()?.toString() ?: ""
-//                    }
-//                )
-//
-//                ClockDialog(
-//                    state = clockState,
-//                    selection = ClockSelection.HoursMinutes { hours, minutes ->
-//                        val newTime = LocalTime.of(hours, minutes, 0).format(timeFormatter)
-//                        selectedTime.value = newTime
-//                    },
-//                    config = ClockConfig(
-//                        defaultTime = LocalTime.parse(selectedTime.value, timeFormatter),
-//                        is24HourFormat = true
-//                    )
-//                )
-            }
         }
     }
 }
@@ -682,7 +609,7 @@ fun AddHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "新增記錄",
+                stringResource(id = R.string.add_record),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

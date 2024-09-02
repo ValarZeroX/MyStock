@@ -1,6 +1,5 @@
 package com.banshus.mystock.ui.record
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,13 +36,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.formatNumberNoDecimalPoint
 import com.banshus.mystock.NumberUtils.formatToDisplayString
-import com.banshus.mystock.SharedOptions.optionStockMarket
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.StockGreen
@@ -53,7 +55,6 @@ import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import java.time.Instant
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.Calendar
 import java.util.Date
 import com.banshus.mystock.ui.tool.CalendarView
@@ -67,6 +68,7 @@ fun RecordScreen(
     stockSymbolViewModel: StockSymbolViewModel,
     stockRecordViewModel: StockRecordViewModel,
 ) {
+    val context = LocalContext.current
     val selectedRecordDate by stockViewModel.selectedRecordDate.observeAsState(Date()) // 观察 ViewModel 中的 selectedRecordDate
 
     val calendar = remember(selectedRecordDate) {
@@ -140,16 +142,7 @@ fun RecordScreen(
     }
 
     val stockAccounts by stockAccountViewModel.stockAccountsMap.observeAsState(emptyMap())
-//    LaunchedEffect(currentMonth, highlightDays) {
-//        Log.d("LaunchedEffect", "$highlightDays")
-//        dates = generateMonthDates(currentMonth, highlightDays)
-//    }
-//    LaunchedEffect(currentMonth, highlightDays) {
-//        dates = generateMonthDates(currentMonth, highlightDays)
-//    }
 
-    Log.d("selectedRecordDate", "$selectedRecordDate")
-//    Log.d("dates", "$dates")
     Scaffold(
         topBar = {
             RecordScreenHeader(navController,selectedRecordDate)
@@ -192,18 +185,8 @@ fun RecordScreen(
                 )
                 LazyColumn {
                     items(stockRecords) { record ->
-                        val transactionType = when (record.transactionType) {
-                            0 -> "買入"
-                            1 -> "賣出"
-                            2 -> "股利"
-                            else -> "買入"
-                        }
-                        val stockType = when (record.stockType) {
-                            0 -> "一般"
-                            1 -> "ETF"
-                            2 -> "當沖"
-                            else -> "一般"
-                        }
+                        val transactionType = SharedOptions.getOptionsTransactionType(context)[record.transactionType]
+                        val stockType = SharedOptions.getOptionsStockType(context)[record.stockType]
                         val textColor = when (record.transactionType) {
                             0 -> StockGreen
                             1 -> StockRed
@@ -217,13 +200,8 @@ fun RecordScreen(
                         }
                         val stockSymbol =
                             stockSymbols.find { it.stockSymbol == record.stockSymbol }
-                        val stockName = stockSymbol?.stockName ?: "未知股票名稱"
-                        val priceName = when (record.transactionType) {
-                            0 -> "每股價格"
-                            1 -> "每股價格"
-                            2 -> "每股股利"
-                            else -> "每股價格"
-                        }
+                        val stockName = stockSymbol?.stockName ?: stringResource(id = R.string.unknown_stock_name)
+                        val priceName = SharedOptions.getPriceName(context, record.transactionType)
                         var checked by remember { mutableStateOf(false) }
                         SwipeBox(
                             checked = checked,
@@ -253,7 +231,7 @@ fun RecordScreen(
                                                 contentDescription = "Edit"
                                             )
                                             Text(
-                                                text = "編輯",
+                                                text = stringResource(id = R.string.edit),
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                         }
@@ -277,7 +255,7 @@ fun RecordScreen(
                                                 contentDescription = "Delete"
                                             )
                                             Text(
-                                                text = "刪除",
+                                                text = stringResource(id = R.string.delete),
                                                 color = MaterialTheme.colorScheme.onPrimaryContainer
                                             )
                                         }
@@ -292,9 +270,9 @@ fun RecordScreen(
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
                                     ) {
-                                        Text("股數", modifier = Modifier.weight(1f))
+                                        Text(stringResource(id = R.string.quantity), modifier = Modifier.weight(1f))
                                         Text(priceName, modifier = Modifier.weight(1f))
-                                        Text("淨收付", modifier = Modifier.weight(1f))
+                                        Text(stringResource(id = R.string.net_proceeds), modifier = Modifier.weight(1f))
                                     }
                                     Row(
                                         modifier = Modifier.fillMaxWidth()
@@ -331,7 +309,7 @@ fun RecordScreen(
                                             .padding(horizontal = 12.dp, vertical = 6.dp)  // 内部文本的填充
                                     )
                                     Text(
-                                        text = optionStockMarket[record.stockMarket],
+                                        text = SharedOptions.getOptionStockMarket(context)[record.stockMarket],
                                         modifier = Modifier
                                             .padding(4.dp)  // 添加一些内边距
                                             .border(
@@ -391,21 +369,5 @@ fun RecordScreenHeader(navController: NavHostController, selectedRecordDate:Date
                 overflow = TextOverflow.Ellipsis
             )
         },
-//        navigationIcon = {
-//            IconButton(onClick = { navController.popBackStack() }) {
-//                Icon(
-//                    imageVector = Icons.Filled.ArrowBackIosNew,
-//                    contentDescription = "返回"
-//                )
-//            }
-//        },
-//                actions = {
-//                    IconButton(onClick = {  onAddClick() }) {
-//                        Icon(
-//                            imageVector = Icons.Filled.Add,
-//                            contentDescription = "新增"
-//                        )
-//                    }
-//                }
     )
 }

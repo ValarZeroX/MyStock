@@ -34,10 +34,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
@@ -53,6 +57,7 @@ fun EditAccountScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
 ) {
+    val context = LocalContext.current
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
     var accountName by remember { mutableStateOf("") }
     var selectedStockMarketIndex by remember { mutableIntStateOf(0) }
@@ -126,7 +131,7 @@ fun EditAccountScreen(
         ) {
             Row(modifier = Modifier.padding(15.dp)) {
                 Text(
-                    text = "帳戶名稱",
+                    text = stringResource(id = R.string.account_name),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(100.dp)
@@ -148,13 +153,13 @@ fun EditAccountScreen(
                 modifier = Modifier.padding(15.dp)
             ) {
                 Text(
-                    text = "股票市場",
+                    text = stringResource(id = R.string.stock_market),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(100.dp)
                         .padding(start = 10.dp, end = 20.dp),
                 )
-                val options = listOf("台股", "美股")
+                val options = SharedOptions.getOptionStockMarket(context)
                 SingleChoiceSegmentedButtonRow(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
@@ -180,7 +185,7 @@ fun EditAccountScreen(
                     modifier = Modifier.padding(15.dp)
                 ) {
                     Text(
-                        text = "進階設定",
+                        text = stringResource(id = R.string.advanced_settings),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -198,7 +203,7 @@ fun EditAccountScreen(
             if (checked) {
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "手續費",
+                        text = stringResource(id = R.string.commission),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -228,7 +233,7 @@ fun EditAccountScreen(
                 }
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "證交稅",
+                        text = stringResource(id = R.string.transaction_tax),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -258,7 +263,7 @@ fun EditAccountScreen(
                 }
                 Row(modifier = Modifier.padding(15.dp)) {
                     Text(
-                        text = "手續費折扣",
+                        text = stringResource(id = R.string.commission_discount),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
                             .width(100.dp)
@@ -301,7 +306,7 @@ fun EditAccountScreenHeader(
     CenterAlignedTopAppBar(
         title = {
             Text(
-                "編輯 ${selectedAccount.account}",
+                stringResource(id = R.string.edit_account, selectedAccount.account),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )

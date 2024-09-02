@@ -1,9 +1,30 @@
 package com.banshus.mystock
 
+import android.content.Context
+
 object SharedOptions {
-    val optionsTransactionType = listOf("買入", "賣出", "股利")
-    val optionsStockType = listOf("一般", "ETF")
-    val optionStockMarket = listOf("台股", "美股")
+    fun getOptionsTransactionType(context: Context) = listOf(
+        context.getString(R.string.transaction_type_buy),
+        context.getString(R.string.transaction_type_sell),
+        context.getString(R.string.transaction_type_dividend)
+    )
+
+    fun getOptionsStockType(context: Context) = listOf(
+        context.getString(R.string.stock_type_normal),
+        context.getString(R.string.stock_type_etf)
+    )
+
+    fun getOptionStockMarket(context: Context) = listOf(
+        context.getString(R.string.taiwan_stocks),
+        context.getString(R.string.us_stocks)
+    )
+
+    fun getPriceName(context: Context, selectedTransactionType: Int): String {
+        return when (selectedTransactionType) {
+            0, 1 -> context.getString(R.string.price_per_share)
+            else -> context.getString(R.string.price_per_dividend)
+        }
+    }
 
     val currencyCodes = listOf(
         "AUD", "BRL", "CAD", "CHF", "CZK", "DKK", "EUR", "GBP", "HKD", "HUF",

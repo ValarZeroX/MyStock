@@ -172,35 +172,41 @@ class MainActivity : ComponentActivity() {
 
         // 检查是否需要自动更新股价
         userSettingsViewModel.userSettings.observe(this) { settings ->
-            if (settings.autoUpdateStock) {
-                // 最小更新间隔为 15 分钟
-                val intervalInMinutes = maxOf(15L, settings.autoUpdateStockSecond / 60L)
-                val stockPriceUpdateRequest = PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
-                    intervalInMinutes, TimeUnit.MINUTES
-                ).build()
+            settings?.let {
+                if (settings.autoUpdateStock) {
+                    // 最小更新间隔为 15 分钟
+                    val intervalInMinutes = maxOf(15L, settings.autoUpdateStockSecond / 60L)
+                    val stockPriceUpdateRequest =
+                        PeriodicWorkRequestBuilder<StockPriceUpdateWorker>(
+                            intervalInMinutes, TimeUnit.MINUTES
+                        ).build()
 
-                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-                    "StockPriceUpdate",
-                    ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
-                    stockPriceUpdateRequest
-                )
-            } else {
-                WorkManager.getInstance(applicationContext).cancelUniqueWork("StockPriceUpdate")
-            }
+                    WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                        "StockPriceUpdate",
+                        ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
+                        stockPriceUpdateRequest
+                    )
+                } else {
+                    WorkManager.getInstance(applicationContext).cancelUniqueWork("StockPriceUpdate")
+                }
 
-            if (settings.autoUpdateExchangeRate) {
-                val currencyIntervalInMinutes = maxOf(15L, settings.autoUpdateExchangeRateSecond / 60L)
-                val currencyRateUpdateRequest = PeriodicWorkRequestBuilder<CurrencyRateUpdateWorker>(
-                    currencyIntervalInMinutes, TimeUnit.MINUTES
-                ).build()
+                if (settings.autoUpdateExchangeRate) {
+                    val currencyIntervalInMinutes =
+                        maxOf(15L, settings.autoUpdateExchangeRateSecond / 60L)
+                    val currencyRateUpdateRequest =
+                        PeriodicWorkRequestBuilder<CurrencyRateUpdateWorker>(
+                            currencyIntervalInMinutes, TimeUnit.MINUTES
+                        ).build()
 
-                WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
-                    "CurrencyRateUpdate",
-                    ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
-                    currencyRateUpdateRequest
-                )
-            } else {
-                WorkManager.getInstance(applicationContext).cancelUniqueWork("CurrencyRateUpdate")
+                    WorkManager.getInstance(applicationContext).enqueueUniquePeriodicWork(
+                        "CurrencyRateUpdate",
+                        ExistingPeriodicWorkPolicy.UPDATE,  // 使用 REPLACE 策略来替换现有任务
+                        currencyRateUpdateRequest
+                    )
+                } else {
+                    WorkManager.getInstance(applicationContext)
+                        .cancelUniqueWork("CurrencyRateUpdate")
+                }
             }
         }
 

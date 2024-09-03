@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">MyStock</string>
+    <string name="hk_stocks">HK Stocks</string>
     <string name="us_stocks">U.S Stocks</string>
     <string name="taiwan_stocks">Taiwan Stocks</string>
     <string name="currency_aud">Australian Dollar</string>
@@ -145,4 +146,36 @@
     <string name="sell">Sell</string>
     <string name="transaction_cost">Transaction Cost</string>
     <string name="profit_loss_amount">Profit/Loss Amount</string>
+    <string name="disclaimer_title">Disclaimer</string>
+    <string name="disclaimer_text_2">
+    This application "MyStock" is designed to help users record and manage stock investment records, but it does not constitute any financial, investment, or legal advice. Please read the following disclaimer carefully before using this application:
+</string>
+    <string name="disclaimer_text_3">Data Accuracy:</string>
+    <string name="disclaimer_text_4">
+    All information and data provided by this application (including but not limited to stock prices, transaction records, market data, etc.) are for reference only. We do not make any explicit or implied guarantees regarding the accuracy, completeness, or timeliness of this information. Users should verify the accuracy of the relevant information themselves.
+</string>
+    <string name="disclaimer_text_5">Investment Risk:</string>
+    <string name="disclaimer_text_6">
+    Stock investment carries high risks, and investment decisions should be based on the individual\'s independent judgment. Using this application to record and manage investment information does not guarantee investment returns or prevent losses. We recommend that users consult a professional financial advisor or other professionals before making any investment decisions.
+</string>
+    <string name="disclaimer_text_7">Limitation of Liability:</string>
+    <string name="disclaimer_text_8">
+    We do not accept any liability for any direct, indirect, incidental, special, or consequential damages (including but not limited to data loss, loss of profits, business interruption, or other financial losses) that may result from the use of this application.
+</string>
+    <string name="disclaimer_text_9">Third-Party Data:</string>
+    <string name="disclaimer_text_10">
+    This application may obtain data from third-party sources. We are not responsible for the accuracy, completeness, or timeliness of this third-party data. Users should understand that this data may change at any time and may not reflect actual market conditions.
+</string>
+    <string name="disclaimer_text_11">User Responsibility:</string>
+    <string name="disclaimer_text_12">
+    Users should understand and assume all risks when using this application. Users are responsible for their financial and investment decisions. All consequences of using this application are the sole responsibility of the user.
+</string>
+    <string name="disclaimer_text_13">Modification and Termination:</string>
+    <string name="disclaimer_text_14">
+    We reserve the right to modify, suspend, or terminate this application and any of its features at any time without prior notice.
+</string>
+    <string name="disclaimer_text_15">
+    By continuing to use this application, you acknowledge that you have read, understood, and agree to comply with the terms of this disclaimer.
+</string>
+    <string name="about">About</string>
 </resources>

@@ -45,10 +45,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
+import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.viewmodels.StockMarketViewModel
 import sh.calvin.reorderable.ReorderableItem
@@ -58,7 +62,7 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: StockMarketViewModel) {
-//    val context = LocalContext.current
+    val context = LocalContext.current
 //    val stockMarketViewModel: StockMarketViewModel = viewModel(
 //        factory = StockMarketViewModelFactory(
 //            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
@@ -74,6 +78,7 @@ fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: Sto
         }
         stockMarketViewModel.updateStockMarketsOrder(updatedList)
     }
+    val options = SharedOptions.getOptionStockMarket(context)
     Scaffold(
         topBar = {
             StockMarketScreenHeader(navController, onAddClick = { showAddDialog = true })
@@ -95,7 +100,7 @@ fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: Sto
                 itemsIndexed(stockMarketList, key = { _, item -> item.stockMarket }) { _, item ->
                     ReorderableItem(reorderableState, item.stockMarket) {
                         ListItem(
-                            headlineContent = { Text(item.stockMarketName) },
+                            headlineContent = { Text(options[item.stockMarket])},
                             trailingContent = {
                                 Icon(
                                     Icons.Filled.DragHandle,
@@ -153,7 +158,7 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
                     modifier = Modifier.fillMaxWidth().padding(top = 16.dp)
                 ) {
                     TextButton(onClick = onDismiss) {
-                        Text("取消")
+                        Text(stringResource(id = R.string.cancel))
                     }
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
@@ -163,7 +168,7 @@ fun StockMarketAdd(onDismiss: () -> Unit, onAdd: (String) -> Unit) {
                             }
                         }
                     ) {
-                        Text("新增")
+                        Text(stringResource(id = R.string.add))
                     }
                 }
             }

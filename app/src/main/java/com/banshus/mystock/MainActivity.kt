@@ -49,6 +49,7 @@ import com.banshus.mystock.ui.setting.AccountScreen
 import com.banshus.mystock.ui.setting.AutoUpdateScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.CurrencyScreen
+import com.banshus.mystock.ui.setting.DisclaimerScreen
 import com.banshus.mystock.ui.setting.EditAccountScreen
 import com.banshus.mystock.ui.setting.ReportSettingScreen
 import com.banshus.mystock.ui.setting.StockMarketScreen
@@ -370,6 +371,11 @@ fun MyApp(
                 navController,
                 stockViewModel,
                 userSettingsViewModel
+            )
+        }
+        composable("disclaimerScreen") {
+            DisclaimerScreen(
+                navController,
             )
         }
     }

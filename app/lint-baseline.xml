@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<issues format="6" by="lint 8.5.1" type="baseline" client="gradle" dependencies="false" name="AGP (8.5.1)" variant="fatal" version="8.5.1">
+
+    <issue
+        id="InvalidFragmentVersionForActivityResult"
+        message="Upgrade Fragment version to at least 1.3.0."
+        errorLine1="        csvImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->"
+        errorLine2="                            ^">
+        <location
+            file="src/main/java/com/banshus/mystock/MainActivity.kt"
+            line="116"
+            column="29"/>
+    </issue>
+
+</issues>

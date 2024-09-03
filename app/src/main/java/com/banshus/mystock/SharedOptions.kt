@@ -16,7 +16,8 @@ object SharedOptions {
 
     fun getOptionStockMarket(context: Context) = listOf(
         context.getString(R.string.taiwan_stocks),
-        context.getString(R.string.us_stocks)
+        context.getString(R.string.us_stocks),
+        context.getString(R.string.hk_stocks),
     )
 
     fun getPriceName(context: Context, selectedTransactionType: Int): String {

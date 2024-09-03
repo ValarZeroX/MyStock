@@ -253,6 +253,37 @@ fun StockSettingScreen(
                         HorizontalDivider()
                     }
                 }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row {
+                            Text(
+                                text = stringResource(id = R.string.about),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        ListItem(
+                            headlineContent = { Text(stringResource(id = R.string.disclaimer_title)) },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "Disclaimer",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("disclaimerScreen")
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
             }
         }
     }

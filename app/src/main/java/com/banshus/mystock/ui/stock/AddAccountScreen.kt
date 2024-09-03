@@ -86,7 +86,8 @@ fun AddAccountScreen(
                     val currencyCode = when (selectedStockMarketIndex) {
                         0 -> "TWD"
                         1 -> "USD"
-                        else -> "TWD"
+                        2 -> "HKD"
+                        else -> "USD"
                     }
 
                     var commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)

@@ -45,9 +45,6 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
                     _error.value = null
                 }
             } catch (e: HttpException) {
-                Log.d("error002", "$e")
-                Log.d("error002", "${e.response()}")
-                Log.d("error002", e.message())
                 if (e.code() == 404) {
                     val errorMessage = "沒有找到該股票的數據: $symbol"
                     _error.value = errorMessage
@@ -57,12 +54,10 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
                     _error.value = errorMessage
                     onError(errorMessage)
                 }
-                Log.e("StockPriceApiViewModel", "HTTP error fetching stock price", e)
             } catch (e: Exception) {
                 val errorMessage = "股票代碼錯誤。無法取得股票資訊。請稍後重試。"
                 _error.value = errorMessage
                 onError(errorMessage)
-                Log.e("StockPriceApiViewModel", "General error fetching stock price", e)
             }
         }
     }
@@ -83,7 +78,6 @@ class StockPriceApiViewModel(private val repository: StockPriceApiRepository) : 
                 onSuccess(response)
 
             } catch (e: Exception) {
-                Log.e("StockSearch", "Failed to search stock", e)
             }
         }
     }

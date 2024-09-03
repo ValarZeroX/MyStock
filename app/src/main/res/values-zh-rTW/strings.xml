@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyStock</string>
+    <string name="hk_stocks">港股</string>
     <string name="us_stocks">美股</string>
     <string name="taiwan_stocks">台股</string>
     <string name="currency_aud">澳幣</string>
@@ -146,4 +147,36 @@
     <string name="sell">賣出</string>
     <string name="transaction_cost">交易費用</string>
     <string name="profit_loss_amount">損益金額</string>
+    <string name="disclaimer_title">免責聲明</string>
+    <string name="disclaimer_text_2">
+    本應用程式「MyStock」旨在幫助用戶記錄和管理股票投資記錄，但不構成任何財務、投資或法律建議。使用本應用程式前，請仔細閱讀以下免責聲明：
+</string>
+    <string name="disclaimer_text_3">數據準確性：</string>
+    <string name="disclaimer_text_4">
+    本應用程式提供的所有信息和數據（包括但不限於股票價格、交易記錄、市場數據等）僅供參考。我們不對這些信息的準確性、完整性或及時性作出任何明示或暗示的保證。用戶應自行核實相關信息的準確性。
+</string>
+    <string name="disclaimer_text_5">投資風險：</string>
+    <string name="disclaimer_text_6">
+    股票投資具有高風險，投資決策應基於個人的獨立判斷。使用本應用程式記錄和管理投資信息並不保證投資收益或避免損失。我們建議用戶在作出任何投資決策之前，諮詢專業的金融顧問或其他專業人士。
+</string>
+    <string name="disclaimer_text_7">責任限制：</string>
+    <string name="disclaimer_text_8">
+    對於因使用本應用程式而可能造成的任何直接、間接、附帶、特殊或後果性損害（包括但不限於數據丟失、收益損失、業務中斷或其他財務損失），本應用程式的開發者和提供者不承擔任何責任。
+</string>
+    <string name="disclaimer_text_9">第三方數據：</string>
+    <string name="disclaimer_text_10">
+    本應用程式可能會從第三方來源獲取數據。我們不對這些第三方數據的準確性、完整性或及時性負責。用戶應了解，這些數據可能會隨時更改，並可能與實際市場情況不符。
+</string>
+    <string name="disclaimer_text_11">自我負責：</string>
+    <string name="disclaimer_text_12">
+    用戶在使用本應用程式時，應了解並承擔所有風險。用戶需對自己的財務和投資決策負責。使用本應用程式的所有後果均由用戶自行承擔。
+</string>
+    <string name="disclaimer_text_13">修改與終止：</string>
+    <string name="disclaimer_text_14">
+    我們保留隨時修改、暫停或終止本應用程式及其任何功能的權利，恕不另行通知。
+</string>
+    <string name="disclaimer_text_15">
+    通過繼續使用本應用程式，您表示已閱讀、理解並同意遵守本免責聲明中的條款。
+</string>
+    <string name="about">關於</string>
 </resources>

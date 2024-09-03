@@ -47,6 +47,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -76,6 +77,7 @@ fun StockSymbolScreen(
     stockMarketViewModel: StockMarketViewModel,
     stockPriceApiViewModel: StockPriceApiViewModel
 ) {
+    val context = LocalContext.current
     // 创建 ScaffoldState
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -83,25 +85,7 @@ fun StockSymbolScreen(
 
     val decimalFormat = DecimalFormat("#.00")
     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-//    val context = LocalContext.current
-//    val stockSymbolViewModel: StockSymbolViewModel = viewModel(
-//        factory = StockSymbolViewModelFactory(
-//            StockSymbolRepository(AppDatabase.getDatabase(context).stockSymbolDao())
-//        )
-//    )
-//
-//    val stockMarketViewModel: StockMarketViewModel = viewModel(
-//        factory = StockMarketViewModelFactory(
-//            StockMarketRepository(AppDatabase.getDatabase(context).stockMarketDao())
-//        )
-//    )
 
-    //使用api 初始化viewModel
-//    val stockPriceApiViewModel: StockPriceApiViewModel = viewModel(
-//        factory = StockPriceApiViewModelFactory(
-//            StockPriceApiRepository(RetrofitInstance.yahooApi)
-//        )
-//    )
     var stockChartResponses by remember { mutableStateOf<Map<String, StockChartResponse>>(emptyMap()) }
 
     var stockChartResponse by remember { mutableStateOf<StockChartResponse?>(null) }
@@ -217,8 +201,8 @@ fun StockSymbolScreen(
                                         response?.chart?.result?.firstOrNull()?.indicators?.quote?.firstOrNull()?.close?.lastOrNull()
                                     Text(
                                         text = price?.let {
-                                            stringResource(id = R.string.stock_price, "%.2f".format(it))
-                                        } ?: stringResource(id = R.string.stock_price, "%.2f".format(stockSymbol.stockPrice))
+                                            context.getString(R.string.stock_price_value, "%.2f".format(it))
+                                        } ?: context.getString(R.string.stock_price_value, "%.2f".format(stockSymbol.stockPrice))
                                     )
                                 }
                                 Row(
@@ -340,19 +324,13 @@ fun StockSymbolScreen(
                 selectedStockMarket = selectedStockMarket,
                 onDismiss = { showAddDialog = false },
                 onAdd = { symbol, name, selectedMarketId ->
-                    Log.d("StockSymbolAdd", "No")
                     if (symbol.isNotEmpty()) {
-                        Log.d("StockSymbolAdd", "Go")
                         stockPriceApiViewModel.fetchStockPriceResult(
                             symbol = symbol,
                             period1 = System.currentTimeMillis() / 1000 - 86400,
                             period2 = System.currentTimeMillis() / 1000,
                             marketCode = selectedStockMarket?.stockMarketCode ?: "",
                             onSuccess = { response ->
-                                Log.d(
-                                    "StockChartResponse",
-                                    "Meta Short Name: ${response?.chart?.result?.firstOrNull()?.meta?.shortName}"
-                                )
                                 val result = response?.chart?.result?.firstOrNull()
                                 val meta = result?.meta
 

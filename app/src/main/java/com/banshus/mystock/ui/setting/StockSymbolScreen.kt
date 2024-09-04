@@ -56,6 +56,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.navigation.NavHostController
 import com.banshus.mystock.R
+import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.StockChartResponse
 import com.banshus.mystock.data.entities.StockMarket
@@ -593,10 +594,12 @@ fun StockMarketDropdown(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf("") }
-
+    val context = LocalContext.current
+    val options = SharedOptions.getOptionStockMarket(context)
+    val myStockMarket = selectedStockMarket?.stockMarket ?: 0
     Column {
         OutlinedTextField(
-            value = selectedStockMarket?.stockMarketName ?: "", // 假設 stockMarketName 是股票市場的顯示名稱
+            value = options[myStockMarket], // 假設 stockMarketName 是股票市場的顯示名稱
             onValueChange = {},
             label = { Text(stringResource(id = R.string.select_stock_market)) },
             readOnly = true,
@@ -638,7 +641,7 @@ fun StockMarketDropdown(
             }
             filteredStockMarkets.forEach { stockMarket ->
                 DropdownMenuItem(
-                    text = { Text(stockMarket.stockMarketName) }, // 顯示股票市場名稱
+                    text = { Text(options[stockMarket.stockMarket]) }, // 顯示股票市場名稱
                     onClick = {
                         onStockMarketSelected(stockMarket)
                         expanded = false

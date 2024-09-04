@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">MyStock</string>
+    <string name="hk_stocks">港股</string>
+    <string name="us_stocks">美股</string>
+    <string name="taiwan_stocks">台股</string>
+    <string name="currency_aud">澳币</string>
+    <string name="currency_brl">巴西雷亚尔</string>
+    <string name="currency_cad">加币</string>
+    <string name="currency_chf">瑞士法郎</string>
+    <string name="currency_czk">捷克克朗</string>
+    <string name="currency_dkk">丹麦克朗</string>
+    <string name="currency_eur">欧元</string>
+    <string name="currency_gbp">英镑</string>
+    <string name="currency_hkd">港币</string>
+    <string name="currency_huf">匈牙利福林</string>
+    <string name="currency_ils">以色列新谢克尔</string>
+    <string name="currency_jpy">日元</string>
+    <string name="currency_mxn">墨西哥比索</string>
+    <string name="currency_myr">马来西亚令吉</string>
+    <string name="currency_nok">挪威克朗</string>
+    <string name="currency_nzd">新西兰元</string>
+    <string name="currency_php">菲律宾比索</string>
+    <string name="currency_pln">波兰兹罗提</string>
+    <string name="currency_rmb">人民币</string>
+    <string name="currency_rub">俄罗斯卢布</string>
+    <string name="currency_sek">瑞典克朗</string>
+    <string name="currency_sgd">新加坡元</string>
+    <string name="currency_thb">泰铢</string>
+    <string name="currency_try">新土耳其里拉</string>
+    <string name="currency_twd">新台币</string>
+    <string name="currency_usd">美元</string>
+    <string name="tab_account">账户</string>
+    <string name="tab_record">记录</string>
+    <string name="tab_add">新增</string>
+    <string name="tab_report">报表</string>
+    <string name="tab_setting">设置</string>
+    <string name="settings_title">功能列表</string>
+    <string name="settings_stock_account">股票账户</string>
+    <string name="settings_stock_market">股票市场</string>
+    <string name="settings_stock_symbol">股票代码</string>
+    <string name="settings_preferences">偏好</string>
+    <string name="settings_color_theme">主题颜色</string>
+    <string name="settings_report">报表</string>
+    <string name="settings_currency">币别汇率</string>
+    <string name="settings_auto_update">自动更新</string>
+    <string name="settings_import_export">导入导出</string>
+    <string name="settings_export_csv">导出CSV</string>
+    <string name="settings_import_csv">导入CSV</string>
+    <string name="share_csv_via">通过以下方式分享CSV</string>
+    <string name="settings_app">设置</string>
+    <string name="account_overview">账户总览</string>
+    <string name="account_value">账户现值</string>
+    <string name="investment_cost">投资成本</string>
+    <string name="unrealized_gain_loss">未实现损益</string>
+    <string name="unrealized_gain_loss_percentage">未实现损益率</string>
+    <string name="account_name">账户名称</string>
+    <string name="stock_market">股票市场</string>
+    <string name="advanced_settings">高级设置</string>
+    <string name="commission">手续费</string>
+    <string name="transaction_tax">交易税</string>
+    <string name="commission_discount">手续费折扣</string>
+    <string name="add_account">新增账户</string>
+    <string name="transaction_type_buy">买入</string>
+    <string name="transaction_type_sell">卖出</string>
+    <string name="transaction_type_dividend">股利</string>
+    <string name="stock_type_normal">普通</string>
+    <string name="stock_type_etf">ETF</string>
+    <string name="select_account">选择账户</string>
+    <string name="price_per_share">每股价格</string>
+    <string name="price_per_dividend">每股股利</string>
+    <string name="trading_account">交易账户</string>
+    <string name="stock_symbol">股票代码</string>
+    <string name="auto_calculate">自动计算</string>
+    <string name="taiwan_stock_support_note">仅支持台湾股票手续费、交易税自动计算。</string>
+    <string name="quantity">股数</string>
+    <string name="stock_type">股票类型</string>
+    <string name="transaction_date">交易日期</string>
+    <string name="add_record">新增记录</string>
+    <string name="transaction_type">交易类型</string>
+    <string name="select_date">选择日期</string>
+    <string name="cancel">取消</string>
+    <string name="confirm">确定</string>
+    <string name="select_time">选择时间</string>
+    <string name="edit_transaction_record">编辑交易记录</string>
+    <string name="account_inventory">账户库存</string>
+    <string name="transaction_record">交易记录</string>
+    <string name="account_cost">账户成本</string>
+    <string name="unknown_stock_name">未知股票名称</string>
+    <string name="shares_held">持有股数</string>
+    <string name="unit_cost">单位成本</string>
+    <string name="total_cost">总成本</string>
+    <string name="market_value">市值</string>
+    <string name="profit_loss">损益</string>
+    <string name="profit_loss_percentage">损益率</string>
+    <string name="delete">删除</string>
+    <string name="edit">编辑</string>
+    <string name="net_proceeds">净收入</string>
+    <string name="delete_account_with_name">删除「%1$s」</string>
+    <string name="account_related_records_will_be_deleted">账户相关交易记录将被删除</string>
+    <string name="transaction_records_count">（%1$d）笔交易记录</string>
+    <string name="stock_price">股价</string>
+    <string name="auto_update_stock_price_description">自动更新股价，每15分钟更新一次。关闭后可手动更新股票代码。</string>
+    <string name="exchange_rate">汇率</string>
+    <string name="auto_update_exchange_rate_description">自动更新汇率，每15分钟更新一次。</string>
+    <string name="auto_update_settings">自动更新设置</string>
+    <string name="theme_color">主题颜色</string>
+    <string name="dark_mode">深夜模式</string>
+    <string name="color">颜色</string>
+    <string name="primary_currency">主币别</string>
+    <string name="currency_rate">币别汇率</string>
+    <string name="search_currency">搜索币别</string>
+    <string name="edit_account">编辑 %1$s</string>
+    <string name="commission_calculation">手续费计算</string>
+    <string name="profit_loss_includes_commission">损益包含手续费成本。</string>
+    <string name="transaction_tax_calculation">交易税计算</string>
+    <string name="profit_loss_includes_transaction_tax">损益包含交易税成本。</string>
+    <string name="dividend_calculation">股利计算</string>
+    <string name="profit_loss_includes_dividends">损益包含股利。</string>
+    <string name="report_settings">报表设置</string>
+    <string name="search_stock">搜索股票</string>
+    <string name="stock_price_value">股价: %1$s</string>
+    <string name="unknown_time">未知时间</string>
+    <string name="last_updated_time">最后更新时间: %1$s</string>
+    <string name="update_successful">更新成功</string>
+    <string name="addition_successful">新增成功</string>
+    <string name="update_stock">更新股票</string>
+    <string name="stock_symbol_value">股票代码: %1$s</string>
+    <string name="stock_name">股票名称</string>
+    <string name="update">更新</string>
+    <string name="add_stock">新增股票</string>
+    <string name="add">新增</string>
+    <string name="select_stock_market">选择股票市场</string>
+    <string name="search_stock_market">搜索股票市场</string>
+    <string name="please_create_account">请创建账户</string>
+    <string name="please_add_transaction_record">请新增交易记录</string>
+    <string name="overview">总览</string>
+    <string name="total_buy">总买入</string>
+    <string name="total_sell">总卖出</string>
+    <string name="total_commission">总手续费</string>
+    <string name="total_transaction_tax">总交易税</string>
+    <string name="total_dividend">总股利</string>
+    <string name="total_profit_loss">总损益</string>
+    <string name="total_profit_loss_percentage">总损益率</string>
+    <string name="annualized_return">年化收益率</string>
+    <string name="buy">买入</string>
+    <string name="sell">卖出</string>
+    <string name="transaction_cost">交易费用</string>
+    <string name="profit_loss_amount">损益金额</string>
+    <string name="disclaimer_title">免责声明</string>
+    <string name="disclaimer_text_2">
+    本应用程序「MyStock」旨在帮助用户记录和管理股票投资记录，但不构成任何财务、投资或法律建议。使用本应用程序前，请仔细阅读以下免责声明：
+</string>
+    <string name="disclaimer_text_3">数据准确性：</string>
+    <string name="disclaimer_text_4">
+    本应用程序提供的所有信息和数据（包括但不限于股票价格、交易记录、市场数据等）仅供参考。我们不对这些信息的准确性、完整性或及时性作出任何明示或暗示的保证。用户应自行核实相关信息的准确性。
+</string>
+    <string name="disclaimer_text_5">投资风险：</string>
+    <string name="disclaimer_text_6">
+    股票投资具有高风险，投资决策应基于个人的独立判断。使用本应用程序记录和管理投资信息并不保证投资收益或避免损失。我们建议用户在作出任何投资决策之前，咨询专业的金融顾问或其他专业人士。
+</string>
+    <string name="disclaimer_text_7">责任限制：</string>
+    <string name="disclaimer_text_8">
+    对于因使用本应用程序而可能造成的任何直接、间接、附带、特殊或后果性损害（包括但不限于数据丢失、收益损失、业务中断或其他财务损失），本应用程序的开发者和提供者不承担任何责任。
+</string>
+    <string name="disclaimer_text_9">第三方数据：</string>
+    <string name="disclaimer_text_10">
+    本应用程序可能会从第三方来源获取数据。我们不对这些第三方数据的准确性、完整性或及时性负责。用户应了解，这些数据可能会随时更改，并可能与实际市场情况不符。
+</string>
+    <string name="disclaimer_text_11">自我负责：</string>
+    <string name="disclaimer_text_12">
+    用户在使用本应用程序时，应了解并承担所有风险。用户需对自己的财务和投资决策负责。使用本应用程序的所有后果均由用户自行承担。
+</string>
+    <string name="disclaimer_text_13">修改与终止：</string>
+    <string name="disclaimer_text_14">
+    我们保留随时修改、暂停或终止本应用程序及其任何功能的权利，恕不另行通知。
+</string>
+    <string name="disclaimer_text_15">
+    通过继续使用本应用程序，您表示已阅读、理解并同意遵守本免责声明中的条款。
+</string>
+    <string name="about">关于</string>
+    <string name="data_source_yahoo">数据来源：Yahoo Finance API</string>
+    <string name="data_source_rter">数据来源：RTER API</string>
+    <string name="all_accounts">全部账户</string>
+    <string name="all">全部</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="week">周</string>
+    <string name="select_start_date">选择起始日期</string>
+    <string name="select_date_range">选择日期范围</string>
+</resources>

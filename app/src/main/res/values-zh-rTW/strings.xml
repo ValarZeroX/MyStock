@@ -179,4 +179,13 @@
     通過繼續使用本應用程式，您表示已閱讀、理解並同意遵守本免責聲明中的條款。
 </string>
     <string name="about">關於</string>
+    <string name="data_source_yahoo">資料來源：Yahoo Finance API</string>
+    <string name="data_source_rter">資料來源：RTER API</string>
+    <string name="all_accounts">全部帳戶</string>
+    <string name="all">全部</string>
+    <string name="year">年</string>
+    <string name="month">月</string>
+    <string name="week">週</string>
+    <string name="select_start_date">選擇起始日期</string>
+    <string name="select_date_range">選擇日期範圍</string>
 </resources>

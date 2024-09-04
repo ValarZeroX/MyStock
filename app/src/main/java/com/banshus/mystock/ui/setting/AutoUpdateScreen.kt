@@ -96,6 +96,16 @@ fun AutoUpdateScreen(
                             color = Gray1
                         )
                     }
+                    Row(modifier = Modifier.padding(5.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.data_source_yahoo),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, end = 20.dp),
+                            fontSize = 14.sp,
+                            color = Gray1
+                        )
+                    }
                 }
                 item {
                     Row(
@@ -121,6 +131,16 @@ fun AutoUpdateScreen(
                     Row(modifier = Modifier.padding(5.dp)) {
                         Text(
                             text = stringResource(id = R.string.auto_update_exchange_rate_description),
+                            modifier = Modifier
+                                .align(Alignment.CenterVertically)
+                                .padding(start = 10.dp, end = 20.dp),
+                            fontSize = 14.sp,
+                            color = Gray1
+                        )
+                    }
+                    Row(modifier = Modifier.padding(5.dp)) {
+                        Text(
+                            text = stringResource(id = R.string.data_source_rter),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
                                 .padding(start = 10.dp, end = 20.dp),

@@ -103,7 +103,7 @@ fun AddStockScreen(
             set(Calendar.MILLISECOND, 0)
         }
         SimpleDateFormat("MMM dd, yyyy", Locale.getDefault()).format(calendar.time)
-    } ?: "選擇日期"
+    } ?: stringResource(id = R.string.select_date)
 
     //時間選擇器
     val initialDateTime = System.currentTimeMillis()
@@ -297,7 +297,7 @@ fun AddStockScreen(
                         text = stringResource(id = R.string.trading_account),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(110.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     if (firstStockAccount == null) {
@@ -335,7 +335,7 @@ fun AddStockScreen(
                         text = stringResource(id = R.string.stock_symbol),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(110.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     StockSymbolDropdown(
@@ -358,7 +358,7 @@ fun AddStockScreen(
                             text = stringResource(id = R.string.auto_calculate),
                             modifier = Modifier
                                 .align(Alignment.CenterVertically)
-                                .width(100.dp)
+                                .width(110.dp)
                                 .padding(start = 10.dp, end = 20.dp),
                         )
                         Switch(
@@ -485,7 +485,7 @@ fun AddStockScreen(
                         text = stringResource(id = R.string.transaction_type),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(110.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     SingleChoiceSegmentedButtonRow(
@@ -518,7 +518,7 @@ fun AddStockScreen(
                         text = stringResource(id = R.string.stock_type),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(110.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     SingleChoiceSegmentedButtonRow(
@@ -551,7 +551,7 @@ fun AddStockScreen(
                         text = stringResource(id = R.string.transaction_date),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(110.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     Row(

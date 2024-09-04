@@ -27,11 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.banshus.mystock.NumberUtils.formatNumber
 import com.banshus.mystock.NumberUtils.getProfitColor
+import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.Currency
@@ -113,7 +115,7 @@ fun AllReportScreen(
         Row(
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = "全部帳戶", fontSize = 24.sp, modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.all_accounts), fontSize = 24.sp, modifier = Modifier.weight(1f))
             Box(
                 modifier = Modifier
                     .border(
@@ -148,8 +150,8 @@ fun AllReportScreen(
             }
         }
         Row {
-            Text(text = "總買進", modifier = Modifier.weight(1f))
-            Text(text = "總賣出", modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_buy), modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_sell), modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -162,8 +164,8 @@ fun AllReportScreen(
             )
         }
         Row {
-            Text(text = "總手續費", modifier = Modifier.weight(1f))
-            Text(text = "總交易稅", modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_commission), modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_transaction_tax), modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -176,8 +178,8 @@ fun AllReportScreen(
             )
         }
         Row {
-            Text(text = "總股利", modifier = Modifier.weight(1f))
-            Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_dividend), modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.annualized_return), modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -198,8 +200,8 @@ fun AllReportScreen(
             }
         }
         Row {
-            Text(text = "總損益", modifier = Modifier.weight(1f))
-            Text(text = "總損益率", modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_profit_loss), modifier = Modifier.weight(1f))
+            Text(text = stringResource(id = R.string.total_profit_loss_percentage), modifier = Modifier.weight(1f))
         }
         Row {
             Text(
@@ -226,9 +228,9 @@ fun AllReportScreen(
                             Row(
                                 modifier = Modifier.fillMaxWidth()
                             ) {
-                                Text(text = "總損益", modifier = Modifier.weight(1f))
-                                Text(text = "總損益率", modifier = Modifier.weight(1f))
-                                Text(text = "年化報酬率", modifier = Modifier.weight(1f))
+                                Text(text = stringResource(id = R.string.total_profit_loss), modifier = Modifier.weight(1f))
+                                Text(text = stringResource(id = R.string.total_profit_loss_percentage), modifier = Modifier.weight(1f))
+                                Text(text = stringResource(id = R.string.annualized_return), modifier = Modifier.weight(1f))
                             }
                             Row(
                                 modifier = Modifier.fillMaxWidth()

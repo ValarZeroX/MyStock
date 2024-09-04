@@ -38,6 +38,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
@@ -147,7 +148,7 @@ fun AddAccountScreen(
                     text = stringResource(id = R.string.account_name),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .width(100.dp)
+                        .width(125.dp)
                         .padding(start = 10.dp, end = 20.dp),
                 )
                 OutlinedTextField(
@@ -170,7 +171,7 @@ fun AddAccountScreen(
                     text = stringResource(id = R.string.stock_market),
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
-                        .width(100.dp)
+                        .width(110.dp)
                         .padding(start = 10.dp, end = 20.dp),
                 )
                 val options = SharedOptions.getOptionStockMarket(context)
@@ -200,7 +201,7 @@ fun AddAccountScreen(
                         text = stringResource(id = R.string.advanced_settings),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(125.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
 
@@ -218,7 +219,7 @@ fun AddAccountScreen(
                         text = stringResource(id = R.string.commission),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(125.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     OutlinedTextField(
@@ -248,7 +249,7 @@ fun AddAccountScreen(
                         text = stringResource(id = R.string.transaction_tax),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(125.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     OutlinedTextField(
@@ -278,7 +279,7 @@ fun AddAccountScreen(
                         text = stringResource(id = R.string.commission_discount),
                         modifier = Modifier
                             .align(Alignment.CenterVertically)
-                            .width(100.dp)
+                            .width(125.dp)
                             .padding(start = 10.dp, end = 20.dp),
                     )
                     OutlinedTextField(

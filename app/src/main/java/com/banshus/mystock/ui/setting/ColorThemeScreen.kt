@@ -102,27 +102,27 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
             Column(
                 modifier = Modifier.padding(20.dp)
             ) {
-//                Row(
-//                    modifier = Modifier.padding(5.dp, bottom = 20.dp)
-//                ) {
-//                    Text(
-//                        text = stringResource(id = R.string.dark_mode),
-//                        modifier = Modifier
-//                            .align(Alignment.CenterVertically)
-//                            .width(150.dp)
-//                            .padding(start = 10.dp, end = 20.dp),
-//                    )
-//                    Switch(
-//                        checked = darkTheme,
-//                        onCheckedChange = {
-//                            darkTheme = it
-//                            userSettingsViewModel.updateDarkTheme(
-//                                darkTheme,
-//                            )
-//                        }
-//                    )
-//                }
-//                HorizontalDivider()
+                Row(
+                    modifier = Modifier.padding(5.dp, bottom = 20.dp)
+                ) {
+                    Text(
+                        text = stringResource(id = R.string.dark_mode),
+                        modifier = Modifier
+                            .align(Alignment.CenterVertically)
+                            .width(150.dp)
+                            .padding(start = 10.dp, end = 20.dp),
+                    )
+                    Switch(
+                        checked = darkTheme,
+                        onCheckedChange = {
+                            darkTheme = it
+                            userSettingsViewModel.updateDarkTheme(
+                                darkTheme,
+                            )
+                        }
+                    )
+                }
+                HorizontalDivider()
                 Row(
                     modifier = Modifier.padding(5.dp)
                 ) {

@@ -29,9 +29,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.LiveData
+import com.banshus.mystock.R
 import com.banshus.mystock.StockViewModel
 import java.time.Instant
 import java.time.LocalDate
@@ -72,13 +74,12 @@ fun MonthSwitcher(onMonthChanged: (LocalDate) -> Unit) {
     }
 }
 
-enum class DateRangeType(val displayName: String) {
-    ALL("全部"),
-    YEAR("年"),
-    MONTH("月"),
-    WEEK("週")
+enum class DateRangeType(val stringResId: Int) {
+    ALL(R.string.all),
+    YEAR(R.string.year),
+    MONTH(R.string.month),
+    WEEK(R.string.week)
 }
-
 @Composable
 fun DateSwitcher(
     stockViewModel: StockViewModel,
@@ -189,12 +190,12 @@ fun DatePickerModal(
                 onDateSelected(selectedDateMillis)
                 onDismiss()
             }) {
-                Text("確定")
+                Text(stringResource(id = R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     ) {
@@ -205,7 +206,7 @@ fun DatePickerModal(
                     modifier = Modifier.padding(16.dp)
                 ) {
                     Text(
-                        text = "選擇起始日期"
+                        text = stringResource(id = R.string.select_start_date)
                     )
                 }
             },
@@ -225,7 +226,7 @@ fun RangeTypeSelectionDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = {
-            Text(text = "選擇日期範圍")
+            Text(text = stringResource(id = R.string.select_date_range))
         },
         text = {
             Column {
@@ -247,46 +248,24 @@ fun RangeTypeSelectionDialog(
                                 onDismiss() // 关闭对话框
                             }
                         )
-                        Text(text = rangeType.displayName)
+                        Text(text = stringResource(id = rangeType.stringResId))
                     }
                 }
             }
         },
         confirmButton = {
             TextButton(onClick = onDismiss) {
-                Text("確定")
+                Text(stringResource(id = R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("取消")
+                Text(stringResource(id = R.string.cancel))
             }
         }
     )
 }
 
-// 計算開始和結束日期的函數
-//fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate): Pair<LocalDate, LocalDate> {
-//    return when (rangeType) {
-//        DateRangeType.YEAR -> {
-//            val startDate = baseDate.withDayOfYear(1)
-//            val endDate = startDate.plusYears(1).minusDays(1)
-//            startDate to endDate
-//        }
-//
-//        DateRangeType.MONTH -> {
-//            val startDate = baseDate.withDayOfMonth(1)
-//            val endDate = startDate.plusMonths(1).minusDays(1)
-//            startDate to endDate
-//        }
-//
-//        DateRangeType.WEEK -> {
-//            val startDate = baseDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
-//            val endDate = startDate.plusDays(6)
-//            startDate to endDate
-//        }
-//    }
-//}
 fun getStartAndEndDate(rangeType: DateRangeType, baseDate: LocalDate, minDate: Long, maxDate: Long): Pair<LocalDate, LocalDate> {
     return when (rangeType) {
         DateRangeType.YEAR -> {

@@ -178,4 +178,13 @@
     By continuing to use this application, you acknowledge that you have read, understood, and agree to comply with the terms of this disclaimer.
 </string>
     <string name="about">About</string>
+    <string name="data_source_yahoo">Data source: Yahoo Finance API</string>
+    <string name="data_source_rter">Data source: RTER API</string>
+    <string name="all_accounts">All Accounts</string>
+    <string name="all">All</string>
+    <string name="year">Year</string>
+    <string name="month">Month</string>
+    <string name="week">Week</string>
+    <string name="select_start_date">Select Start Date</string>
+    <string name="select_date_range">Select Date Range</string>
 </resources>

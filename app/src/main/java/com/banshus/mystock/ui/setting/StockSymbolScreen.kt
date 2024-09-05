@@ -177,7 +177,7 @@ fun StockSymbolScreen(
                 trailingIcon = {
                     Icon(
                         imageVector = Icons.Default.Add,
-                        contentDescription = "Add",
+                        contentDescription = "Add Stock Symbol",
                         modifier = Modifier.clickable {
                             showAddDialog = true
                         }

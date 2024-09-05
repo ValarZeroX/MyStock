@@ -118,7 +118,7 @@ fun AccountListHeader(navController: NavHostController) {
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Close"
+                    contentDescription = "Close Account List"
                 )
             }
         },
@@ -128,7 +128,7 @@ fun AccountListHeader(navController: NavHostController) {
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
+                    contentDescription = "Add Account List"
                 )
             }
         }

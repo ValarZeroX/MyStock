@@ -37,6 +37,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -83,7 +85,7 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Filled.ArrowBackIosNew,
-                            contentDescription = "Back"
+                            contentDescription = "Back Color Theme"
                         )
                     }
                 },
@@ -144,7 +146,8 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                                 .weight(1f)
                                 .clickable {
                                     userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
-                                },
+                                }
+                                .semantics { contentDescription = "Theme 1" },
                             border = BorderStroke(
                                 width = if (themeIndex == 0) 2.dp else 1.dp,
                                 color = if (themeIndex == 0) Blue1 else Gray1
@@ -183,7 +186,8 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                                 .weight(1f)
                                 .clickable {
                                     userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
-                                },
+                                }
+                                .semantics { contentDescription = "Theme 2"},
                             border = BorderStroke(
                                 width = if (themeIndex == 1) 2.dp else 1.dp,
                                 color = if (themeIndex == 1) Blue1 else Gray1
@@ -226,7 +230,8 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                                 .weight(1f)
                                 .clickable {
                                     userSettingsViewModel.updateUserSettings(newThemeIndex = 0)
-                                },
+                                }
+                                .semantics { contentDescription = "Theme 3"},
                             border = BorderStroke(
                                 width = if (themeIndex == 0) 2.dp else 1.dp,
                                 color = if (themeIndex == 0) Blue1 else Gray1
@@ -265,7 +270,8 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
                                 .weight(1f)
                                 .clickable {
                                     userSettingsViewModel.updateUserSettings(newThemeIndex = 1)
-                                },
+                                }
+                                .semantics { contentDescription = "Theme 4"},
                             border = BorderStroke(
                                 width = if (themeIndex == 1) 2.dp else 1.dp,
                                 color = if (themeIndex == 1) Blue1 else Gray1

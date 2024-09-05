@@ -68,7 +68,6 @@ import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import java.time.Instant
 import java.time.LocalDate
-import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import androidx.compose.ui.viewinterop.AndroidView
@@ -80,9 +79,7 @@ import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
-import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
-import com.banshus.mystock.ui.tool.MonthSwitcher
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
@@ -593,7 +590,7 @@ fun StockListHeader(
                 }) {
                     Icon(
                         imageVector = Icons.Filled.Add,
-                        contentDescription = "add"
+                        contentDescription = "Add Stock List"
                     )
                 }
             }

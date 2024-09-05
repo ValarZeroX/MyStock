@@ -201,18 +201,18 @@ fun DatePickerModal(
     ) {
         DatePicker(
             state = datePickerState,
-            title = {
-                Box(
-                    modifier = Modifier.padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(id = R.string.select_start_date)
-                    )
-                }
-            },
+//            title = {
+//                Box(
+//                    modifier = Modifier.padding(16.dp)
+//                ) {
+//                    Text(
+//                        text = stringResource(id = R.string.select_start_date)
+//                    )
+//                }
+//            },
             modifier = Modifier
                 .fillMaxWidth()
-                .height(500.dp)
+                .height(514.dp)
         )
     }
 }

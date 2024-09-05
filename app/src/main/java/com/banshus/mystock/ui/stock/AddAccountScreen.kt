@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -142,10 +144,10 @@ fun AddAccountScreen(
                 .background(MaterialTheme.colorScheme.surface)
                 .padding(innerPadding)
         ) {
-
+            val accountNameString = stringResource(id = R.string.account_name)
             Row(modifier = Modifier.padding(15.dp)){
                 Text(
-                    text = stringResource(id = R.string.account_name),
+                    text = accountNameString,
                     modifier = Modifier
                         .align(Alignment.CenterVertically)
                         .width(125.dp)
@@ -161,6 +163,7 @@ fun AddAccountScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(15.dp)
+                        .semantics { contentDescription = accountNameString },
                 )
             }
 
@@ -327,7 +330,7 @@ fun AddAccountScreenHeader(
             IconButton(onClick = { navController.popBackStack() }) {
                 Icon(
                     imageVector = Icons.Filled.Close,
-                    contentDescription = "Back"
+                    contentDescription = "Back Add Account"
                 )
             }
         },
@@ -337,7 +340,7 @@ fun AddAccountScreenHeader(
             }) {
                 Icon(
                     imageVector = Icons.Filled.Check,
-                    contentDescription = "Check"
+                    contentDescription = "Check Add Account"
                 )
             }
         }

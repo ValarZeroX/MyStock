@@ -406,7 +406,7 @@ fun AccountTab(
                         leadingIcon = {
                             Icon(
                                 Icons.Filled.AccountBalance,
-                                contentDescription = "Account",
+                                contentDescription = "Account Report",
                                 Modifier.size(AssistChipDefaults.IconSize)
                             )
                         },

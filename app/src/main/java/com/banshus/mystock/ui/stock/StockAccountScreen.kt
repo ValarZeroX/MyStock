@@ -314,7 +314,7 @@ fun AccountHeader(navController: NavHostController) {
             }) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add"
+                    contentDescription = "Add Account"
                 )
             }
         }

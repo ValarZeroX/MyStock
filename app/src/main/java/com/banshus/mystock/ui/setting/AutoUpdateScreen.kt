@@ -27,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,6 +52,10 @@ fun AutoUpdateScreen(
         autoUpdateStockPrice = userSettings!!.autoUpdateStock
         autoUpdateExchangeRate = userSettings!!.autoUpdateExchangeRate
     }
+    val stockPriceOn = stringResource(id = R.string.stock_price_on)
+    val stockPriceOff = stringResource(id = R.string.stock_price_off)
+    val exchangeRateOn = stringResource(id = R.string.exchange_rate_on)
+    val exchangeRateOff = stringResource(id = R.string.exchange_rate_off)
     Scaffold(
         topBar = {
             AutoUpdateScreenHeader(navController)
@@ -83,7 +89,15 @@ fun AutoUpdateScreen(
                                 userSettingsViewModel.updateAutoStockPrice(
                                     autoUpdateStockPrice,
                                 )
-                            }
+                            },
+                            modifier = Modifier
+                                .semantics {
+                                    contentDescription = if (autoUpdateStockPrice) {
+                                        stockPriceOn  // 狀態為開啟
+                                    } else {
+                                        stockPriceOff  // 狀態為關閉
+                                    }
+                                }
                         )
                     }
                     Row(modifier = Modifier.padding(5.dp)) {
@@ -125,7 +139,15 @@ fun AutoUpdateScreen(
                                 userSettingsViewModel.updateAutoExchangeRate(
                                     autoUpdateExchangeRate,
                                 )
-                            }
+                            },
+                            modifier = Modifier
+                                .semantics {
+                                    contentDescription = if (autoUpdateStockPrice) {
+                                        exchangeRateOn  // 狀態為開啟
+                                    } else {
+                                        exchangeRateOff  // 狀態為關閉
+                                    }
+                                }
                         )
                     }
                     Row(modifier = Modifier.padding(5.dp)) {

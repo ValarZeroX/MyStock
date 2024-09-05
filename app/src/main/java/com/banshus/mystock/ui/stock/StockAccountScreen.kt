@@ -215,7 +215,7 @@ fun StockMainScreen(
                         }) {
                             Icon(
                                 imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "詳細"
+                                contentDescription = "詳細 ${stockAccount.account}"
                             )
                         }
                     }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -18,26 +19,34 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AttachMoney
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.NavHostController
+import com.banshus.mystock.DateValueFormatter
+import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.data.entities.StockAccount
@@ -84,7 +93,7 @@ fun AllStockScreen(
     } ?: "Unknown Market"
 
     val marketStockSummary = marketToUse?.let { stockByMarket[it.stockMarket] }
-
+    var selectedShowType by remember { mutableIntStateOf(0) }
 //    if (marketStockSummary != null) {
 //        // 对 marketStockSummary 进行处理，显示或日志输出
 //        Log.d("MarketStockSummary", "$marketStockSummary")
@@ -92,7 +101,7 @@ fun AllStockScreen(
 //        Log.d("MarketStockSummary", "No data for selected market")
 //    }
 //    Log.d("marketStockSummary", "$marketStockSummary")
-    Log.d("selectedMarket", "$selectedMarket")
+//    Log.d("marketStockSummary", "$marketStockSummary")
     Column(
         modifier = Modifier.padding(start = 10.dp, end = 10.dp)
     ) {
@@ -111,32 +120,63 @@ fun AllStockScreen(
                 },
                 modifier = Modifier.weight(1f)
             )
+        }
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        )  {
+            AssistChip(
+                onClick = {
+                    selectedShowType = 0
+                },
+                label = { Text(stringResource(id = R.string.transaction_type_buy)) },
+                leadingIcon = {
+                    if (selectedShowType == 0) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Stock Report buy",
+                            Modifier.size(AssistChipDefaults.IconSize)
+                        )
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
             Spacer(modifier = Modifier.width(12.dp))
-            Box(
-                modifier = Modifier
-                    .padding(top = 1.dp, bottom = 1.dp, start = 10.dp, end = 10.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(vertical = 3.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        Icons.Filled.AttachMoney,
-                        contentDescription = "Localized description",
-                        modifier = Modifier.size(18.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-//                    Text(
-//                        text = stockAccounts.currency,
-//                        fontSize = 14.sp,
-//                        fontWeight = FontWeight.Bold
-//                    )
-                }
-            }
+            AssistChip(
+                onClick = {
+                    selectedShowType = 1
+                },
+                label = { Text(stringResource(id = R.string.transaction_type_sell)) },
+                leadingIcon = {
+                    if (selectedShowType == 1) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Stock Report buy",
+                            Modifier.size(AssistChipDefaults.IconSize)
+                        )
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            AssistChip(
+                onClick = {
+                    selectedShowType = 2
+                },
+                label = { Text(stringResource(id = R.string.transaction_type_dividend)) },
+                leadingIcon = {
+                    if (selectedShowType == 2) {
+                        Icon(
+                            Icons.Filled.Check,
+                            contentDescription = "Stock Report buy",
+                            Modifier.size(AssistChipDefaults.IconSize)
+                        )
+                    }
+                },
+                modifier = Modifier.weight(1f)
+            )
         }
         Row(modifier = Modifier.fillMaxWidth()) {
-            StockBuyPieChart(marketStockSummary)
+            StockBuyPieChart(marketStockSummary, selectedShowType)
         }
 //        Row(modifier = Modifier.fillMaxWidth()) {
 //            StockSellPieChart(marketStockSummary)
@@ -145,25 +185,54 @@ fun AllStockScreen(
 }
 
 @Composable
-fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?) {
+fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?, selectedShowType: Int) {
     if (marketStockSummary.isNullOrEmpty()) {
         // 如果 marketStockSummary 是空的，顯示提示信息或占位符
-        Text(text = "No data available", modifier = Modifier.fillMaxWidth(), fontSize = 16.sp)
+        Box(
+            modifier = Modifier.fillMaxSize(), // 讓 Box 充滿整個父佈局
+            contentAlignment = Alignment.Center // 讓內容在水平方向和垂直方向都居中
+        ) {
+            Text(text = stringResource(id = R.string.no_data_available), fontSize = 16.sp)
+        }
         return
     }
 
     val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
     val m3Surface = MaterialTheme.colorScheme.surface.toArgb()
 
-    // 将 `marketStockSummary` 转换为每个股票代码对应 `totalBuy` 的映射
-    val totalBuyMap = marketStockSummary.mapValues { it.value.totalBuy.toFloat() }
+    // 根據 selectedShowType 決定要顯示的數據類型
+    val filteredSummary = when (selectedShowType) {
+        0 -> marketStockSummary.filterValues { it.totalBuy > 0 } // 買進
+        1 -> marketStockSummary.filterValues { it.totalSell > 0 } // 賣出
+        2 -> marketStockSummary.filterValues { it.totalDividend > 0 } // 股利
+        else -> emptyMap() // 如果沒有匹配，則不顯示
+    }
 
-    // 计算所有 `totalBuy` 的总和
-    val totalBuySum = totalBuyMap.values.sum()
+    // 轉換為 PieEntry 只顯示所選類型的數據
+    val totalAmountMap = when (selectedShowType) {
+        0 -> filteredSummary.mapValues { it.value.totalBuy.toFloat() }
+        1 -> filteredSummary.mapValues { it.value.totalSell.toFloat() }
+        2 -> filteredSummary.mapValues { it.value.totalDividend.toFloat() }
+        else -> emptyMap()
+    }
 
-    // 使用 `totalBuy` 的比例创建 `PieEntry`
-    val entries = totalBuyMap.map { (stockSymbol, totalBuy) ->
-        PieEntry(totalBuy / totalBuySum * 100, stockSymbol) // 计算比例并转换为百分比
+    // 如果过滤後没有数据，则返回提示信息
+    if (totalAmountMap.isEmpty()) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(text = stringResource(id = R.string.no_data_available), fontSize = 16.sp)
+        }
+        return
+    }
+
+    // 计算所有數量的总和
+    val totalAmountSum = totalAmountMap.values.sum()
+
+    // 使用百分比创建 PieEntry
+    val entries = totalAmountMap.map { (stockSymbol, totalAmount) ->
+        PieEntry(totalAmount / totalAmountSum * 100, stockSymbol) // 计算比例并转换为百分比
     }
 
     val dataSet = PieDataSet(entries, "Stock Holdings").apply {
@@ -197,16 +266,14 @@ fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?) {
     val pieData = PieData(dataSet)
     val selectedEntryLabel = remember { mutableStateOf("") }
     val selectedLabel = remember { mutableStateOf("") }
-    Column {
 
+    Column {
         AndroidView(
             factory = { context ->
                 PieChart(context).apply {
                     this.data = pieData
                     this.description.isEnabled = false
                     this.legend.isEnabled = false
-//                    this.legend.textColor = m3OnSurface
-//                    this.legend.textSize = 15f
                     this.setUsePercentValues(true)
                     this.isDrawHoleEnabled = true
                     this.holeRadius = 60f
@@ -214,7 +281,6 @@ fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?) {
                     this.setDrawCenterText(true)
                     this.setCenterTextSize(14f)
                     this.setCenterTextColor(m3OnSurface)
-//                this.centerText = "買進比例"
                     this.centerText = selectedEntryLabel.value
                     this.setExtraOffsets(40f, 20f, 0f, 20f)
                     this.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
@@ -226,17 +292,79 @@ fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?) {
                         }
 
                         override fun onNothingSelected() {
-                            selectedEntryLabel.value = "" // 当没有选择时显示默认文本
+                            selectedEntryLabel.value = ""
+                            selectedLabel.value = ""
                             this@apply.centerText = selectedEntryLabel.value
                         }
                     })
                 }
             },
+            update = { chart ->
+                // 根據選擇的類型過濾數據
+                val filteredMarketStockSummary = when (selectedShowType) {
+                    0 -> marketStockSummary.filterValues { it.totalBuy > 0 } // 買進數據
+                    1 -> marketStockSummary.filterValues { it.totalSell > 0 } // 賣出數據
+                    2 -> marketStockSummary.filterValues { it.totalDividend > 0 } // 股利數據
+                    else -> marketStockSummary // 預設顯示所有數據
+                }
+
+                if (filteredMarketStockSummary.isEmpty()) {
+                    chart.clear()  // 如果沒有數據，清除圖表
+                } else {
+                    // 更新圖表數據
+                    val updatedTotalMap = when (selectedShowType) {
+                        0 -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
+                        1 -> filteredMarketStockSummary.mapValues { it.value.totalSell.toFloat() }
+                        2 -> filteredMarketStockSummary.mapValues { it.value.totalDividend.toFloat() }
+                        else -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
+                    }
+
+                    val updatedTotalSum = updatedTotalMap.values.sum()
+
+                    val updatedEntries = updatedTotalMap.map { (stockSymbol, total) ->
+                        PieEntry(total / updatedTotalSum * 100, stockSymbol) // 計算比例並轉換為百分比
+                    }
+
+                    // 創建新的 PieDataSet 和 PieData
+                    val updatedDataSet = PieDataSet(updatedEntries, "Stock Holdings").apply {
+                        colors = listOf(
+                            Color.parseColor("#4777c0"),
+                            Color.parseColor("#a374c6"),
+                            Color.parseColor("#4fb3e8"),
+                            Color.parseColor("#99cf43"),
+                            Color.parseColor("#fdc135"),
+                            Color.parseColor("#fd9a47"),
+                            Color.parseColor("#eb6e7a"),
+                            Color.parseColor("#6785c2")
+                        )
+                        setValueTextColors(colors)
+                        valueLinePart1Length = 0.6f
+                        valueLinePart2Length = 0.3f
+                        valueLineWidth = 2f
+                        valueLinePart1OffsetPercentage = 115f
+                        isUsingSliceColorAsValueLineColor = true
+                        yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                        valueTextSize = 16f
+                        valueTypeface = Typeface.DEFAULT_BOLD
+                        valueFormatter = object : ValueFormatter() {
+                            private val formatter = NumberFormat.getPercentInstance()
+
+                            override fun getFormattedValue(value: Float) =
+                                formatter.format(value / 100f)
+                        }
+                    }
+
+                    // 創建新的 PieData
+                    val updatedPieData = PieData(updatedDataSet)
+                    chart.data = updatedPieData  // 更新圖表的數據
+                }
+                chart.invalidate()  // 刷新圖表
+            },
             modifier = Modifier
                 .width(350.dp)
                 .height(300.dp)
         )
-        LegendList(totalBuyMap, entries, dataSet.colors, totalBuySum, selectedLabel.value)
+        LegendList(totalAmountMap, entries, dataSet.colors, totalAmountSum, selectedLabel.value, selectedShowType)
     }
 }
 
@@ -246,59 +374,53 @@ fun LegendList(
     entries: List<PieEntry>,
     colors: List<Int>,
     totalBuySum: Float,
-    selectedLabel: String
+    selectedLabel: String,
+    selectedShowType: Int
 ) {
-    LazyColumn(
-        modifier = Modifier.padding(16.dp)
-    ) {
-        items(entries.size) { index ->
-            val entry = entries[index]
+    val filteredEntries = if (selectedLabel.isEmpty()) {
+        entries // 如果没有选中的 label，显示所有条目
+    } else {
+        entries.filter { it.label == selectedLabel } // 只显示选中的条目
+    }
+
+    LazyColumn {
+        items(filteredEntries.size) { index ->
+            val entry = filteredEntries[index]  // 使用 filteredEntries，而不是 entries
             val stockSymbol = entry.label
             val totalBuy = totalBuyMap[stockSymbol] ?: 0f
+            val labelText = when (selectedShowType) {
+                0 -> stringResource(id = R.string.total_buy) // 顯示買進
+                1 -> stringResource(id = R.string.total_sell) // 顯示賣出
+                2 -> stringResource(id = R.string.total_dividend) // 顯示股利
+                else -> stringResource(id = R.string.total_buy) // 默認顯示買進
+            }
             ListItem(
-                headlineContent = { Text(text = stockSymbol) },
-                supportingContent = {
-                    Column {
+                headlineContent = {
+                    Row {
                         Box(
                             modifier = Modifier
                                 .size(16.dp)
                                 .padding(end = 8.dp)
                                 .background(androidx.compose.ui.graphics.Color(colors[index]))
                         )
+                        Text(text = stockSymbol)
+                    }
+                },
+                supportingContent = {
+                    Row {
+                        Text(
+                            text = labelText,
+                            modifier = Modifier.weight(1f)
+                        )
                         Text(
                             text = "$totalBuy (%.2f%%)".format((totalBuy / totalBuySum) * 100),
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Normal
+                            fontWeight = FontWeight.Normal,
+                            modifier = Modifier.weight(1f)
                         )
                     }
                 },
-//                trailingContent = { Text(text = stockMarketName) },
             )
-//            Row(
-//                verticalAlignment = Alignment.CenterVertically,
-//                modifier = Modifier.padding(bottom = 8.dp)
-//            ) {
-//                // 圓形顏色標誌
-//                Box(
-//                    modifier = Modifier
-//                        .size(16.dp)
-//                        .padding(end = 8.dp)
-//                        .background(androidx.compose.ui.graphics.Color(colors[index]))
-//                )
-//                // 股票名稱
-//                Text(
-//                    text = stockSymbol,
-//                    fontSize = 14.sp,
-//                    fontWeight = FontWeight.Bold,
-//                    modifier = Modifier.weight(1f) // 保持行对齐
-//                )
-//                // 股票的买入数值和百分比
-//                Text(
-//                    text = "$totalBuy (%.2f%%)".format((totalBuy / totalBuySum) * 100),
-//                    fontSize = 14.sp,
-//                    fontWeight = FontWeight.Normal
-//                )
-//            }
+            HorizontalDivider()
         }
     }
 }

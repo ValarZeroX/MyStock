@@ -211,13 +211,6 @@ fun StockMainScreen(
                                 )
                             }
                         }
-                        IconButton(onClick = {
-                        }) {
-                            Icon(
-                                imageVector = Icons.Filled.MoreVert,
-                                contentDescription = "詳細 ${stockAccount.account}"
-                            )
-                        }
                     }
                     HorizontalDivider(
                         color = MaterialTheme.colorScheme.onSecondaryContainer,

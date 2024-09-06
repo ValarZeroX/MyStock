@@ -293,11 +293,11 @@ fun ReportScreen(
                             onClick = { selectedReportTabIndex = 2 },
                             text = { Text(stringResource(id = R.string.stock)) }
                         )
-                        Tab(
-                            selected = selectedReportTabIndex == 3,
-                            onClick = { selectedReportTabIndex = 3 },
-                            text = { Text(stringResource(id = R.string.market)) }
-                        )
+//                        Tab(
+//                            selected = selectedReportTabIndex == 3,
+//                            onClick = { selectedReportTabIndex = 3 },
+//                            text = { Text(stringResource(id = R.string.market)) }
+//                        )
                     }
                     when (selectedReportTabIndex) {
                         0 -> {
@@ -387,28 +387,28 @@ fun ReportScreen(
                             )
                         }
 
-                        3 -> {
-                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange()
-                                .observeAsState()
-                            stockViewModel.setTransactionDateRange(
-                                getAccountStockMaxMinDate?.first,
-                                getAccountStockMaxMinDate?.second
-                            )
-                            DateSwitcher(
-                                stockViewModel = stockViewModel,
-                                initialDate = startDate,
-                                onDateChanged = { start, end ->
-                                    stockViewModel.setDateRange(start, end)
-                                }
-                            )
-                            AllMarketScreen(
-                                navController,
-                                stockRecordViewModel,
-                                stockViewModel,
-                                stockMarketViewModel,
-                                stockAccounts
-                            )
-                        }
+//                        3 -> {
+//                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange()
+//                                .observeAsState()
+//                            stockViewModel.setTransactionDateRange(
+//                                getAccountStockMaxMinDate?.first,
+//                                getAccountStockMaxMinDate?.second
+//                            )
+//                            DateSwitcher(
+//                                stockViewModel = stockViewModel,
+//                                initialDate = startDate,
+//                                onDateChanged = { start, end ->
+//                                    stockViewModel.setDateRange(start, end)
+//                                }
+//                            )
+//                            AllMarketScreen(
+//                                navController,
+//                                stockRecordViewModel,
+//                                stockViewModel,
+//                                stockMarketViewModel,
+//                                stockAccounts
+//                            )
+//                        }
                     }
                 }
             }
@@ -788,7 +788,7 @@ fun AccountMetricsLineChart(
         textColor = StockText.toArgb()
     }
     val profitColor = StockRed.toArgb()
-    val profitPercentColor = StockBlue.toArgb()
+    val profitPercentColor = android.graphics.Color.parseColor("#4777c0")
 //    var primary = MaterialTheme.colorScheme.primary.toArgb()
 //    var onPrimary = MaterialTheme.colorScheme.onPrimary.toArgb()
     // 创建数据集
@@ -797,6 +797,9 @@ fun AccountMetricsLineChart(
 
     // 用日期来分组交易记录
     val tradesByDate = mutableMapOf<Long, MutableList<RealizedTrade>>()
+    if (tradesByDate.isEmpty()) {
+        return
+    }
     realizedTrades?.forEach { (_, trades) ->
         trades.forEach { trade ->
             // 将时间戳转换为当天的开始时间（零点）

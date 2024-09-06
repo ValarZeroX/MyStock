@@ -192,8 +192,8 @@ fun MyStockTheme(
 ) {
     //取資料庫app設定
     val userSettings = userSettingsViewModel.userSettings.observeAsState()
-    val themeIndex = userSettings.value?.themeIndex
-    val darkTheme = userSettings.value?.darkTheme ?: isSystemInDarkTheme()
+    val themeIndex = userSettings.value?.themeIndex ?: 0
+    val darkTheme = userSettings.value?.darkTheme ?: true
 //    val darkTheme = true
 //    println(userSettings.value?.themeIndex)
 

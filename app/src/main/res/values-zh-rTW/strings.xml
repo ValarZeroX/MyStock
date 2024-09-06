@@ -195,4 +195,5 @@
     <string name="stock">股票</string>
     <string name="market">市場</string>
     <string name="select_market">選擇市場</string>
+    <string name="no_data_available">沒有可用的資料</string>
 </resources>

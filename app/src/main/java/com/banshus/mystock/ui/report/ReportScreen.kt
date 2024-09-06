@@ -77,6 +77,7 @@ import com.banshus.mystock.ui.tool.DateSwitcher
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
+import com.banshus.mystock.viewmodels.StockMarketViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
@@ -107,6 +108,7 @@ fun ReportScreen(
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
     userSettingsViewModel: UserSettingsViewModel,
+    stockMarketViewModel: StockMarketViewModel,
     currencyViewModel: CurrencyViewModel
 ) {
 
@@ -194,14 +196,7 @@ fun ReportScreen(
         startDateMillis,
         endDateMillis
     ).observeAsState(emptyMap())
-//    val selectedAccount = 2
 
-//    var isDataReady by remember { mutableStateOf(allAccountsRecord.isNotEmpty()) }
-//
-//    LaunchedEffect(allAccountsRecord) {
-//        // 更新状态
-//        isDataReady = allAccountsRecord.isNotEmpty()
-//    }
     val totalDividends by stockRecordViewModel.getTotalDividendsByDateRangeAndAccount(
         accountId = selectedAccountId,
         startDate = startDateMillis,
@@ -293,6 +288,16 @@ fun ReportScreen(
                             onClick = { selectedReportTabIndex = 1 },
                             text = { Text(stringResource(id = R.string.tab_account)) }
                         )
+                        Tab(
+                            selected = selectedReportTabIndex == 2,
+                            onClick = { selectedReportTabIndex = 2 },
+                            text = { Text(stringResource(id = R.string.stock)) }
+                        )
+                        Tab(
+                            selected = selectedReportTabIndex == 3,
+                            onClick = { selectedReportTabIndex = 3 },
+                            text = { Text(stringResource(id = R.string.market)) }
+                        )
                     }
                     when (selectedReportTabIndex) {
                         0 -> {
@@ -356,6 +361,52 @@ fun ReportScreen(
                                 totalDividends,
                                 annualizedReturn,
                                 darkTheme
+                            )
+                        }
+
+                        2 -> {
+                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange()
+                                .observeAsState()
+                            stockViewModel.setTransactionDateRange(
+                                getAccountStockMaxMinDate?.first,
+                                getAccountStockMaxMinDate?.second
+                            )
+                            DateSwitcher(
+                                stockViewModel = stockViewModel,
+                                initialDate = startDate,
+                                onDateChanged = { start, end ->
+                                    stockViewModel.setDateRange(start, end)
+                                }
+                            )
+                            AllStockScreen(
+                                navController,
+                                stockRecordViewModel,
+                                stockViewModel,
+                                stockMarketViewModel,
+                                stockAccounts
+                            )
+                        }
+
+                        3 -> {
+                            val getAccountStockMaxMinDate by stockRecordViewModel.getTransactionDateRange()
+                                .observeAsState()
+                            stockViewModel.setTransactionDateRange(
+                                getAccountStockMaxMinDate?.first,
+                                getAccountStockMaxMinDate?.second
+                            )
+                            DateSwitcher(
+                                stockViewModel = stockViewModel,
+                                initialDate = startDate,
+                                onDateChanged = { start, end ->
+                                    stockViewModel.setDateRange(start, end)
+                                }
+                            )
+                            AllMarketScreen(
+                                navController,
+                                stockRecordViewModel,
+                                stockViewModel,
+                                stockMarketViewModel,
+                                stockAccounts
                             )
                         }
                     }

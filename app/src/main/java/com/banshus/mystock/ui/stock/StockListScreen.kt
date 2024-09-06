@@ -598,82 +598,82 @@ fun StockListHeader(
     )
 }
 
-@Composable
-fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
-    //圖例文字顏色
-    val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
-    val m3Surface = MaterialTheme.colorScheme.surface.toArgb()
-    val entries = holdings.map { (stockSymbol, holdingData) ->
-        val (totalQuantity, _) = holdingData
-        PieEntry(totalQuantity.toFloat(), stockSymbol)
-    }
-
-    val dataSet = PieDataSet(entries, "Stock Holdings").apply {
-        colors = listOf(
-            Color.parseColor("#4777c0"),
-            Color.parseColor("#a374c6"),
-            Color.parseColor("#4fb3e8"),
-            Color.parseColor("#99cf43"),
-            Color.parseColor("#fdc135"),
-            Color.parseColor("#fd9a47"),
-            Color.parseColor("#eb6e7a"),
-            Color.parseColor("#6785c2")
-        )
-        setValueTextColors(colors)
-        valueLinePart1Length = 0.6f
-        valueLinePart2Length = 0.3f
-        valueLineWidth = 2f
-        valueLinePart1OffsetPercentage = 115f
-        isUsingSliceColorAsValueLineColor = true
-        yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
-        valueTextSize = 16f
-        valueTypeface = Typeface.DEFAULT_BOLD
-        valueFormatter = object : ValueFormatter() {
-            private val formatter = NumberFormat.getPercentInstance()
-
-            override fun getFormattedValue(value: Float) =
-                formatter.format(value / 100f)
-        }
-    }
-
-    val pieData = PieData(dataSet)
-
-    AndroidView(
-        factory = { context ->
-            PieChart(context).apply {
-                this.data = pieData
-                this.description.isEnabled = false
-
-                //圖例
-                this.legend.isEnabled = false
-                this.legend.textColor = m3OnSurface
-                this.legend.textSize = 13f
-                this.setUsePercentValues(true)
-//                this.setDrawHoleEnabled(true)
-                this.isDrawHoleEnabled = true
-                this.holeRadius = 70f
-                this.setHoleColor(m3Surface)
-
-
-//                this.setHoleColor(Color.TRANSPARENT)  // 设置中央孔颜色为透明
+//@Composable
+//fun StockPieChart(holdings: Map<String, Pair<Int, Double>>) {
+//    //圖例文字顏色
+//    val m3OnSurface = MaterialTheme.colorScheme.onSurface.toArgb()
+//    val m3Surface = MaterialTheme.colorScheme.surface.toArgb()
+//    val entries = holdings.map { (stockSymbol, holdingData) ->
+//        val (totalQuantity, _) = holdingData
+//        PieEntry(totalQuantity.toFloat(), stockSymbol)
+//    }
 //
-//                // 确保透明圆设置正确
-//                this.setTransparentCircleColor(Color.TRANSPARENT)
-//                this.setTransparentCircleAlpha(0)
-
-                this.setDrawCenterText(true)
-                this.setCenterTextSize(14f)
-//                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
-                this.setCenterTextColor(m3OnSurface)
-                this.centerText = "持有比例"
-                this.setExtraOffsets(0f, 20f, 0f, 20f)
-//                this.renderer = CustomPieChartRenderer(this, 10f)
-//                this.invalidate()
-            }
-        },
-        modifier = Modifier
-            .width(200.dp)  // 設定寬度
-            .height(200.dp) // 設定高度
-//            .padding(40.dp)
-    )
-}
+//    val dataSet = PieDataSet(entries, "Stock Holdings").apply {
+//        colors = listOf(
+//            Color.parseColor("#4777c0"),
+//            Color.parseColor("#a374c6"),
+//            Color.parseColor("#4fb3e8"),
+//            Color.parseColor("#99cf43"),
+//            Color.parseColor("#fdc135"),
+//            Color.parseColor("#fd9a47"),
+//            Color.parseColor("#eb6e7a"),
+//            Color.parseColor("#6785c2")
+//        )
+//        setValueTextColors(colors)
+//        valueLinePart1Length = 0.6f
+//        valueLinePart2Length = 0.3f
+//        valueLineWidth = 2f
+//        valueLinePart1OffsetPercentage = 115f
+//        isUsingSliceColorAsValueLineColor = true
+//        yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+//        valueTextSize = 16f
+//        valueTypeface = Typeface.DEFAULT_BOLD
+//        valueFormatter = object : ValueFormatter() {
+//            private val formatter = NumberFormat.getPercentInstance()
+//
+//            override fun getFormattedValue(value: Float) =
+//                formatter.format(value / 100f)
+//        }
+//    }
+//
+//    val pieData = PieData(dataSet)
+//
+//    AndroidView(
+//        factory = { context ->
+//            PieChart(context).apply {
+//                this.data = pieData
+//                this.description.isEnabled = false
+//
+//                //圖例
+//                this.legend.isEnabled = false
+//                this.legend.textColor = m3OnSurface
+//                this.legend.textSize = 13f
+//                this.setUsePercentValues(true)
+////                this.setDrawHoleEnabled(true)
+//                this.isDrawHoleEnabled = true
+//                this.holeRadius = 70f
+//                this.setHoleColor(m3Surface)
+//
+//
+////                this.setHoleColor(Color.TRANSPARENT)  // 设置中央孔颜色为透明
+////
+////                // 确保透明圆设置正确
+////                this.setTransparentCircleColor(Color.TRANSPARENT)
+////                this.setTransparentCircleAlpha(0)
+//
+//                this.setDrawCenterText(true)
+//                this.setCenterTextSize(14f)
+////                this.setCenterTextTypeface(Typeface.DEFAULT_BOLD)
+//                this.setCenterTextColor(m3OnSurface)
+//                this.centerText = "持有比例"
+//                this.setExtraOffsets(0f, 20f, 0f, 20f)
+////                this.renderer = CustomPieChartRenderer(this, 10f)
+////                this.invalidate()
+//            }
+//        },
+//        modifier = Modifier
+//            .width(200.dp)  // 設定寬度
+//            .height(200.dp) // 設定高度
+////            .padding(40.dp)
+//    )
+//}

@@ -21,6 +21,15 @@ data class RealizedTrade(
     val sell: StockRecord         // 卖出记录
 )
 
+data class StockSummary(
+    val totalBuy: Double,            // 總買入金額
+    val totalSell: Double,           // 總賣出金額
+    val totalDividend: Double,       // 總股利收入
+    val totalCommission: Double,     // 總手續費
+    val totalTransactionTax: Double, // 總交易稅
+    val totalQuantity: Int           // 總股數
+)
+
 class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
 
     suspend fun insertStockRecord(stockRecord: StockRecord) {
@@ -468,5 +477,57 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
         endDate: Long
     ): LiveData<List<StockRecord>> {
         return stockRecordDao.getAllDividendRecordsByDateRangeAndAccount(startDate, endDate)
+    }
+
+    fun calculateStockSummaryByMarketAndSymbol(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, Map<String, StockSummary>>> {
+        return getAllStockRecords().map { stockRecords ->
+            stockRecords
+                // 過濾出日期在 startDate 和 endDate 之間的交易記錄
+                .filter { it.transactionDate in startDate..endDate }
+                .groupBy { it.stockMarket } // 第一層按 stockMarket 分組
+                .mapValues { (market, marketRecords) ->
+                    marketRecords.groupBy { it.stockSymbol } // 第二層按 stockSymbol 分組
+                        .mapValues { (symbol, symbolRecords) ->
+                            var totalBuy = 0.0
+                            var totalSell = 0.0
+                            var totalDividend = 0.0
+                            var totalCommission = 0.0
+                            var totalTransactionTax = 0.0
+                            var totalQuantity = 0
+
+                            // 計算統計數據
+                            for (record in symbolRecords) {
+                                totalCommission += record.commission
+                                totalTransactionTax += record.transactionTax
+
+                                when (record.transactionType) {
+                                    0 -> { // Buy
+                                        totalBuy += record.totalAmount
+                                        totalQuantity += record.quantity
+                                    }
+                                    1 -> { // Sell
+                                        totalSell += record.totalAmount
+                                        totalQuantity -= record.quantity
+                                    }
+                                    2 -> { // Dividend
+                                        totalDividend += record.quantity * record.pricePerUnit
+                                    }
+                                }
+                            }
+
+                            StockSummary(
+                                totalBuy = totalBuy,
+                                totalSell = totalSell,
+                                totalDividend = totalDividend,
+                                totalCommission = totalCommission,
+                                totalTransactionTax = totalTransactionTax,
+                                totalQuantity = totalQuantity
+                            )
+                        }
+                }
+        }
     }
 }

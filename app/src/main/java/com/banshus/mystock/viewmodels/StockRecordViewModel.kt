@@ -19,6 +19,7 @@ import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.repository.RealizedResult
 import com.banshus.mystock.repository.RealizedTrade
 import com.banshus.mystock.repository.StockRecordRepository
+import com.banshus.mystock.repository.StockSummary
 import com.banshus.mystock.repository.StockSymbolRepository
 import kotlinx.coroutines.launch
 import java.time.Instant
@@ -568,6 +569,13 @@ class StockRecordViewModel(
 
         result.value = annualizedReturnMap
         return result
+    }
+
+    fun getStockSummaryByMarketAndSymbol(
+        startDate: Long,
+        endDate: Long
+    ): LiveData<Map<Int, Map<String, StockSummary>>> {
+        return repository.calculateStockSummaryByMarketAndSymbol(startDate, endDate)
     }
 }
 

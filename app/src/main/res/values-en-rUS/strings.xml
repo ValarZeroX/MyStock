@@ -192,4 +192,7 @@
     <string name="stock_price_off">Stock price auto-update disabled</string>
     <string name="exchange_rate_on">Exchange rate auto-update enabled</string>
     <string name="exchange_rate_off">Exchange rate auto-update disabled</string>
+    <string name="stock">Stock</string>
+    <string name="market">Market</string>
+    <string name="select_market">Select Market</string>
 </resources>

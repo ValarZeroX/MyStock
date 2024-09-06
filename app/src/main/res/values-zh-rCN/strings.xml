@@ -192,4 +192,7 @@
     <string name="stock_price_off">股价自动更新关闭</string>
     <string name="exchange_rate_on">汇率自动更新开启</string>
     <string name="exchange_rate_off">汇率自动更新关闭</string>
+    <string name="stock">股票</string>
+    <string name="market">市场</string>
+    <string name="select_market">选择市场</string>
 </resources>

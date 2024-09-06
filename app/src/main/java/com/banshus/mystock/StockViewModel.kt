@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.banshus.mystock.data.entities.StockAccount
+import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.getStartAndEndDate
@@ -21,6 +22,14 @@ class StockViewModel : ViewModel() {
         fun updateSelectedAccount(account: StockAccount) {
                 _selectedAccount.value = account
         }
+
+        private val _selectedMarket = MutableLiveData<StockMarket?>()
+        val selectedMarket: LiveData<StockMarket?> = _selectedMarket
+
+        fun updateSelectedMarket(market: StockMarket) {
+                _selectedMarket.value = market
+        }
+
 
         private val _selectedAccountForStockList = MutableLiveData<StockAccount?>()
         val selectedAccountForStockList: LiveData<StockAccount?> = _selectedAccountForStockList

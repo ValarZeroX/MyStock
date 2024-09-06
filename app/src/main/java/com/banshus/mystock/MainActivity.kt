@@ -57,6 +57,7 @@ import com.banshus.mystock.ui.setting.StockSymbolScreen
 import com.banshus.mystock.ui.stock.AccountListScreen
 import com.banshus.mystock.ui.stock.AddAccountScreen
 import com.banshus.mystock.ui.stock.AddStockScreen
+import com.banshus.mystock.ui.stock.MarketListScreen
 import com.banshus.mystock.ui.stock.StockAccountScreen
 import com.banshus.mystock.ui.stock.StockDetailScreen
 import com.banshus.mystock.ui.stock.StockListScreen
@@ -338,6 +339,7 @@ fun MyApp(
                 stockRecordViewModel,
                 stockSymbolViewModel,
                 userSettingsViewModel,
+                stockMarketViewModel,
                 currencyViewModel
             )
         }
@@ -384,5 +386,13 @@ fun MyApp(
                 navController,
             )
         }
+        composable("marketListScreen") {
+            MarketListScreen(
+                navController,
+                stockViewModel,
+                stockMarketViewModel,
+            )
+        }
+
     }
 }

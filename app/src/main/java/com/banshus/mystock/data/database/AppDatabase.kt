@@ -22,7 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-@Database(entities = [UserSettings::class, StockAccount::class, StockRecord::class, StockSymbol::class, StockMarket::class, Currency::class], version = 1)
+@Database(entities = [UserSettings::class, StockAccount::class, StockRecord::class, StockSymbol::class, StockMarket::class, Currency::class], version = 1, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userSettingsDao(): UserSettingsDao
     abstract fun stockAccountDao(): StockAccountDao

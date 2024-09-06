@@ -19,7 +19,7 @@ fun AdBanner() {
         factory = {
             AdView(context).apply {
                 setAdSize(AdSize.BANNER)
-                adUnitId = ""  // 替换为你的广告单元 ID
+                adUnitId = "ca-app-pub-9868429025931364/8633003875"  // 替换为你的广告单元 ID
                 loadAd(AdRequest.Builder().build())
             }
         }

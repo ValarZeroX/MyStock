@@ -150,7 +150,7 @@ fun AllStockScreen(
                     if (selectedShowType == 1) {
                         Icon(
                             Icons.Filled.Check,
-                            contentDescription = "Stock Report buy",
+                            contentDescription = "Stock Report sell",
                             Modifier.size(AssistChipDefaults.IconSize)
                         )
                     }
@@ -167,7 +167,7 @@ fun AllStockScreen(
                     if (selectedShowType == 2) {
                         Icon(
                             Icons.Filled.Check,
-                            contentDescription = "Stock Report buy",
+                            contentDescription = "Stock Report dividend",
                             Modifier.size(AssistChipDefaults.IconSize)
                         )
                     }

@@ -6,7 +6,6 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.banshus.mystock.api.RetrofitInstance
-import com.banshus.mystock.data.dao.StockMarketDao
 import com.banshus.mystock.repository.StockPriceApiRepository
 import com.banshus.mystock.data.database.AppDatabase
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +20,6 @@ class StockPriceUpdateWorker(
         suspend fun updateStockPrices(context: Context) {
             withContext(Dispatchers.IO) {
                 try {
-                    Log.d(TAG, "Starting to update stock prices immediately")
                     val stockPriceApiRepository = StockPriceApiRepository(RetrofitInstance.yahooApi)
                     val database = AppDatabase.getDatabase(context)
                     val stockSymbolDao = database.stockSymbolDao()
@@ -59,7 +57,6 @@ class StockPriceUpdateWorker(
                             Log.w(TAG, "No stockMarketCode found for stockMarket: ${stockSymbol.stockMarket}")
                         }
                     }
-                    Log.d(TAG, "Stock prices updated successfully")
                 } catch (e: Exception) {
                     Log.e(TAG, "Error updating stock prices", e)
                 }

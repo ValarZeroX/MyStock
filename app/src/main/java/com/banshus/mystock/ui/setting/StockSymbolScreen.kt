@@ -350,7 +350,6 @@ fun StockSymbolScreen(
                                         onSuccess = { searchStockResponse ->
                                             val quotes = result?.meta
                                             val shortName = quotes?.shortName
-                                            Log.d("response", "$searchStockResponse")
                                             updatedName = name.ifEmpty {
                                                 shortName ?: name
                                             }

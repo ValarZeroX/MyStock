@@ -1,6 +1,5 @@
 package com.banshus.mystock.repository
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.banshus.mystock.data.dao.StockRecordDao
@@ -328,7 +327,6 @@ class StockRecordRepository(private val stockRecordDao: StockRecordDao) {
                 val filteredBuyRecords = stockRecords.filter { it.transactionType == 0 }
                     .groupBy { it.accountId }
                 val data = calculateRealizedGainsAndLosses(filteredBuyRecords, filteredSellRecords)
-                Log.d("data", "$data")
                 value = data
             }
         }

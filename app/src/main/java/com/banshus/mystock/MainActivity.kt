@@ -7,12 +7,10 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableIntStateOf
@@ -29,8 +27,8 @@ import androidx.navigation.compose.rememberNavController
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.RetrofitInstance
+import com.banshus.mystock.billing.BillingManager
 import com.banshus.mystock.csv.importDataFromCSV
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.repository.CurrencyApiRepository
@@ -47,6 +45,7 @@ import com.banshus.mystock.ui.record.RecordScreen
 import com.banshus.mystock.ui.report.ReportScreen
 import com.banshus.mystock.ui.setting.AccountScreen
 import com.banshus.mystock.ui.setting.AutoUpdateScreen
+import com.banshus.mystock.ui.setting.BillingScreen
 import com.banshus.mystock.ui.setting.ColorThemeScreen
 import com.banshus.mystock.ui.setting.CurrencyScreen
 import com.banshus.mystock.ui.setting.DisclaimerScreen
@@ -62,6 +61,8 @@ import com.banshus.mystock.ui.stock.StockAccountScreen
 import com.banshus.mystock.ui.stock.StockDetailScreen
 import com.banshus.mystock.ui.stock.StockListScreen
 import com.banshus.mystock.ui.theme.MyStockTheme
+import com.banshus.mystock.viewmodels.BillingViewModel
+import com.banshus.mystock.viewmodels.BillingViewModelFactory
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyApiViewModelFactory
 import com.banshus.mystock.viewmodels.CurrencyViewModel
@@ -87,9 +88,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-
 class MainActivity : ComponentActivity() {
-    //    private val userSettingsViewModel by viewModels<UserSettingsViewModel>()
     private lateinit var userSettingsViewModel: UserSettingsViewModel
     private lateinit var stockAccountViewModel: StockAccountViewModel
     private lateinit var stockRecordViewModel: StockRecordViewModel
@@ -100,14 +99,12 @@ class MainActivity : ComponentActivity() {
     private lateinit var currencyApiViewModel: CurrencyApiViewModel
     private lateinit var csvImportLauncher: ActivityResultLauncher<Intent>
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         //圖表初始化
         Utils.init(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // google廣告
-//        MobileAds.initialize(this) {}
         val backgroundScope = CoroutineScope(Dispatchers.IO)
         backgroundScope.launch {
             // Initialize the Google Mobile Ads SDK on a background thread.
@@ -126,6 +123,15 @@ class MainActivity : ComponentActivity() {
             }
         }
 
+        val billingManager = BillingManager(this)
+        val billingViewModel: BillingViewModel = ViewModelProvider(
+            this,
+            BillingViewModelFactory(billingManager)
+        )[BillingViewModel::class.java]
+        billingViewModel.startBillingConnection()
+        billingViewModel.hasSubscription()
+
+
         // 数据库和 Repository 的初始化
         val database = AppDatabase.getDatabase(this)
         val stockAccountRepository = StockAccountRepository(database.stockAccountDao())
@@ -136,6 +142,7 @@ class MainActivity : ComponentActivity() {
         val userSettingsRepository = UserSettingsRepository(database.userSettingsDao())
         val currencyRepository = CurrencyRepository(database.currencyDao())
         val currencyApiRepository = CurrencyApiRepository(RetrofitInstance.currencyApi)
+
 
         // ViewModel 的初始化
         stockAccountViewModel = ViewModelProvider(
@@ -246,7 +253,8 @@ class MainActivity : ComponentActivity() {
                                 userSettingsViewModel = userSettingsViewModel,
                                 currencyViewModel = currencyViewModel,
                                 currencyApiViewModel = currencyApiViewModel,
-                                csvImportLauncher = csvImportLauncher
+                                csvImportLauncher = csvImportLauncher,
+                                billingViewModel  = billingViewModel
                             )
                         }
                     }
@@ -267,7 +275,8 @@ fun MyApp(
     userSettingsViewModel: UserSettingsViewModel,
     currencyViewModel: CurrencyViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
-    csvImportLauncher: ActivityResultLauncher<Intent>
+    csvImportLauncher: ActivityResultLauncher<Intent>,
+    billingViewModel : BillingViewModel
 ) {
 //    val viewModel: StockViewModel = viewModel()
     val stockViewModel: StockViewModel = viewModel()
@@ -393,6 +402,11 @@ fun MyApp(
                 stockMarketViewModel,
             )
         }
-
+        composable("billingScreen") {
+            BillingScreen(
+                navController,
+                billingViewModel
+            )
+        }
     }
 }

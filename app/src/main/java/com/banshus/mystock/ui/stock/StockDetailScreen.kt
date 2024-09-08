@@ -167,10 +167,6 @@ fun StockDetailScreen(
 
     val decimalFormat = DecimalFormat("#.00")
     val calculatedCommission = remember(stockQuantity, stockPrice, selectedCommissionDecimal) {
-        Log.d("stockQuantity", stockQuantity)
-        Log.d("stockPrice", stockPrice)
-        Log.d("selectedCommissionDecimal", "$selectedCommissionDecimal")
-        Log.d("selectedDiscount", "$selectedDiscount")
         val quantity = stockQuantity.toDoubleOrNull() ?: 0.0
         val price = stockPrice.toDoubleOrNull() ?: 0.0
         val commissionPercent = selectedCommissionDecimal

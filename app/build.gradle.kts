@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.firebase.crashlytics.buildtools)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -96,4 +97,6 @@ dependencies {
     implementation (libs.converter.gson)
     implementation (libs.mpandroidchart)
     implementation (libs.play.services.ads)
+
+    implementation (libs.billing)
 }

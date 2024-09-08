@@ -2,7 +2,6 @@ package com.banshus.mystock.csv
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import com.banshus.mystock.data.database.AppDatabase
 import com.banshus.mystock.data.entities.Currency
 import com.banshus.mystock.data.entities.StockAccount
@@ -53,8 +52,6 @@ private suspend fun importStockRecords(context: Context, lines: List<String>, st
 
     while (index < lines.size && !lines[index].startsWith("stockSymbol")) {
         val tokens = lines[index].split(",").map { it.trim() }
-        Log.d("tokens", "$tokens")
-        Log.d("size", "${tokens.size}")
         if (tokens.size == 13) {
             val stockRecord = StockRecord(
                 recordId = tokens[0].toInt(),
@@ -71,12 +68,10 @@ private suspend fun importStockRecords(context: Context, lines: List<String>, st
                 transactionTax = tokens[11].toDouble(),
                 note = tokens[12]
             )
-            Log.d("stockRecord", "$stockRecord")
             stockRecords.add(stockRecord)
         }
         index++
     }
-    Log.d("stockRecords", "$stockRecords")
     val database = AppDatabase.getDatabase(context)
     val stockRecordDao = database.stockRecordDao()
     stockRecordDao.insertStockRecords(stockRecords)

@@ -95,7 +95,13 @@ fun AddAccountScreen(
 
                     var commission = roundToDecimal(commissionPercent.toDouble() / 100, 6)
                     var transactionTax = roundToDecimal(transactionTaxPercent.toDouble() / 100, 6)
-                    var newDiscount = roundToDecimal(discount.toDouble() / 100, 4)
+                    var newDiscount = if (discount.isNotEmpty() && discount.toDoubleOrNull() != null) {
+                        roundToDecimal(discount.toDouble() / 100, 4)
+                    } else {
+                        isDiscountError = true // 設置錯誤標誌，或者顯示提示給用戶
+                        1.0 // 設定一個默認折扣值，例如 100% 折扣
+                    }
+//                    var newDiscount = roundToDecimal(discount.toDouble() / 100, 4)
                     if (selectedStockMarketIndex != 0) {
                         commission = 0.0
                         transactionTax = 0.0

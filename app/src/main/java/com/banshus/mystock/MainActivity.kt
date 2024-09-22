@@ -105,11 +105,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // google廣告
-        val backgroundScope = CoroutineScope(Dispatchers.IO)
-        backgroundScope.launch {
-            // Initialize the Google Mobile Ads SDK on a background thread.
-            MobileAds.initialize(this@MainActivity) {}
-        }
+        MobileAds.initialize(this) {}
+//        val backgroundScope = CoroutineScope(Dispatchers.IO)
+//        backgroundScope.launch {
+//            // Initialize the Google Mobile Ads SDK on a background thread.
+//            MobileAds.initialize(this@MainActivity) {}
+//        }
         // 注册 ActivityResultLauncher
         csvImportLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {

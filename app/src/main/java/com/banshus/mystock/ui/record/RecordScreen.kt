@@ -297,7 +297,7 @@ fun RecordScreen(
                             trailingContent = {
                                 Column {
                                     Text(
-                                        text = stockAccounts[record.accountId]!!.account,
+                                        text = stockAccounts[record.accountId]?.account ?: "Unknown Account",
                                         modifier = Modifier
                                             .padding(4.dp)  // 添加一些内边距
                                             .border(

@@ -71,37 +71,37 @@ fun StockSettingScreen(
                 .padding(innerPadding)
         ) {
             LazyColumn{
-                item {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(10.dp)
-                    ) {
-                        Row {
-                            Text(
-                                text = "我的帳號",
-                                style = MaterialTheme.typography.titleLarge,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp),
-                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                        }
-                        ListItem(
-                            headlineContent = { Text("訂閱") },
-                            trailingContent = {
-                                Icon(
-                                    imageVector = Icons.Filled.ChevronRight,
-                                    contentDescription = "方案",
-                                )
-                            },
-                            modifier = Modifier.clickable {
-                                navController.navigate("billingScreen")
-                            }
-                        )
-                        HorizontalDivider()
-                    }
-                }
+//                item {
+//                    Card(
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .padding(10.dp)
+//                    ) {
+//                        Row {
+//                            Text(
+//                                text = "我的帳號",
+//                                style = MaterialTheme.typography.titleLarge,
+//                                modifier = Modifier
+//                                    .fillMaxWidth()
+//                                    .padding(10.dp),
+//                                color = MaterialTheme.colorScheme.onPrimaryContainer
+//                            )
+//                        }
+//                        ListItem(
+//                            headlineContent = { Text("訂閱") },
+//                            trailingContent = {
+//                                Icon(
+//                                    imageVector = Icons.Filled.ChevronRight,
+//                                    contentDescription = "方案",
+//                                )
+//                            },
+//                            modifier = Modifier.clickable {
+//                                navController.navigate("billingScreen")
+//                            }
+//                        )
+//                        HorizontalDivider()
+//                    }
+//                }
                 item {
                     Card(
                         modifier = Modifier

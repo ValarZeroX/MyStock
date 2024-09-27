@@ -245,7 +245,7 @@ fun AddAccountScreen(
                             }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                         ),
                         isError = isCommissionError,
                         suffix = {
@@ -275,7 +275,7 @@ fun AddAccountScreen(
                             }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal
                         ),
                         isError = isTransactionTaxError,
                         suffix = {
@@ -305,7 +305,7 @@ fun AddAccountScreen(
                             }
                         },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal
                         ),
                         isError = isDiscountError,
                         suffix = {

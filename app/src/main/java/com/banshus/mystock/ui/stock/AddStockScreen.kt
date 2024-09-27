@@ -419,7 +419,7 @@ fun AddStockScreen(
                         },
                         label = { Text(text = priceName) },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                         ),
                         isError = isStockPriceError,
                         modifier = Modifier
@@ -445,7 +445,7 @@ fun AddStockScreen(
                         },
                         label = { Text(text = stringResource(id = R.string.commission)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                         ),
                         isError = isCommissionError,
                         enabled = !autoCalculateChecked,
@@ -466,7 +466,7 @@ fun AddStockScreen(
                         },
                         label = { Text(text = stringResource(id = R.string.transaction_tax)) },
                         keyboardOptions = KeyboardOptions.Default.copy(
-                            keyboardType = KeyboardType.Number
+                            keyboardType = KeyboardType.Decimal // 显示带有小数点的数字键盘
                         ),
                         isError = isTransactionTaxError,
                         enabled = !autoCalculateChecked,

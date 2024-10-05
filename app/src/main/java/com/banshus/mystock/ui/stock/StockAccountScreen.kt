@@ -52,6 +52,7 @@ import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.theme.StockGreen
 import com.banshus.mystock.ui.theme.StockRed
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -63,13 +64,14 @@ fun StockAccountScreen(
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
+    billingViewModel: BillingViewModel
 ) {
     Scaffold(
         topBar = {
             AccountHeader(navController)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         StockMainScreen(

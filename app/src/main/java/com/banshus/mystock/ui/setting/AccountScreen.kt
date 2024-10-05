@@ -58,6 +58,7 @@ import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.tool.SwipeBox
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import sh.calvin.reorderable.ReorderableItem
@@ -71,6 +72,7 @@ fun AccountScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
@@ -95,7 +97,7 @@ fun AccountScreen(
             AccountScreenHeader(navController)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

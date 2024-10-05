@@ -196,4 +196,10 @@
     <string name="market">Market</string>
     <string name="select_market">Select Market</string>
     <string name="no_data_available">No data available</string>
+    <string name="my_account">My Account</string>
+    <string name="subscription">Subscription</string>
+    <string name="plan">Plan</string>
+    <string name="pro_version">Pro Version</string>
+    <string name="remove_ads">Remove Ads</string>
+    <string name="subscribed">Subscribed</string>
 </resources>

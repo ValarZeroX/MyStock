@@ -5,6 +5,7 @@ import android.content.Intent
 import androidx.activity.result.ActivityResultLauncher
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -30,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,6 +48,8 @@ import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.csv.exportCSV
 import com.banshus.mystock.ui.setting.ColorThemeScreen
+import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.viewmodels.BillingViewModel
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -53,15 +57,19 @@ import java.io.File
 @Composable
 fun StockSettingScreen(
     navController: NavHostController,
-    csvImportLauncher: ActivityResultLauncher<Intent>
+    csvImportLauncher: ActivityResultLauncher<Intent>,
+    billingViewModel: BillingViewModel
 ){
     val coroutineScope = rememberCoroutineScope()
+    val context = LocalContext.current
+    val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+    val versionName = packageInfo.versionName
     Scaffold(
         topBar = {
             SettingHeader()
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(
@@ -71,37 +79,37 @@ fun StockSettingScreen(
                 .padding(innerPadding)
         ) {
             LazyColumn{
-//                item {
-//                    Card(
-//                        modifier = Modifier
-//                            .fillMaxWidth()
-//                            .padding(10.dp)
-//                    ) {
-//                        Row {
-//                            Text(
-//                                text = "我的帳號",
-//                                style = MaterialTheme.typography.titleLarge,
-//                                modifier = Modifier
-//                                    .fillMaxWidth()
-//                                    .padding(10.dp),
-//                                color = MaterialTheme.colorScheme.onPrimaryContainer
-//                            )
-//                        }
-//                        ListItem(
-//                            headlineContent = { Text("訂閱") },
-//                            trailingContent = {
-//                                Icon(
-//                                    imageVector = Icons.Filled.ChevronRight,
-//                                    contentDescription = "方案",
-//                                )
-//                            },
-//                            modifier = Modifier.clickable {
-//                                navController.navigate("billingScreen")
-//                            }
-//                        )
-//                        HorizontalDivider()
-//                    }
-//                }
+                item {
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp)
+                    ) {
+                        Row {
+                            Text(
+                                text = stringResource(id = R.string.my_account),
+                                style = MaterialTheme.typography.titleLarge,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(10.dp),
+                                color = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        }
+                        ListItem(
+                            headlineContent = { Text(stringResource(id = R.string.subscription)) },
+                            trailingContent = {
+                                Icon(
+                                    imageVector = Icons.Filled.ChevronRight,
+                                    contentDescription = "方案",
+                                )
+                            },
+                            modifier = Modifier.clickable {
+                                navController.navigate("billingScreen")
+                            }
+                        )
+                        HorizontalDivider()
+                    }
+                }
                 item {
                     Card(
                         modifier = Modifier
@@ -313,6 +321,19 @@ fun StockSettingScreen(
                             }
                         )
                         HorizontalDivider()
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(10.dp),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        Text(
+                            text = "Version: $versionName",
+                            color = Gray1
+                        )
                     }
                 }
             }

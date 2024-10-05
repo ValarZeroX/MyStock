@@ -133,6 +133,7 @@ class MainActivity : ComponentActivity() {
         billingViewModel.hasSubscription()
 
 
+
         // 数据库和 Repository 的初始化
         val database = AppDatabase.getDatabase(this)
         val stockAccountRepository = StockAccountRepository(database.stockAccountDao())
@@ -288,20 +289,20 @@ fun MyApp(
                 stockViewModel,
                 stockAccountViewModel,
                 stockRecordViewModel,
-                stockSymbolViewModel
+                stockSymbolViewModel,billingViewModel
             )
         }
         composable("addAccountScreen") {
-            AddAccountScreen(navController, stockAccountViewModel, currencyViewModel, currencyApiViewModel)
+            AddAccountScreen(navController, stockAccountViewModel, currencyViewModel, currencyApiViewModel,billingViewModel)
         }
         composable("accountListScreen") {
-            AccountListScreen(navController, stockViewModel, stockAccountViewModel)
+            AccountListScreen(navController, stockViewModel, stockAccountViewModel,billingViewModel)
         }
         composable("stockSettingScreen") {
-            StockSettingScreen(navController, csvImportLauncher)
+            StockSettingScreen(navController, csvImportLauncher,billingViewModel)
         }
         composable("colorThemeScreen") {
-            ColorThemeScreen(navController, userSettingsViewModel)
+            ColorThemeScreen(navController, userSettingsViewModel,billingViewModel)
         }
         composable("addStockScreen") {
             AddStockScreen(
@@ -309,18 +310,20 @@ fun MyApp(
                 stockViewModel,
                 stockAccountViewModel,
                 stockRecordViewModel,
-                stockSymbolViewModel
+                stockSymbolViewModel,
+                billingViewModel
             )
         }
         composable("stockMarketScreen") {
-            StockMarketScreen(navController, stockMarketViewModel)
+            StockMarketScreen(navController, stockMarketViewModel,billingViewModel)
         }
         composable("stockSymbolScreen") {
             StockSymbolScreen(
                 navController,
                 stockSymbolViewModel,
                 stockMarketViewModel,
-                stockPriceApiViewModel
+                stockPriceApiViewModel,
+                billingViewModel
             )
         }
         composable("stockListScreen") {
@@ -329,7 +332,8 @@ fun MyApp(
                 stockViewModel,
                 stockAccountViewModel,
                 stockRecordViewModel,
-                stockSymbolViewModel
+                stockSymbolViewModel,
+                billingViewModel
             )
         }
         composable("stockDetailScreen") {
@@ -338,7 +342,8 @@ fun MyApp(
                 stockViewModel,
                 stockAccountViewModel,
                 stockRecordViewModel,
-                stockSymbolViewModel
+                stockSymbolViewModel,
+                billingViewModel
             )
         }
         composable("reportScreen") {
@@ -350,7 +355,8 @@ fun MyApp(
                 stockSymbolViewModel,
                 userSettingsViewModel,
                 stockMarketViewModel,
-                currencyViewModel
+                currencyViewModel,
+                billingViewModel
             )
         }
         composable("accountScreen") {
@@ -358,11 +364,12 @@ fun MyApp(
                 navController,
                 stockViewModel,
                 stockAccountViewModel,
-                stockRecordViewModel
+                stockRecordViewModel,
+                billingViewModel
             )
         }
         composable("editAccountScreen") {
-            EditAccountScreen(navController, stockViewModel, stockAccountViewModel)
+            EditAccountScreen(navController, stockViewModel, stockAccountViewModel,billingViewModel)
         }
         composable("recordScreen") {
             RecordScreen(
@@ -370,30 +377,34 @@ fun MyApp(
                 stockViewModel,
                 stockAccountViewModel,
                 stockSymbolViewModel,
-                stockRecordViewModel
+                stockRecordViewModel,
+                billingViewModel
             )
         }
         composable("reportSettingScreen") {
-            ReportSettingScreen(navController, userSettingsViewModel)
+            ReportSettingScreen(navController, userSettingsViewModel,billingViewModel)
         }
         composable("currencyScreen") {
             CurrencyScreen(
                 navController,
                 userSettingsViewModel,
                 currencyViewModel,
-                currencyApiViewModel
+                currencyApiViewModel,
+                billingViewModel
             )
         }
         composable("autoUpdateScreen") {
             AutoUpdateScreen(
                 navController,
                 stockViewModel,
-                userSettingsViewModel
+                userSettingsViewModel,
+                billingViewModel
             )
         }
         composable("disclaimerScreen") {
             DisclaimerScreen(
                 navController,
+                billingViewModel
             )
         }
         composable("marketListScreen") {
@@ -401,6 +412,7 @@ fun MyApp(
                 navController,
                 stockViewModel,
                 stockMarketViewModel,
+                billingViewModel
             )
         }
         composable("billingScreen") {

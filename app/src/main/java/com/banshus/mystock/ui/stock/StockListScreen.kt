@@ -80,6 +80,7 @@ import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.tool.SwipeBox
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.tool.DateSwitcher
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockMetrics
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.data.PieData
@@ -95,7 +96,8 @@ fun StockListScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
-    stockSymbolViewModel: StockSymbolViewModel
+    stockSymbolViewModel: StockSymbolViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     val decimalFormat = DecimalFormat("#.00")
@@ -153,13 +155,12 @@ fun StockListScreen(
     )
 
     var selectedTabIndex by stockViewModel.selectedTabIndex
-
     Scaffold(
         topBar = {
             StockListHeader(navController, stockAccount, stockViewModel, selectedTabIndex)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

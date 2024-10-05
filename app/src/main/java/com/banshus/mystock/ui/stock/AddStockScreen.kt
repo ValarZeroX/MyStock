@@ -68,6 +68,7 @@ import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.tool.DatePickerModal
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -83,7 +84,8 @@ fun AddStockScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
-    stockSymbolViewModel: StockSymbolViewModel
+    stockSymbolViewModel: StockSymbolViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     //撈第一筆帳戶
@@ -279,7 +281,7 @@ fun AddStockScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         LazyColumn(

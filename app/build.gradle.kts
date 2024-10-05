@@ -12,8 +12,8 @@ android {
         applicationId = "com.banshus.mystock"
         minSdk = 26
         targetSdk = 34
-        versionCode = 10
-        versionName = "1.1.2"
+        versionCode = 14
+        versionName = "1.1.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -99,4 +99,5 @@ dependencies {
     implementation (libs.play.services.ads)
 
     implementation (libs.billing)
+    implementation(libs.billing.ktx)
 }

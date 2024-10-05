@@ -54,6 +54,7 @@ import androidx.navigation.NavHostController
 import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockMarketViewModel
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
@@ -61,7 +62,11 @@ import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: StockMarketViewModel) {
+fun StockMarketScreen(
+    navController: NavHostController,
+    stockMarketViewModel: StockMarketViewModel,
+    billingViewModel: BillingViewModel
+) {
     val context = LocalContext.current
 //    val stockMarketViewModel: StockMarketViewModel = viewModel(
 //        factory = StockMarketViewModelFactory(
@@ -84,7 +89,7 @@ fun StockMarketScreen(navController: NavHostController,stockMarketViewModel: Sto
             StockMarketScreenHeader(navController, onAddClick = { showAddDialog = true })
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

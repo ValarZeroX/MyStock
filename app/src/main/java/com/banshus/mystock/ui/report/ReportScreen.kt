@@ -74,6 +74,7 @@ import com.banshus.mystock.ui.theme.StockRed
 import com.banshus.mystock.ui.theme.StockText
 import com.banshus.mystock.ui.tool.DateRangeType
 import com.banshus.mystock.ui.tool.DateSwitcher
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.DetailedStockMetrics
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -109,7 +110,8 @@ fun ReportScreen(
     stockSymbolViewModel: StockSymbolViewModel,
     userSettingsViewModel: UserSettingsViewModel,
     stockMarketViewModel: StockMarketViewModel,
-    currencyViewModel: CurrencyViewModel
+    currencyViewModel: CurrencyViewModel,
+    billingViewModel: BillingViewModel
 ) {
 
     var calculateCommission by remember { mutableStateOf(false) }
@@ -264,7 +266,7 @@ fun ReportScreen(
                 ReportHeader(stockViewModel)
             },
             bottomBar = {
-                AdBanner() // 将广告放在底部栏
+                AdBanner(billingViewModel) // 将广告放在底部栏
             }
         ) { innerPadding ->
             Box(

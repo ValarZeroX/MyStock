@@ -67,6 +67,7 @@ import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.data.entities.StockSymbol
 import com.banshus.mystock.ui.theme.Gray1
 import com.banshus.mystock.ui.tool.DatePickerModal
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import com.banshus.mystock.viewmodels.StockRecordViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -82,7 +83,8 @@ fun StockDetailScreen(
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
     stockRecordViewModel: StockRecordViewModel,
-    stockSymbolViewModel: StockSymbolViewModel
+    stockSymbolViewModel: StockSymbolViewModel,
+    billingViewModel: BillingViewModel
 ){
     val context = LocalContext.current
     val selectedStock by stockViewModel.selectedStock.observeAsState()
@@ -215,7 +217,6 @@ fun StockDetailScreen(
     LaunchedEffect(selectedStockMarket) {
         stockSymbolViewModel.fetchStockSymbolsListByMarket(selectedStockMarket)
     }
-
     Scaffold(
         topBar = {
             StockDetailHeader(
@@ -241,7 +242,7 @@ fun StockDetailScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

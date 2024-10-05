@@ -57,6 +57,7 @@ import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.CurrencyRate
 import com.banshus.mystock.data.entities.Currency
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
@@ -68,7 +69,8 @@ fun CurrencyScreen(
     navController: NavHostController,
     userSettingsViewModel: UserSettingsViewModel,
     currencyViewModel: CurrencyViewModel,
-    currencyApiViewModel: CurrencyApiViewModel
+    currencyApiViewModel: CurrencyApiViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     var selectedCurrencyCode by remember { mutableStateOf(userSettings?.currency ?: "") }
@@ -95,7 +97,7 @@ fun CurrencyScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

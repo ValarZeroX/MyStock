@@ -196,4 +196,10 @@
     <string name="market">市场</string>
     <string name="select_market">选择市场</string>
     <string name="no_data_available">没有可用的资料</string>
+    <string name="my_account">我的账户</string>
+    <string name="subscription">订阅</string>
+    <string name="plan">方案</string>
+    <string name="pro_version">专业版</string>
+    <string name="remove_ads">移除广告</string>
+    <string name="subscribed">已订阅</string>
 </resources>

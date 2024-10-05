@@ -47,6 +47,7 @@ import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.data.entities.StockAccount
 import com.banshus.mystock.data.entities.StockRecord
 import com.banshus.mystock.ui.stock.roundToDecimal
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 import java.math.RoundingMode
 
@@ -56,6 +57,7 @@ fun EditAccountScreen(
     navController: NavHostController,
     stockViewModel: StockViewModel,
     stockAccountViewModel: StockAccountViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     val selectedAccount by stockViewModel.selectedAccount.observeAsState()
@@ -120,7 +122,7 @@ fun EditAccountScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Column(

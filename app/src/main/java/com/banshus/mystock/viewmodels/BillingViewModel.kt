@@ -7,6 +7,8 @@ import com.banshus.mystock.billing.BillingManager
 
 class BillingViewModel(private val billingManager: BillingManager) : ViewModel() {
     val skuDetailsList = billingManager.subscriptions.asLiveData()
+    val productDetailsList = billingManager.productDetailsList.asLiveData()  // 暴露產品詳細信息
+
 
     fun startBillingConnection() {
         billingManager.billingSetup() // 建立 Billing 連接
@@ -18,6 +20,14 @@ class BillingViewModel(private val billingManager: BillingManager) : ViewModel()
 
     fun checkSubscriptionStatus(subscriptionPlanId: String) {
         billingManager.checkSubscriptionStatus(subscriptionPlanId)
+    }
+
+    fun querySubscriptionPlans(subscriptionPlanIds: List<String>) {
+        billingManager.querySubscriptionPlans(subscriptionPlanIds)
+    }
+
+    fun purchaseSubscription(productId: String, offerToken: String) {
+        billingManager.purchaseSubscription(productId, offerToken)
     }
 }
 

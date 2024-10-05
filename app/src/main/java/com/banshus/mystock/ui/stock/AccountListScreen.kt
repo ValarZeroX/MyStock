@@ -35,23 +35,24 @@ import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
 
 @Composable
 fun AccountListScreen(
     navController: NavHostController,
     stockViewModel: StockViewModel,
-    stockAccountViewModel: StockAccountViewModel
+    stockAccountViewModel: StockAccountViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     val stockAccounts by stockAccountViewModel.stockAccounts.observeAsState(emptyList())
-
     Scaffold(
         topBar = {
             AccountListHeader(navController)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

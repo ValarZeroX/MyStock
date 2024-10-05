@@ -59,6 +59,7 @@ import java.util.Calendar
 import java.util.Date
 import com.banshus.mystock.ui.tool.CalendarView
 import com.banshus.mystock.ui.tool.SwipeBox
+import com.banshus.mystock.viewmodels.BillingViewModel
 
 @Composable
 fun RecordScreen(
@@ -67,6 +68,7 @@ fun RecordScreen(
     stockAccountViewModel: StockAccountViewModel,
     stockSymbolViewModel: StockSymbolViewModel,
     stockRecordViewModel: StockRecordViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     val selectedRecordDate by stockViewModel.selectedRecordDate.observeAsState(Date()) // 观察 ViewModel 中的 selectedRecordDate
@@ -148,7 +150,7 @@ fun RecordScreen(
             RecordScreenHeader(navController,selectedRecordDate)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

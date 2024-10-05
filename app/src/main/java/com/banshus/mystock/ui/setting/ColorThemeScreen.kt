@@ -58,11 +58,15 @@ import com.banshus.mystock.ui.theme.surfaceDark
 import com.banshus.mystock.ui.theme.surfaceDarkGreen
 import com.banshus.mystock.ui.theme.surfaceLight
 import com.banshus.mystock.ui.theme.surfaceLightGreen
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: UserSettingsViewModel) {
+fun ColorThemeScreen(navController: NavHostController,
+                     userSettingsViewModel: UserSettingsViewModel,
+                     billingViewModel: BillingViewModel
+) {
     val userSettings by userSettingsViewModel.userSettings.observeAsState()
     var themeIndex by remember { mutableIntStateOf(0) }
     var darkTheme by remember { mutableStateOf(true) }
@@ -92,7 +96,7 @@ fun ColorThemeScreen(navController: NavHostController, userSettingsViewModel: Us
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Column(

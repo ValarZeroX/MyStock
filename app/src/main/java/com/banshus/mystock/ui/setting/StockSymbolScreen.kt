@@ -61,6 +61,7 @@ import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.api.response.StockChartResponse
 import com.banshus.mystock.data.entities.StockMarket
 import com.banshus.mystock.data.entities.StockSymbol
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.StockMarketViewModel
 import com.banshus.mystock.viewmodels.StockPriceApiViewModel
 import com.banshus.mystock.viewmodels.StockSymbolViewModel
@@ -76,7 +77,8 @@ fun StockSymbolScreen(
     navController: NavHostController,
     stockSymbolViewModel: StockSymbolViewModel,
     stockMarketViewModel: StockMarketViewModel,
-    stockPriceApiViewModel: StockPriceApiViewModel
+    stockPriceApiViewModel: StockPriceApiViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
     // 创建 ScaffoldState
@@ -147,7 +149,7 @@ fun StockSymbolScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         },
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)

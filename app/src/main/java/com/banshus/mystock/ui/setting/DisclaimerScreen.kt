@@ -26,15 +26,19 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.banshus.mystock.R
 import com.banshus.mystock.ads.AdBanner
+import com.banshus.mystock.viewmodels.BillingViewModel
 
 @Composable
-fun DisclaimerScreen(navController: NavHostController) {
+fun DisclaimerScreen(
+    navController: NavHostController,
+    billingViewModel: BillingViewModel
+) {
     Scaffold(
         topBar = {
             DisclaimerScreenHeader(navController)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

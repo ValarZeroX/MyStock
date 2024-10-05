@@ -45,6 +45,7 @@ import androidx.navigation.NavHostController
 import com.banshus.mystock.R
 import com.banshus.mystock.SharedOptions
 import com.banshus.mystock.ads.AdBanner
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.CurrencyApiViewModel
 import com.banshus.mystock.viewmodels.CurrencyViewModel
 import com.banshus.mystock.viewmodels.StockAccountViewModel
@@ -60,6 +61,7 @@ fun AddAccountScreen(
     stockAccountViewModel: StockAccountViewModel,
     currencyViewModel: CurrencyViewModel,
     currencyApiViewModel: CurrencyApiViewModel,
+    billingViewModel: BillingViewModel
 ) {
     val context = LocalContext.current
 
@@ -141,7 +143,7 @@ fun AddAccountScreen(
             )
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Column(

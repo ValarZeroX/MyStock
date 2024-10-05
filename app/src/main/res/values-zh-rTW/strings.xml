@@ -196,4 +196,10 @@
     <string name="market">市場</string>
     <string name="select_market">選擇市場</string>
     <string name="no_data_available">沒有可用的資料</string>
+    <string name="my_account">我的帳號</string>
+    <string name="subscription">訂閱</string>
+    <string name="plan">方案</string>
+    <string name="pro_version">專業版</string>
+    <string name="remove_ads">移除廣告</string>
+    <string name="subscribed">已訂閱</string>
 </resources>

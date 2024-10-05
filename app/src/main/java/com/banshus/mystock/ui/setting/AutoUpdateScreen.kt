@@ -37,13 +37,15 @@ import com.banshus.mystock.R
 import com.banshus.mystock.StockViewModel
 import com.banshus.mystock.ads.AdBanner
 import com.banshus.mystock.ui.theme.Gray1
+import com.banshus.mystock.viewmodels.BillingViewModel
 import com.banshus.mystock.viewmodels.UserSettingsViewModel
 
 @Composable
 fun AutoUpdateScreen(
     navController: NavHostController,
     stockViewModel: StockViewModel,
-    userSettingsViewModel: UserSettingsViewModel
+    userSettingsViewModel: UserSettingsViewModel,
+    billingViewModel: BillingViewModel
 ) {
     var autoUpdateStockPrice by remember { mutableStateOf(false) }
     var autoUpdateExchangeRate by remember { mutableStateOf(false) }
@@ -61,7 +63,7 @@ fun AutoUpdateScreen(
             AutoUpdateScreenHeader(navController)
         },
         bottomBar = {
-            AdBanner() // 将广告放在底部栏
+            AdBanner(billingViewModel) // 将广告放在底部栏
         }
     ) { innerPadding ->
         Box(

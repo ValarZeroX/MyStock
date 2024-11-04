@@ -12,8 +12,8 @@ android {
         applicationId = "com.banshus.mystock"
         minSdk = 26
         targetSdk = 34
-        versionCode = 15
-        versionName = "1.1.7"
+        versionCode = 18
+        versionName = "1.1.10"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

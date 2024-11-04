@@ -17,17 +17,17 @@ import com.google.android.gms.ads.AdView
 fun AdBanner(billingViewModel: BillingViewModel) {
     val context = LocalContext.current
     val subscriptions by billingViewModel.skuDetailsList.observeAsState(emptyList())
-    if (!subscriptions.contains("stock_tracker_monthly")) {
-        AndroidView(
-            modifier = Modifier
-                .fillMaxWidth(),
-            factory = {
-                AdView(context).apply {
-                    setAdSize(AdSize.BANNER)
-                    adUnitId = "ca-app-pub-9868429025931364/8633003875"  // 替换为你的广告单元 ID
-                    loadAd(AdRequest.Builder().build())
-                }
-            }
-        )
-    }
+//    if (!subscriptions.contains("stock_tracker_monthly")) {
+//        AndroidView(
+//            modifier = Modifier
+//                .fillMaxWidth(),
+//            factory = {
+//                AdView(context).apply {
+//                    setAdSize(AdSize.BANNER)
+//                    adUnitId = "ca-app-pub-9868429025931364/8633003875"  // 替换为你的广告单元 ID
+//                    loadAd(AdRequest.Builder().build())
+//                }
+//            }
+//        )
+//    }
 }

@@ -85,6 +85,7 @@ class BillingManager(
             override fun onBillingServiceDisconnected() {
                 // Handle billing service disconnection
                 Log.e("BillingManager", "Billing service disconnected")
+                billingSetup() // 尝试重新连接
             }
         })
     }

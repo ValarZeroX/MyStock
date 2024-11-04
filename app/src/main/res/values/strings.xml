@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">MyStock</string>
+    <string name="hk_stocks_2">HK</string>
+    <string name="us_stocks_2">US</string>
+    <string name="taiwan_stocks_2">TW</string>
     <string name="hk_stocks">HK Stocks</string>
     <string name="us_stocks">U.S Stocks</string>
     <string name="taiwan_stocks">Taiwan Stocks</string>

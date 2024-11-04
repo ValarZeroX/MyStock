@@ -109,6 +109,10 @@ fun AddAccountScreen(
                         transactionTax = 0.0
                         newDiscount = 0.0
                     }
+                    if (accountName == "") { // 如果帳戶名稱為空，則不保存
+                        return@AddAccountScreenHeader
+                    }
+
                     stockAccountViewModel.insertStockAccount(
                         accountName,
                         currencyCode,

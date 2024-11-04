@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyStock</string>
+    <string name="hk_stocks_2">港股</string>
+    <string name="us_stocks_2">美股</string>
+    <string name="taiwan_stocks_2">台股</string>
     <string name="hk_stocks">港股</string>
     <string name="us_stocks">美股</string>
     <string name="taiwan_stocks">台股</string>

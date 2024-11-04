@@ -261,21 +261,23 @@ fun AddStockScreen(
         topBar = {
             AddHeader(
                 onSaveStockRecord = {
-                    val stockRecord = StockRecord(
-                        accountId = selectedAccountId,
-                        stockMarket = selectedStockMarket,
-                        stockSymbol = selectedStockSymbol?.stockSymbol ?: "",
-                        stockType = selectedStockTypeIndex,
-                        transactionType = selectedTransactionType,
-                        transactionDate = transactionDate,
-                        quantity = quantityInt,
-                        pricePerUnit = pricePerUnitDouble,
-                        totalAmount = quantityInt * pricePerUnitDouble,
-                        commission = commissionDouble,
-                        transactionTax = transactionTaxDouble,
-                        note = ""
-                    )
-                    stockRecordViewModel.insertStockRecord(stockRecord)
+                    if (!selectedStockSymbol?.stockSymbol.isNullOrEmpty()) {
+                        val stockRecord = StockRecord(
+                            accountId = selectedAccountId,
+                            stockMarket = selectedStockMarket,
+                            stockSymbol = selectedStockSymbol?.stockSymbol ?: "",
+                            stockType = selectedStockTypeIndex,
+                            transactionType = selectedTransactionType,
+                            transactionDate = transactionDate,
+                            quantity = quantityInt,
+                            pricePerUnit = pricePerUnitDouble,
+                            totalAmount = quantityInt * pricePerUnitDouble,
+                            commission = commissionDouble,
+                            transactionTax = transactionTaxDouble,
+                            note = ""
+                        )
+                        stockRecordViewModel.insertStockRecord(stockRecord)
+                    }
                 },
                 navController
             )

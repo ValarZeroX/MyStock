@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
 import androidx.compose.material.icons.filled.AttachMoney
@@ -267,105 +269,112 @@ fun StockBuyPieChart(marketStockSummary: Map<String, StockSummary>?, selectedSho
     val selectedEntryLabel = remember { mutableStateOf("") }
     val selectedLabel = remember { mutableStateOf("") }
 
-    Column {
-        AndroidView(
-            factory = { context ->
-                PieChart(context).apply {
-                    this.data = pieData
-                    this.description.isEnabled = false
-                    this.legend.isEnabled = false
-                    this.setUsePercentValues(true)
-                    this.isDrawHoleEnabled = true
-                    this.holeRadius = 60f
-                    this.setHoleColor(m3Surface)
-                    this.setDrawCenterText(true)
-                    this.setCenterTextSize(14f)
-                    this.setCenterTextColor(m3OnSurface)
-                    this.centerText = selectedEntryLabel.value
-                    this.setExtraOffsets(40f, 20f, 0f, 20f)
-                    this.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
-                        override fun onValueSelected(e: Entry?, h: Highlight?) {
-                            val entry = e as PieEntry
-                            selectedEntryLabel.value = "${entry.value.toInt()}%"
-                            selectedLabel.value = entry.label
-                            this@apply.centerText = selectedEntryLabel.value // 更新 centerText
-                        }
+    LazyColumn(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        item {
+            AndroidView(
+                factory = { context ->
+                    PieChart(context).apply {
+                        this.data = pieData
+                        this.description.isEnabled = false
+                        this.legend.isEnabled = false
+                        this.setUsePercentValues(true)
+                        this.isDrawHoleEnabled = true
+                        this.holeRadius = 60f
+                        this.setHoleColor(m3Surface)
+                        this.setDrawCenterText(true)
+                        this.setCenterTextSize(14f)
+                        this.setCenterTextColor(m3OnSurface)
+                        this.centerText = selectedEntryLabel.value
+                        this.setExtraOffsets(40f, 20f, 0f, 20f)
+                        this.setOnChartValueSelectedListener(object : OnChartValueSelectedListener {
+                            override fun onValueSelected(e: Entry?, h: Highlight?) {
+                                val entry = e as PieEntry
+                                selectedEntryLabel.value = "${entry.value.toInt()}%"
+                                selectedLabel.value = entry.label
+                                this@apply.centerText = selectedEntryLabel.value // 更新 centerText
+                            }
 
-                        override fun onNothingSelected() {
-                            selectedEntryLabel.value = ""
-                            selectedLabel.value = ""
-                            this@apply.centerText = selectedEntryLabel.value
-                        }
-                    })
-                }
-            },
-            update = { chart ->
-                // 根據選擇的類型過濾數據
-                val filteredMarketStockSummary = when (selectedShowType) {
-                    0 -> marketStockSummary.filterValues { it.totalBuy > 0 } // 買進數據
-                    1 -> marketStockSummary.filterValues { it.totalSell > 0 } // 賣出數據
-                    2 -> marketStockSummary.filterValues { it.totalDividend > 0 } // 股利數據
-                    else -> marketStockSummary // 預設顯示所有數據
-                }
-
-                if (filteredMarketStockSummary.isEmpty()) {
-                    chart.clear()  // 如果沒有數據，清除圖表
-                } else {
-                    // 更新圖表數據
-                    val updatedTotalMap = when (selectedShowType) {
-                        0 -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
-                        1 -> filteredMarketStockSummary.mapValues { it.value.totalSell.toFloat() }
-                        2 -> filteredMarketStockSummary.mapValues { it.value.totalDividend.toFloat() }
-                        else -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
+                            override fun onNothingSelected() {
+                                selectedEntryLabel.value = ""
+                                selectedLabel.value = ""
+                                this@apply.centerText = selectedEntryLabel.value
+                            }
+                        })
+                    }
+                },
+                update = { chart ->
+                    // 根據選擇的類型過濾數據
+                    val filteredMarketStockSummary = when (selectedShowType) {
+                        0 -> marketStockSummary.filterValues { it.totalBuy > 0 } // 買進數據
+                        1 -> marketStockSummary.filterValues { it.totalSell > 0 } // 賣出數據
+                        2 -> marketStockSummary.filterValues { it.totalDividend > 0 } // 股利數據
+                        else -> marketStockSummary // 預設顯示所有數據
                     }
 
-                    val updatedTotalSum = updatedTotalMap.values.sum()
-
-                    val updatedEntries = updatedTotalMap.map { (stockSymbol, total) ->
-                        PieEntry(total / updatedTotalSum * 100, stockSymbol) // 計算比例並轉換為百分比
-                    }
-
-                    // 創建新的 PieDataSet 和 PieData
-                    val updatedDataSet = PieDataSet(updatedEntries, "Stock Holdings").apply {
-                        colors = listOf(
-                            Color.parseColor("#4777c0"),
-                            Color.parseColor("#a374c6"),
-                            Color.parseColor("#4fb3e8"),
-                            Color.parseColor("#99cf43"),
-                            Color.parseColor("#fdc135"),
-                            Color.parseColor("#fd9a47"),
-                            Color.parseColor("#eb6e7a"),
-                            Color.parseColor("#6785c2")
-                        )
-                        setValueTextColors(colors)
-                        valueLinePart1Length = 0.6f
-                        valueLinePart2Length = 0.3f
-                        valueLineWidth = 2f
-                        valueLinePart1OffsetPercentage = 115f
-                        isUsingSliceColorAsValueLineColor = true
-                        yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
-                        valueTextSize = 16f
-                        valueTypeface = Typeface.DEFAULT_BOLD
-                        valueFormatter = object : ValueFormatter() {
-                            private val formatter = NumberFormat.getPercentInstance()
-
-                            override fun getFormattedValue(value: Float) =
-                                formatter.format(value / 100f)
+                    if (filteredMarketStockSummary.isEmpty()) {
+                        chart.clear()  // 如果沒有數據，清除圖表
+                    } else {
+                        // 更新圖表數據
+                        val updatedTotalMap = when (selectedShowType) {
+                            0 -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
+                            1 -> filteredMarketStockSummary.mapValues { it.value.totalSell.toFloat() }
+                            2 -> filteredMarketStockSummary.mapValues { it.value.totalDividend.toFloat() }
+                            else -> filteredMarketStockSummary.mapValues { it.value.totalBuy.toFloat() }
                         }
-                    }
 
-                    // 創建新的 PieData
-                    val updatedPieData = PieData(updatedDataSet)
-                    chart.data = updatedPieData  // 更新圖表的數據
-                }
-                chart.invalidate()  // 刷新圖表
-            },
-            modifier = Modifier
-                .width(350.dp)
-                .height(300.dp)
-        )
-        LegendList(totalAmountMap, entries, dataSet.colors, totalAmountSum, selectedLabel.value, selectedShowType)
+                        val updatedTotalSum = updatedTotalMap.values.sum()
+
+                        val updatedEntries = updatedTotalMap.map { (stockSymbol, total) ->
+                            PieEntry(total / updatedTotalSum * 100, stockSymbol) // 計算比例並轉換為百分比
+                        }
+
+                        // 創建新的 PieDataSet 和 PieData
+                        val updatedDataSet = PieDataSet(updatedEntries, "Stock Holdings").apply {
+                            colors = listOf(
+                                Color.parseColor("#4777c0"),
+                                Color.parseColor("#a374c6"),
+                                Color.parseColor("#4fb3e8"),
+                                Color.parseColor("#99cf43"),
+                                Color.parseColor("#fdc135"),
+                                Color.parseColor("#fd9a47"),
+                                Color.parseColor("#eb6e7a"),
+                                Color.parseColor("#6785c2")
+                            )
+                            setValueTextColors(colors)
+                            valueLinePart1Length = 0.6f
+                            valueLinePart2Length = 0.3f
+                            valueLineWidth = 2f
+                            valueLinePart1OffsetPercentage = 115f
+                            isUsingSliceColorAsValueLineColor = true
+                            yValuePosition = PieDataSet.ValuePosition.OUTSIDE_SLICE
+                            valueTextSize = 16f
+                            valueTypeface = Typeface.DEFAULT_BOLD
+                            valueFormatter = object : ValueFormatter() {
+                                private val formatter = NumberFormat.getPercentInstance()
+
+                                override fun getFormattedValue(value: Float) =
+                                    formatter.format(value / 100f)
+                            }
+                        }
+
+                        // 創建新的 PieData
+                        val updatedPieData = PieData(updatedDataSet)
+                        chart.data = updatedPieData  // 更新圖表的數據
+                    }
+                    chart.invalidate()  // 刷新圖表
+                },
+                modifier = Modifier
+                    .width(350.dp)
+                    .height(300.dp)
+            )
+        }
+        item{
+            LegendList(totalAmountMap, entries, dataSet.colors, totalAmountSum, selectedLabel.value, selectedShowType)
+        }
     }
+
 }
 
 @Composable
@@ -383,9 +392,13 @@ fun LegendList(
         entries.filter { it.label == selectedLabel } // 只显示选中的条目
     }
 
-    LazyColumn {
-        items(filteredEntries.size) { index ->
-            val entry = filteredEntries[index]  // 使用 filteredEntries，而不是 entries
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+    ) {
+        filteredEntries.forEachIndexed { index, entry ->
+//            val entry = filteredEntries[index]  // 使用 filteredEntries，而不是 entries
             val stockSymbol = entry.label
             val totalBuy = totalBuyMap[stockSymbol] ?: 0f
             val labelText = when (selectedShowType) {

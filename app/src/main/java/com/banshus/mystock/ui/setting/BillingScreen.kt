@@ -58,10 +58,12 @@ fun BillingScreen(
     val subscriptions by billingViewModel.skuDetailsList.observeAsState(emptyList())
     // 觀察產品詳細信息
     val productDetailsList by billingViewModel.productDetailsList.observeAsState(emptyList())
+
 // 查詢產品列表
     LaunchedEffect(Unit) {
         billingViewModel.querySubscriptionPlans(listOf("stock_tracker_monthly")) // 輸入您的產品ID"stock_tracker_monthly",
     }
+    Log.d("productDetailsList", "$productDetailsList")
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
